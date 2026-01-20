@@ -38,7 +38,7 @@ We want local failures to be:
 
 A local-only script is added:
 
-```
+```bash
 scripts/precheck.sh
 ```
 
@@ -51,7 +51,7 @@ Responsibilities:
 - Validate Docker socket health
 - On macOS:
   - Detect Colima
-  - Ensure Colima is running (optionally required)
+  - Ensure Colima is running (when Docker is backed by Colima on macOS)
 - Perform best-effort Docker memory checks
 
 Design constraints:
@@ -69,10 +69,10 @@ This script is a **local convenience tool** and is not used directly by CI.
 
 The following Make targets are defined for environment readiness:
 
-| Target        | Purpose |
-|---------------|---------|
-| `doctor`      | Runs `scripts/precheck.sh` to validate local prerequisites |
-| `help`        | Lists common Make targets |
+| Target        | Purpose                                                     |
+|---------------|------------------------------------------------------------ |
+| `doctor`      | Runs `scripts/precheck.sh` to validate local prerequisites  |
+| `help`        | Lists common Make targets                                   |
 
 Rationale:
 
@@ -88,13 +88,13 @@ Make is used as a **thin orchestration layer** over Gradle and scripts.
 
 Key targets:
 
-| Target        | Meaning |
-|---------------|--------|
-| `lint`        | Static analysis only |
-| `test`        | Unit tests |
-| `verify`      | “Am I good to push?” (doctor + lint + test) |
-| `quality`     | Local approximation of CI (doctor + format + clean check) |
-| `bootstrap`   | First-time setup (hooks + doctor + quality) |
+| Target        | Meaning                                                                  |
+|---------------|------------------------------------------------------------------------- |
+| `lint`        | Static analysis only                                                     |
+| `test`        | Unit tests                                                               |
+| `verify`      | “Am I good to push?” (doctor + lint + test)                              |
+| `quality`     | Local approximation of CI (doctor + auto-format + ./gradlew clean check) |
+| `bootstrap`   | First-time setup (hooks + doctor + quality)                              |
 
 Design principles:
 
