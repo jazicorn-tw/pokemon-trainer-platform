@@ -13,9 +13,17 @@ set -euo pipefail
 # - SKIP_QUALITY=1 git commit ...   -> skip this hook once
 # - RUN_TESTS=1 git commit ...      -> also run unit tests
 # - AUTO_FORMAT=0 git commit ...    -> do NOT run spotlessApply (validate only)
+# - DEBUG_PRECOMMIT=1 git commit ...-> print debug info about what triggered the hook
+
+log() { printf '%s\n' "$*"; }
+debug() {
+  if [[ "${DEBUG_PRECOMMIT:-}" == "1" ]]; then
+    printf '%s\n' "pre-commit(debug): $*"
+  fi
+}
 
 if [[ "${SKIP_QUALITY:-}" == "1" ]]; then
-  echo "pre-commit: SKIP_QUALITY=1 set; skipping quality gate."
+  log "pre-commit: SKIP_QUALITY=1 set; skipping quality gate."
   exit 0
 fi
 
@@ -23,25 +31,36 @@ fi
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
-# Only run if relevant files changed (Java/Gradle/config/workflows)
+# Only run if relevant files are staged
 CHANGED="$(git diff --cached --name-only --diff-filter=ACMR || true)"
 
+debug "staged files:" 
+debug "${CHANGED:-<none>}"
+
 should_run=false
+triggered_by=""
+
 while IFS= read -r f; do
+  [[ -z "$f" ]] && continue
+
   case "$f" in
-    *.java|build.gradle|settings.gradle|gradle.properties|config/*|src/*|.github/workflows/*)
+    *.java|build.gradle|settings.gradle|gradle.properties|src/*|config/*|.github/workflows/*)
       should_run=true
+      triggered_by="$f"
       break
       ;;
   esac
+
 done <<< "$CHANGED"
 
 if [[ "$should_run" != "true" ]]; then
-  echo "pre-commit: no relevant files staged; skipping quality gate."
+  log "pre-commit: no relevant files staged; skipping quality gate."
   exit 0
 fi
 
-echo "pre-commit: running ADR-000 quality gate (format + lint/static analysis)..."
+debug "triggered by: $triggered_by"
+
+log "pre-commit: running ADR-000 quality gate (format + lint/static analysis)..."
 
 # Optional auto-format (mutates working tree).
 # If formatting changes files, we fail the commit so you can re-stage intentionally.
@@ -49,20 +68,18 @@ if [[ "${AUTO_FORMAT:-1}" != "0" ]]; then
   ./gradlew --no-daemon --no-configuration-cache -q spotlessApply
 
   if ! git diff --quiet; then
-    echo "pre-commit: ✨ Spotless reformatted files."
-    echo "pre-commit: please re-stage the changes and commit again."
+    log "pre-commit: ✨ Spotless reformatted files."
+    log "pre-commit: please re-stage the changes and commit again."
     exit 1
   fi
 else
-  echo "pre-commit: AUTO_FORMAT=0 set; skipping spotlessApply."
+  log "pre-commit: AUTO_FORMAT=0 set; skipping spotlessApply."
 fi
 
-# Static analysis
+# Static analysis (main sources)
 ./gradlew --no-daemon -q checkstyleMain pmdMain spotbugsMain
 
 if [[ "${RUN_TESTS:-}" == "1" ]]; then
-  echo "pre-commit: RUN_TESTS=1 set; running unit tests..."
+  log "pre-commit: RUN_TESTS=1 set; running unit tests..."
   ./gradlew --no-daemon -q test
 fi
-
-echo "pre-commit: ✅ quality gate passed."
