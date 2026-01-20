@@ -1,8 +1,9 @@
 # 🧰 Makefile Commands Overview
 
-This project uses a small set of **simple, memorable Makefile commands** to standardize local development and **mirror CI behavior exactly**, as defined in **ADR-000**.
+This project uses a small set of **simple, memorable Makefile commands** to standardize local development and provide **fast feedback aligned with CI**, as defined in **ADR-000**.
 
-Formatting, linting, static analysis, and tests are treated as a **single quality gate**.
+Formatting, linting, static analysis, and tests together form a **single quality gate**.
+CI is the **authoritative enforcer** of that gate.
 
 ---
 
@@ -12,11 +13,11 @@ Formatting, linting, static analysis, and tests are treated as a **single qualit
 
 ```bash
 make hooks     # install git hooks
-make quality   # formatting + linting + static analysis + tests
+make quality   # full local quality gate (CI-aligned)
 make test      # run tests only
 ```
 
-Each command does **one clear thing** and maps directly to an existing workflow.
+Each command does **one clear thing** and maps to a specific workflow.
 
 ---
 
@@ -28,19 +29,21 @@ Sets up local safeguards.
 
 - Installs pre-commit hooks
 - Ensures formatting and quality checks run before commits
-- Mirrors CI expectations locally
+- Provides early feedback aligned with CI expectations
 
 Run once after cloning.
 
 ---
 
-### `make quality` (the full quality gate)
+### `make quality` (full local quality gate)
 
-Runs the **same checks as CI**, in the same order:
+Runs a **local approximation of the CI quality gate**, with developer-friendly behavior:
 
-1. **Formatting**
-   - `./gradlew spotlessApply` (local convenience)
-2. **Formatting verification, linting & static analysis**
+1. **Formatting (local convenience)**
+   - `./gradlew spotlessApply`
+   - Auto-formats code to avoid format-only CI failures
+
+2. **Verification, linting & static analysis**
    - `./gradlew clean check`
    - Includes:
      - Spotless (format verification)
@@ -49,7 +52,17 @@ Runs the **same checks as CI**, in the same order:
      - SpotBugs
      - Tests
 
-This is the **non-negotiable baseline** defined in ADR-000.
+This command reflects the **intent and scope** of CI, but is optimized for local use.
+
+⚠️ **Source of truth**
+
+CI always runs:
+
+```bash
+./gradlew clean check
+```
+
+CI does **not** auto-format and is the only authoritative quality gate.
 
 ---
 
@@ -62,6 +75,7 @@ This is the **non-negotiable baseline** defined in ADR-000.
 - Runs tests only
 - Useful during tight feedback loops
 - Does **not** replace `make quality` before pushing
+- Does **not** satisfy the ADR-000 quality contract
 
 ---
 
@@ -77,11 +91,14 @@ One mental model:
 
 ---
 
-### 2. Mirrors CI exactly
+### 2. Aligns with CI without pretending to be CI
 
-- `make quality` == CI quality gate
-- No “but it passed locally” surprises
-- Same tools, same order, same failure modes
+- Same rules
+- Same failure modes
+- Same expectations
+- Clear separation between **local convenience** and **CI enforcement**
+
+No “but it passed locally” ambiguity.
 
 ---
 
@@ -99,8 +116,8 @@ This Makefile operationalizes the decision that:
 
 - Formatting comes first
 - Linting defines the baseline
-- Static analysis is non-optional
-- CI is not special — it just runs the same commands
+- Static analysis is non-negotiable
+- CI enforces the contract authoritatively
 
 ---
 

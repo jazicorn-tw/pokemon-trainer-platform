@@ -7,12 +7,8 @@
   <img src="https://img.shields.io/badge/java-21-blue" alt="Java">
   <img src="https://img.shields.io/badge/spring--boot-4.x-brightgreen" alt="Spring Boot">
   <img src="https://img.shields.io/badge/docker-ready-blue" alt="Docker">
-  <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml">
-    <img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml/badge.svg" alt="CI">
-  </a>
-  <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml">
-    <img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml/badge.svg" alt="Build Image">
-  </a>
+  <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml"><img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml"><img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml/badge.svg" alt="Build Image"></a>
 </p>
 
 ---
@@ -258,11 +254,7 @@ This decision is formally captured in:
 
 ## 🐳 Docker
 
-Build a runnable image locally:
-
-```bash
-./gradlew bootBuildImage
-```
+👉 See **[DOCKER.md](./docs/onboarding/SETUP_DOCKER.md)**
 
 ---
 
@@ -270,7 +262,7 @@ Build a runnable image locally:
 
 For system design, trade-offs, and rationale, see:
 
-👉 **ARCHITECTURE.md**
+👉 See **[ARCHITECTURE.md](./ARCHITECTURE.md)**
 
 ---
 

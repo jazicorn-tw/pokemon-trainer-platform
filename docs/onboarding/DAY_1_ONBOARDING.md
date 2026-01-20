@@ -1,7 +1,6 @@
 # Day-1 Onboarding Checklist
 
-This project follows **strict but boring** conventions to ensure
-repeatable builds, reliable tests, and production parity.
+This project follows **strict but boring** conventions to ensure repeatable builds, reliable tests, and production parity.
 
 If you follow this checklist, you will not fight the tooling.
 
@@ -13,11 +12,11 @@ If you follow this checklist, you will not fight the tooling.
 
 ## Prerequisites
 
-- Java **21**
-- Docker (Docker Desktop or **Colima** on macOS)
-- Git
-- No global Gradle install needed
-- `make` (available by default on macOS and most Linux distros)
+* Java **21**
+* Docker (Docker Desktop or **Colima** on macOS)
+* Git
+* No global Gradle install needed
+* `make` (available by default on macOS and most Linux distros)
 
 ---
 
@@ -38,14 +37,15 @@ cp .env.example .env
 
 ### How `.env` works in this project
 
-- Spring Boot loads `.env` automatically for **local runs** via:
+* Spring Boot loads `.env` automatically for **local runs** via:
 
   ```properties
   spring.config.import=optional:file:.env[.properties]
   ```
 
-- `.env` is **optional** and **local-only**
-- OS-level environment variables **always take precedence** (CI / prod)
+* `.env` is **optional** and **local-only**
+
+* OS-level environment variables **always take precedence** (CI / prod)
 
 ⚠️ `.env` must use simple `KEY=value` syntax (no `export`, no shell logic).
 
@@ -97,42 +97,55 @@ make hooks
 
 This installs:
 
-- pre-commit hooks
-- fast local quality checks (lint / static analysis)
+* pre-commit hooks
+* fast local quality checks (lint / static analysis)
 
 Hooks provide early feedback but **do not replace CI**.
 
-See [MAKEFILE](./MAKEFILE.md) for details
+See [MAKEFILE](./MAKEFILE.md) for details.
 
 ---
 
 ## 6. Run quality gate (source of truth)
 
-You may run Gradle directly:
+There are **multiple ways to run checks locally**, but they are **not equivalent**.
+
+You may run **tests only**:
 
 ```bash
 ./gradlew test
 ```
 
-Or use the ergonomic wrapper:
+This validates behavior, but **does not** run formatting or static analysis.
+
+For a **local approximation of CI**, use the ergonomic wrapper:
 
 ```bash
 make quality
 ```
 
-Both are equivalent. CI always runs:
+This runs formatting, static analysis, and tests, and is the recommended Day‑1 command.
+
+⚠️ **Source of truth**
+
+CI always runs:
 
 ```bash
 ./gradlew clean check
 ```
 
-✅ Expected result:
+Only this command is authoritative.
+Local commands exist for convenience and fast feedback — **they do not replace CI**.
 
-- Build succeeds
-- All tests pass
-- No Docker / Testcontainers errors
+✅ Expected result in CI:
 
-If this fails, stop and fix it before continuing.
+* Build succeeds
+* All tests pass
+* No formatting violations
+* No static-analysis violations
+* No Docker / Testcontainers errors
+
+If CI fails, local success does not matter — fix the failure before proceeding.
 
 ---
 
@@ -142,20 +155,20 @@ If this fails, stop and fix it before continuing.
 make bootstrap
 ```
 
-This installs hooks and runs the full quality gate.
+This installs hooks and runs the full local quality gate.
 
 ---
 
 ## 8. Run the app (local profile)
 
 ```bash
-./gradlew bootRun -Dspring.profiles.active=local
+./gradlew bootRun -D spring.profiles.active=local
 ```
 
 Endpoints:
 
-- App: <http://localhost:8080>
-- Health: <http://localhost:8080/actuator/health>
+* App: [http://localhost:8080](http://localhost:8080)
+* Health: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 
 ---
 
@@ -169,12 +182,12 @@ docker compose up --build app
 
 ## What *Not* To Do
 
-- ❌ Do not install global Gradle
-- ❌ Do not hardcode secrets
-- ❌ Do not commit `.env`
-- ❌ Do not bypass failing tests
-- ❌ Do not bypass quality gates for PRs
+* ❌ Do not install global Gradle
+* ❌ Do not hardcode secrets
+* ❌ Do not commit `.env`
+* ❌ Do not bypass failing tests
+* ❌ Do not bypass quality gates for PRs
 
 ---
 
-If Day-1 works, everything else will too.
+If Day‑1 works, everything else will too.

@@ -65,51 +65,100 @@ No feature is added without tests.
 
 ## 🔰 Phase 0 — Project Skeleton (v0.0.1)
 
-> ⚠️ Phase 0 tests require Docker (or Colima on macOS) due to Testcontainers usage.
+> ⚠️ **Environment requirement:** Phase 0 tests require **Docker** (or **Colima on macOS**) because the project uses **Testcontainers** for PostgreSQL-backed integration tests.  
+> If Docker is not running, Phase 0 **must fail** — this is intentional and documents production parity.
 
-* See [`PHASE_0.md`](PHASE_0.md) for full details.
+* Full walkthrough: [`PHASE_0.md`](PHASE_0.md)
 
-### Purpose
+---
 
-Establish a runnable, testable Spring Boot service with production-aware scaffolding and infrastructure parity.
+### 🎯 Purpose
 
-### Phase-Gate ADRs
+Establish a **runnable, testable Spring Boot 4 service** with production-aware scaffolding and strict infrastructure parity from day one.
 
-The following architectural decisions must be **accepted and committed** before Phase 0 is considered complete:
+Phase 0 exists to:
 
-* **ADR-001** — PostgreSQL baseline (no H2)
-* **ADR-002** — Flyway for schema migrations
-* **ADR-003** — Testcontainers for integration testing
-* **ADR-004** — Actuator health endpoints + Docker healthchecks
-* **ADR-005** — Security phased approach (dependencies first, enforcement later)
+* Prove the application can boot end-to-end
+* Lock in database, migration, testing, and quality-gate strategy
+* Prevent later architectural drift
+* Ensure CI and local environments behave identically
 
-### TDD Steps
+No business logic is introduced in this phase.
 
-* Create context-load test (validates Spring + DB + Flyway wiring)
-* Add `GET /ping` endpoint test (`pong`)
-* Verify Actuator health endpoint (`/actuator/health`)
-* Add Dockerfile and Docker Compose healthchecks
+---
 
-## 📦 Dependencies (Phase 0)
+### 🧱 Phase-Gate ADRs
 
-Baseline:
+The following Architectural Decision Records **must be accepted and committed**
+before Phase 0 is considered complete:
+
+* **ADR-000** — Quality gates & local/CI parity (pre-commit, CI authority)
+* **ADR-001** — PostgreSQL as the only database (no H2, no in-memory fallbacks)
+* **ADR-002** — Flyway for schema migrations (explicit, versioned SQL)
+* **ADR-003** — Testcontainers for all integration tests
+* **ADR-004** — Actuator health endpoints + Docker health checks
+* **ADR-005** — Phased security approach (dependencies now, enforcement later)
+
+Failure to comply with any ADR invalidates Phase 0.
+
+---
+
+### 🧪 TDD Contract (Phase 0)
+
+Phase 0 is implemented **test-first**. The following tests define the phase boundary:
+
+1. **Context load test**
+   * Verifies Spring context boots
+   * Confirms PostgreSQL + Flyway wiring
+   * Fails fast if Testcontainers or Docker is misconfigured
+
+2. **Public liveness endpoint**
+   * `GET /ping` returns `"pong"`
+   * No authentication
+   * Used by humans, CI, and container health checks
+
+3. **Operational health**
+   * `GET /actuator/health` returns `UP`
+   * Database health included
+   * Mirrors production readiness checks
+
+4. **Container health**
+   * Dockerfile includes healthcheck
+   * Docker Compose respects health status
+   * CI depends on container health, not timing hacks
+
+---
+
+## 📦 Dependencies (Phase 0 Only)
+
+Baseline dependencies introduced in this phase:
 
 * Spring Boot Web
 * Spring Boot Data JPA
-* Validation
-* Actuator
-* PostgreSQL driver
-* Flyway
+* Bean Validation
+* Spring Boot Actuator
+* PostgreSQL JDBC Driver
+* Flyway Core
 * Spring Boot Test
-* Testcontainers (PostgreSQL + JUnit Jupiter)
+* Testcontainers
+* PostgreSQL module
+* JUnit Jupiter integration
 
-### Release Criteria
+No optional, convenience, or feature-level dependencies are permitted.
 
-* Docker/Colima running locally
-* Application boots locally
-* `./gradlew test` passes (Testcontainers PostgreSQL)
-* `/ping` returns `"pong"`
+---
+
+### ✅ Release Criteria (Phase 0 Complete)
+
+Phase 0 is complete **only when all criteria pass**:
+
+* Docker / Colima running locally
+* Application boots without manual setup
+* Local quality gates pass (ADR-000)
+* `./gradlew test` passes using Testcontainers PostgreSQL
+* `/ping` responds with `"pong"`
 * `/actuator/health` reports `UP`
+* CI pipeline passes with no environment-specific hacks
 * Docker healthcheck passes
 
 ---

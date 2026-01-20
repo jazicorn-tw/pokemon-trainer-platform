@@ -7,7 +7,7 @@
 
 ## ⚠️ Test Requirement (Read First)
 
-**Phase 0 tests REQUIRE Docker (or Colima on macOS).**
+**Phase 0 integration tests REQUIRE a running Docker engine (or Colima on macOS).**
 
 This project uses **Testcontainers with PostgreSQL** starting in Phase 0 to ensure:
 
@@ -15,7 +15,9 @@ This project uses **Testcontainers with PostgreSQL** starting in Phase 0 to ensu
 * early detection of schema/migration issues
 * no divergence between test and real environments
 
-If Docker/Colima is not running, `./gradlew test` **will fail**.
+If Docker/Colima is not running, `./gradlew test` **will fail** for integration tests.
+
+> Note: **not every test needs Docker**. MVC slice tests (like `/ping`) are intentionally DB-free.
 
 ---
 
@@ -38,7 +40,7 @@ This phase intentionally includes **infrastructure weight early** to avoid later
 By the end of Phase 0 you will have:
 
 * A Spring Boot app that starts successfully
-* A passing **context-load** test backed by PostgreSQL (Testcontainers)
+* A passing **context-load** integration test backed by PostgreSQL (Testcontainers)
 * A verified `GET /ping` endpoint that returns `pong`
 * A verified `GET /actuator/health` endpoint that returns `UP`
 * A clean baseline for Phase 1 domain work
@@ -71,26 +73,37 @@ This test proves that:
 * database + Flyway wiring is correct
 * the application can **actually start**
 
+In this repo, integration tests extend a shared Testcontainers base:
+`com.pokedex.inventory.testinfra.BaseIntegrationTest`.
+
+That base class:
+* defines a `@Container` PostgreSQL Testcontainer
+* starts it defensively (to avoid early Spring condition-check evaluation issues)
+* registers datasource properties via `@DynamicPropertySource`
+
 **File**
 `src/test/java/com/pokedex/inventory/InventoryApplicationTests.java`
 
 ```java
 package com.pokedex.inventory;
 
+import com.pokedex.inventory.testinfra.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class InventoryApplicationTests {
+class InventoryApplicationTests extends BaseIntegrationTest {
 
-    @Test
-    void contextLoads() {
-        // Fails if Spring, DB, or Flyway are misconfigured
-    }
+  @Test
+  void contextLoads() {
+    // Fails if Spring, DB, or Flyway are misconfigured
+  }
 }
 ```
 
 ✅ **Expected result**: passes only if Docker + Testcontainers are working.
+
+> Schema behavior (Flyway + JPA validate, etc.) is owned by `application-test.yml` to avoid duplicate configuration sources.
 
 ---
 
@@ -117,19 +130,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PingController.class)
 class PingControllerTest {
 
-    @Autowired
-    MockMvc mockMvc;
+  @Autowired
+  MockMvc mockMvc;
 
-    @Test
-    void ping_returns_pong() throws Exception {
-        mockMvc.perform(get("/ping"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("pong"));
-    }
+  @Test
+  void ping_returns_pong() throws Exception {
+    mockMvc.perform(get("/ping"))
+        .andExpect(status().isOk())
+        .andExpect(content().string("pong"));
+  }
 }
 ```
 
 ❌ **Expected result initially**: fails — controller doesn’t exist yet.
+
+> If Spring Security is introduced later and this test starts failing due to filters/authorization,
+> either disable filters for this slice test or import the security configuration explicitly.
 
 ---
 
@@ -147,10 +163,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 class PingController {
 
-    @GetMapping("/ping")
-    String ping() {
-        return "pong";
-    }
+  @GetMapping("/ping")
+  String ping() {
+    return "pong";
+  }
 }
 ```
 
@@ -164,17 +180,17 @@ Phase 0 intentionally includes **real infrastructure dependencies**.
 
 ```gradle
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    implementation 'org.flywaydb:flyway-core'
-    runtimeOnly 'org.postgresql:postgresql'
+  implementation 'org.flywaydb:flyway-core'
+  runtimeOnly 'org.postgresql:postgresql'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:postgresql'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testImplementation 'org.testcontainers:junit-jupiter'
+  testImplementation 'org.testcontainers:postgresql'
 }
 ```
 
@@ -201,29 +217,54 @@ spring.flyway.locations=${FLYWAY_LOCATIONS:classpath:db/migration}
 management.endpoints.web.exposure.include=health,info
 ```
 
+> Tests do **not** need these environment variables because Testcontainers provides datasource properties dynamically.
+
 ---
 
 ## ▶️ Runbook
 
+### Run tests (Testcontainers)
+
+```bash
+docker ps
+./gradlew test
+```
+
+### Run the app locally (docker-compose PostgreSQL)
+
+Use docker-compose for **runtime**, not for tests:
+
 ```bash
 docker compose up -d postgres
-./gradlew test
+```
+
+Then provide the datasource env vars expected by `application.properties`:
+
+```bash
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/pokedex"
+export SPRING_DATASOURCE_USERNAME="postgres"
+export SPRING_DATASOURCE_PASSWORD="postgres"
 ./gradlew bootRun
 ```
+
+Validate endpoints:
 
 ```bash
 curl -i http://localhost:8080/ping
 curl -i http://localhost:8080/actuator/health
 ```
 
+> If security is added later, decide whether `/actuator/health` stays public or requires auth,
+> and update the expected behavior accordingly.
+
 ---
 
 ## ✅ Definition of Done (Phase 0)
 
 * [ ] Docker/Colima running
-* [ ] `contextLoads()` passes using Testcontainers PostgreSQL
+* [ ] `contextLoads()` passes using Testcontainers PostgreSQL (`BaseIntegrationTest`)
 * [ ] `PingControllerTest` passes
-* [ ] App boots cleanly
+* [ ] App boots cleanly (with runtime datasource env vars set)
 * [ ] `/ping` returns `pong`
 * [ ] `/actuator/health` returns `UP`
 
