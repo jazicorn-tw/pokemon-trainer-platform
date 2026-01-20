@@ -1,31 +1,31 @@
 # Contributing
 
 Thank you for your interest in contributing! 🤝
-We welcome thoughtful, well-tested contributions that improve the quality, clarity, and reliability of the system.
+We welcome thoughtful, well-tested changes that improve **correctness, clarity, and long-term maintainability**.
 
-This project is built around **Test-Driven Development (TDD)**, strong testing discipline, and a clean, modular **Spring Boot** architecture. To keep quality high and avoid regressions, please follow the guidelines below.
+This project is built around **Test-Driven Development (TDD)**, strict CI parity, and production-realistic constraints. Contributions that bypass these principles will not be merged.
 
 ---
 
 ## 🧪 Development Workflow (TDD Required)
 
-All development **must** follow a **red → green → refactor** loop.
+All development **must** follow the **red → green → refactor** loop.
 
 ### 1. Write a failing test (RED)
 
-Choose the appropriate test type for the layer you are modifying:
+Choose the *lowest appropriate layer*:
 
 * **Service layer** → unit tests (Mockito)
 * **Controller layer** → `@WebMvcTest` + MockMvc
 * **Integration layer** → Testcontainers (PostgreSQL)
 
-> If you are unsure which layer applies, default to the *lowest* level possible.
+> If unsure, default to the lowest layer possible.
 
 ---
 
 ### 2. Write the minimal implementation (GREEN)
 
-* Implement only what is required to satisfy the test
+* Implement only what satisfies the test
 * No speculative features
 * No premature abstractions
 
@@ -35,38 +35,35 @@ Choose the appropriate test type for the layer you are modifying:
 
 * Improve readability and naming
 * Reduce duplication
-* Enforce **SRP** (Single Responsibility Principle)
-* Keep all tests passing at all times
+* Enforce **SRP**
+* Keep all tests passing
 
 ---
 
-### 4. Commit with a meaningful message
+### 4. Commit with intent
 
-Use clear, scoped, and intention-revealing commit messages.
+Use clear, scoped commit messages:
 
-**Examples:**
-
-* `feat(trade): add trade acceptance logic and tests`
-* `fix(pokemon): correct PokeAPI validation error handling`
+* `feat(trade): add trade acceptance logic`
+* `fix(pokemon): handle PokeAPI validation errors`
 * `test(market): add listing cancellation coverage`
 
 ---
 
-## 🧩 Code Style Guidelines
+## 🧩 Code Style & Design Rules
 
-* Follow Java and Spring Boot best practices
+* Follow Java & Spring Boot best practices
 * Prefer **small, focused methods**
-* Use meaningful class, method, and variable names
-* Prefer **constructor injection**
-* Avoid static mutable state
-* Use DTOs at API boundaries
-* Keep controllers thin (no business logic)
+* Constructor injection only
+* No static mutable state
+* DTOs at API boundaries
+* Thin controllers — no business logic
 
 ---
 
 ## 🛡️ Local Quality Gates (ADR-000)
 
-This repository enforces **local quality gates** using a Git `pre-commit` hook.
+This repository enforces **local quality gates** via a Git `pre-commit` hook.
 
 Before code leaves your machine, the hook may:
 
@@ -74,7 +71,7 @@ Before code leaves your machine, the hook may:
 * run static analysis
 * optionally run unit tests
 
-To install hooks and run checks locally:
+Install hooks and run the full local gate:
 
 ```bash
 make bootstrap
@@ -86,65 +83,63 @@ See `docs/onboarding/PRECOMMIT.md` for details and override options.
 
 ## 🏗 Architecture Principles
 
-The codebase follows a **layered architecture** with clear boundaries:
+The codebase follows a **layered architecture**:
 
-* `controller` → HTTP request/response handling only
-* `service` → business logic and orchestration
-* `repository` → persistence (Spring Data JPA)
-* `client` → external integrations (e.g. PokeAPI)
-* `config` → cross-cutting Spring configuration
+* `controller` → HTTP only
+* `service` → business logic
+* `repository` → persistence (JPA)
+* `client` → external integrations (PokeAPI)
+* `config` → cross-cutting concerns
 
-Violations of these boundaries require justification and, if significant, an ADR.
+Breaking layer boundaries requires justification and, if significant, an ADR.
 
 ---
 
 ## 🌱 Branching Strategy
 
-This repository uses a **promotion-based branching model** with clear stability guarantees per branch:
+Promotion-based model:
 
-* `main` → **production-ready** releases only
-* `staging` → **release-candidate validation** (CI, migrations, integration parity)
-* `dev` → active development and feature integration
-* `feature/*` → one feature or change per branch
-* `hotfix/*` → urgent production fixes (merged back into `staging` and `main`)
-
-### Promotion Flow
+* `main` → production-only
+* `staging` → release candidates
+* `dev` → active development
+* `feature/*` → one change per branch
+* `hotfix/*` → urgent fixes
 
 ```text
 feature/* → dev → staging → main
 ```
 
 * No direct commits to `main` or `staging`
-* All merges require passing CI and required reviews
-* `staging` represents the closest approximation to production behavior
+* All merges require CI + reviews
 
 ---
 
 ## 🧪 Testing Requirements
 
-Every pull request **must include appropriate tests**.
+Every PR **must include appropriate tests**:
 
-| Layer       | Test Type                                           |
-| ----------- | --------------------------------------------------- |
-| Services    | Unit tests (Mockito)                                |
-| Controllers | `@WebMvcTest`                                       |
-| Integration | Testcontainers (PostgreSQL)                         |
-| Security    | `spring-security-test` (`@WithMockUser`, JWT tests) |
+| Layer       | Required Tests              |
+| ----------- | --------------------------- |
+| Services    | Unit (Mockito)              |
+| Controllers | `@WebMvcTest`               |
+| Integration | Testcontainers (PostgreSQL) |
+| Security    | `spring-security-test`      |
 
-PRs that reduce coverage or omit tests **will not be merged**.
+PRs without tests or with reduced coverage **will not be merged**.
 
 ---
 
 ## 🚦 Quality Gates (ADR-000)
 
-This project treats **linting, static analysis, and CI enforcement** as a
-**foundational architectural decision**.
+Linting and CI enforcement are **architectural decisions**, not tooling preferences.
 
 Before opening a PR:
 
-* Run `./gradlew clean check`
-* Address all linting and static analysis findings
-* Do **not** disable or bypass checks without an approved ADR
+```bash
+./gradlew clean check
+```
+
+Do **not** disable or bypass checks without an approved ADR.
 
 See:
 
@@ -155,26 +150,24 @@ See:
 
 ## 📝 Pull Request Checklist
 
-Before opening a PR, ensure:
-
 * [ ] Tests added and passing
 * [ ] No failing integration tests
-* [ ] Code is formatted
-* [ ] Feature documented (README or CHANGELOG if applicable)
-* [ ] No commented-out or dead code
-* [ ] No new Testcontainers strategy introduced
+* [ ] Code formatted
+* [ ] Feature documented if applicable
+* [ ] No dead or commented-out code
+* [ ] No new Testcontainers strategy
 
 ---
 
 ## ⚙ Local Development Requirements
 
-### Prerequisites
+**Prerequisites**:
 
 * Java 21
 * Docker
-* macOS users: **Colima**
+* macOS: Colima
 
-Verify your environment:
+Verify:
 
 ```bash
 java -version
@@ -191,13 +184,13 @@ docker context use colima
 ./gradlew test
 ```
 
-If tests fail, consult **`docs/TESTING.md`** before opening an issue.
+If tests fail, consult `docs/TESTING.md` first.
 
 ---
 
 ## 🚫 Testcontainers Rules (Important)
 
-This project uses **classic Testcontainers** only.
+This project uses **classic Testcontainers only**.
 
 ✅ Allowed:
 
@@ -208,21 +201,19 @@ This project uses **classic Testcontainers** only.
 🚫 Not allowed:
 
 * `@ServiceConnection`
-* Mixing multiple Testcontainers strategies
-
-Violating these rules can cause subtle startup and CI failures.
+* Mixing container strategies
 
 ---
 
 ## 🧪 Integration Test Base Class
 
-All integration tests **must** extend the shared base class:
+All integration tests **must** extend:
 
 ```java
 class ExampleIT extends BaseIntegrationTest {}
 ```
 
-This ensures consistent container lifecycle management and configuration across all environments.
+This guarantees consistent container lifecycle behavior.
 
 ---
 
@@ -230,8 +221,8 @@ This ensures consistent container lifecycle management and configuration across 
 
 Open an issue with:
 
-* A clear description of the problem or idea
-* What problem it solves
-* Any proposed approach or constraints
+* The problem being solved
+* Why it matters
+* Any constraints or proposals
 
-We welcome discussion, questions, and high-quality contributions 🚀
+High-quality discussions and contributions are always welcome 🚀
