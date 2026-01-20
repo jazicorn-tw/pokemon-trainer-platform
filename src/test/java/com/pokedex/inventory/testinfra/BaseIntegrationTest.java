@@ -13,29 +13,20 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 /**
  * Base infrastructure for PostgreSQL-backed integration tests.
  *
- * <p><strong>ADR-style note:</strong> This class is intentionally {@code abstract} and
- * intentionally contains no {@code @Test} methods.
+ * <p>This class centralizes Testcontainers + Spring wiring so concrete tests only need to extend
+ * it.
  *
- * <ul>
- *   <li>It is not a test case; it is shared test infrastructure.
- *   <li>It exists solely to centralize Testcontainers + Spring wiring.
- *   <li>Concrete integration tests extend this class and define the actual tests.
- * </ul>
+ * <p>Datasource properties are provided dynamically from the running container. Schema behavior
+ * (Flyway + JPA validate, etc.) is owned by {@code application-test.yml} to avoid duplicate
+ * configuration sources.
  *
- * <p>PMD is opinionated about test classes and abstraction:
+ * <p><strong>Important:</strong> Spring may evaluate {@code @DynamicPropertySource} values during
+ * auto-configuration condition checks while the ApplicationContext is being built. If the container
+ * is not started yet, {@code getJdbcUrl()} can throw errors like: "Mapped port can only be obtained
+ * after the container is started".
  *
- * <ul>
- *   <li>{@code AbstractClassWithoutAbstractMethod}
- *   <li>{@code TestClassWithoutTestCases}
- * </ul>
- *
- * Both warnings are suppressed deliberately to document intent and prevent future refactors from
- * accidentally inlining or duplicating container wiring.
- *
- * <p><strong>Important:</strong> We start the container eagerly (static init) because Spring may
- * resolve {@code spring.datasource.url} during auto-configuration condition checks while the
- * ApplicationContext is being built. If the container is not started yet, {@code getJdbcUrl()}
- * throws: "Mapped port can only be obtained after the container is started".
+ * <p>To keep startup deterministic, we ensure the container is running inside the
+ * {@code @DynamicPropertySource} method before registering supplier functions.
  */
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -65,24 +56,9 @@ public abstract class BaseIntegrationTest {
           .withUsername(POSTGRES_USER)
           .withPassword(POSTGRES_PASSWORD);
 
-  static {
-    // Ensure the container is started before Spring evaluates DynamicPropertySource values.
-    if (!POSTGRES.isRunning()) {
-      POSTGRES.start();
-    }
-  }
-
   /**
    * Optional hook for subclasses to perform additional verification or setup once the container is
    * running.
-   *
-   * <p>Examples (future):
-   *
-   * <ul>
-   *   <li>Verify schema state
-   *   <li>Seed reference data
-   *   <li>Assert required extensions exist
-   * </ul>
    */
   protected void onContainerReady() {
     // no-op by default
@@ -96,21 +72,20 @@ public abstract class BaseIntegrationTest {
   }
 
   @DynamicPropertySource
-  static void registerProperties(DynamicPropertyRegistry registry) {
+  static void registerDatasourceProperties(DynamicPropertyRegistry registry) {
 
-    // Datasource (container must already be started)
+    // Spring may evaluate these properties very early (during condition checks) before
+    // the Testcontainers JUnit extension starts @Container. Ensure it's running first.
+    if (!POSTGRES.isRunning()) {
+      POSTGRES.start();
+    }
+
+    // Datasource
     registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
     registry.add("spring.datasource.username", POSTGRES::getUsername);
     registry.add("spring.datasource.password", POSTGRES::getPassword);
 
-    // Flyway
-    registry.add("spring.flyway.enabled", () -> "true");
-    registry.add(
-        "spring.flyway.locations",
-        () -> System.getenv().getOrDefault("FLYWAY_LOCATIONS", "classpath:db/migration"));
-
-    // JPA
-    registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
-    registry.add("spring.jpa.open-in-view", () -> "false");
+    // Optional: make driver explicit (Boot usually infers it fine)
+    // registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
   }
 }

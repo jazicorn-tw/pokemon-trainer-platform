@@ -1,7 +1,7 @@
 # Developer convenience aliases
 # These do NOT replace CI; they mirror ADR-000 locally.
 
-.PHONY: hooks format lint quality test bootstrap
+.PHONY: hooks format lint quality test test-ci bootstrap
 
 hooks:
 	./scripts/install-hooks.sh
@@ -22,6 +22,9 @@ quality: format
 
 test:
 	./gradlew --no-daemon -q test
+
+test-ci:
+	CI=true SPRING_PROFILES_ACTIVE=test ./gradlew --no-daemon --stacktrace clean check
 
 # Install hooks + run the full quality gate (recommended after clone)
 bootstrap: hooks quality

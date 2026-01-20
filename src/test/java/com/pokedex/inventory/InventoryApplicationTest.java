@@ -14,7 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
  * profile.
  *
  * <p>This is an integration test (requires PostgreSQL via Testcontainers). It intentionally extends
- * {@link BaseIntegrationTest} so the datasource is wired via {@code @DynamicPropertySource}.
+ * {@link BaseIntegrationTest} so the datasource is provided by the shared Testcontainers setup.
  *
  * <p>Note: We explicitly point {@code @SpringBootTest} at the application class to avoid "can't
  * locate @SpringBootConfiguration" failures if package structure changes.
