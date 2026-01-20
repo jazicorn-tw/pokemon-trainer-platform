@@ -1,10 +1,20 @@
-mkdir -p .githooks
-cat > .githooks/commit-msg <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
 # Enforce Conventional Commits via Commitizen (cz).
 # Git passes the commit message file path as $1.
+#
+# IMPORTANT:
+# This file must contain ONLY hook logic.
+# Installer/setup commands (cat >..., chmod +x..., mkdir -p...) belong in scripts/,
+# not in this hook.
+
+# Guard against accidentally committing installer commands into the hook.
+# Ignore comment lines; only fail on actual command lines.
+if grep -vE '^[[:space:]]*#' "$0" | grep -qE '^[[:space:]]*(mkdir -p[[:space:]]+\.githooks|cat[[:space:]]+>[[:space:]]+\.githooks/commit-msg|chmod[[:space:]]+\+x[[:space:]]+\.githooks/commit-msg)'; then
+  echo "commit-msg: hook file contains installer commands; it must contain only hook logic." >&2
+  exit 1
+fi
 
 if [[ -z "${1:-}" ]]; then
   echo "commit-msg: missing commit message file argument" >&2
@@ -25,6 +35,3 @@ fi
 
 # Validate the commit message file.
 cz check --commit-msg-file "$1"
-EOF
-
-chmod +x .githooks/commit-msg
