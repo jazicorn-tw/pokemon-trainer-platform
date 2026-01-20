@@ -23,10 +23,11 @@ This is the **single supported entry point** for new contributors.
 
 ### What `make bootstrap` does
 
-1. Installs Git hooks (`pre-commit`)
+1. Installs repo-local Git hooks (including commit message validation)
 2. Verifies required local dependencies
 3. Runs the local quality gate (formatting + static checks)
-4. Fails fast if your environment is misconfigured
+4. Fixes common macOS permission issues
+5. Fails fast if your environment is misconfigured
 
 📄 Details: [`MAKEFILE.md`](./files/MAKEFILE.md)
 
@@ -48,13 +49,13 @@ Onboarding docs are intentionally **progressive**. You don’t need to read ever
 ## 🧑‍💻 Development workflow
 
 ```text
-Code → git commit → pre-commit → CI → review → merge
+Code → cz commit → commit-msg hook → CI → review → merge
 ```
 
 ```mermaid
 flowchart LR
-    A[Write Code] --> B[git commit]
-    B --> C[pre-commit hooks]
+    A[Write Code] --> B[cz commit]
+    B --> C[commit-msg hook]
     C -->|pass| D[Push PR]
     D --> E[CI]
     E -->|pass| F[Merge]
@@ -62,15 +63,42 @@ flowchart LR
     E -->|fail| A
 ```
 
-- **Pre-commit** enforces ADR-000 locally
-- **CI** enforces the same rules authoritatively
-- Local bypasses are documented and intentional
+### 📝 Commit messages (important)
+
+This project **enforces Conventional Commits** to support:
+
+- semantic versioning
+- clean changelogs
+- reliable release automation
+
+#### ✅ Preferred way to commit
+
+```bash
+cz commit
+```
+
+This interactive command:
+
+- guides you through the correct commit format
+- prevents rejected commits
+- keeps history consistent across contributors
+
+#### ⚠️ About `git commit`
+
+You *can* use `git commit` **only if** you already know the correct format.
+
+If the message is invalid:
+
+- the `commit-msg` hook will reject it
+- you’ll be asked to fix the message before committing
+
+> **Rule of thumb:**  
+> Use `cz commit` unless you have a specific reason not to.
 
 📄 Details:
 
-- [`PRECOMMIT.md`](./files/PRECOMMIT.md)
-- [`LINTING.md`](./LINTING.md)
-- [`docs/adr/ADR-000-linting.md`](../adr/ADR-000-linting.md)
+- [`docs/onboarding/setup/COMMITIZEN.md`](./setup/COMMITIZEN.md)
+- [`docs/adr/ADR-007-commit-msg.md`](../adr/ADR-007-commit-msg.md)
 
 ---
 
@@ -85,7 +113,8 @@ All non-obvious rules are documented as Architecture Decision Records.
 - ADR-002 — Testcontainers  
 - ADR-003 — Actuator health checks  
 - ADR-004 — `.env` & config precedence  
-- ADR-005 — Phased security
+- ADR-005 — Phased security  
+- ADR-007 — Commit message enforcement (Commitizen)
 
 📄 Index: [`docs/adr/README.md`](../adr/README.md)
 
@@ -105,7 +134,7 @@ All non-obvious rules are documented as Architecture Decision Records.
 
 📄 Docs:
 
-- [`SETUP_DOCKER.md`](./SETUP_DOCKER.md)
+- [`SETUP_DOCKER.md`](./setup/SETUP_DOCKER.md)
 - [`docker-compose.yml`](../../docker-compose.yml)
 
 ---
@@ -122,6 +151,9 @@ All non-obvious rules are documented as Architecture Decision Records.
 
 ## 🧠 Guiding principle
 
-> **Local checks help you. CI protects the system. ADRs explain why.**
+> **Use `cz commit` for guidance.  
+> Let hooks fail fast.  
+> CI protects the system.  
+> ADRs explain why.**
 
 Welcome aboard 🚀
