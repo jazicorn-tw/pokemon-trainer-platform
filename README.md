@@ -9,9 +9,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/java-21-blue" alt="Java">
-  <img src="https://img.shields.io/badge/spring--boot-4.x-brightgreen" alt="Spring Boot">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
+  <img src="https://img.shields.io/badge/java-21-blue" alt="Java 21">
+  <img src="https://img.shields.io/badge/spring--boot-4.x-brightgreen" alt="Spring Boot 4">
+  <img src="https://img.shields.io/badge/database-postgresql-blue" alt="PostgreSQL">
   <img src="https://img.shields.io/badge/docker-ready-blue" alt="Docker">
+  <img src="https://img.shields.io/badge/tests-testcontainers-2496ED" alt="Testcontainers">
   <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml"><img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml"><img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml/badge.svg" alt="Build Image"></a>
 </p>
