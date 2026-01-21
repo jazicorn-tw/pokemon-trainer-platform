@@ -55,8 +55,6 @@ The domain is playful. The engineering is not.
 * **SpringDoc OpenAPI**
 * **MapStruct**
 
-> Architectural trade-offs and decisions are documented in **ARCHITECTURE.md**.
-
 ---
 
 ## 🧠 Architectural Principles
@@ -72,6 +70,8 @@ The domain is playful. The engineering is not.
 
 * **Decisions are documented**  
   Non-trivial choices are captured as ADRs.
+
+> Architectural trade-offs and decisions are documented in **ARCHITECTURE.md**.
 
 ---
 
