@@ -1,12 +1,12 @@
-package com.pokedex.inventory;
+package com.pokedex.platform;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class InventoryApplication {
+public class PlatformApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(InventoryApplication.class, args);
+    SpringApplication.run(PlatformApplication.class, args);
   }
 }

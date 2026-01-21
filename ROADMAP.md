@@ -1,6 +1,6 @@
-# 🗺️ Roadmap — Pokémon Inventory System
+# 🗺️ Roadmap — Pokémon Trainer Platform
 
-This document describes the **planned, phased roadmap** for the Pokémon Inventory System.
+This document describes the **planned, phased roadmap** for the Pokémon Trainer Platform.
 
 It reflects **intent and design direction**, not a record of released changes.
 

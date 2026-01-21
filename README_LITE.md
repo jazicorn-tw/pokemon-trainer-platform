@@ -1,4 +1,4 @@
-# 🎒 Pokémon Trainer Inventory Service
+# 🎒 Pokémon Trainer Platform
 
 _A production-minded Spring Boot 4 backend built with Test-Driven Development._
 

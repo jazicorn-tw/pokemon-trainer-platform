@@ -1,6 +1,6 @@
 # 🧠 Architecture Overview
 
-This document explains **how** the Pokémon Trainer Inventory Service is structured and **why** specific design decisions were made.
+This document explains **how** the Pokémon Trainer Platform is structured and **why** specific design decisions were made.
 
 ---
 

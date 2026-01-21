@@ -14,7 +14,7 @@ For design rationale and trade‑offs, see **./ARCHITECTURE.md**.
 
 ## 📘 Overview
 
-The **Pokémon Trainer Inventory Service** is a Spring Boot 4 backend that lets trainers:
+The **Pokémon Trainer Platform Service** is a Spring Boot 4 backend that lets trainers:
 
 * Register and manage trainer profiles
 * Add Pokémon to their inventory (validated via PokeAPI)
@@ -392,8 +392,8 @@ Improve maintainability and developer experience.
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/yourname/inventory-service
-cd inventory-service
+git clone https://github.com/yourname/pokemon-platform-system
+cd pokemon-platform-system
 ./gradlew bootRun
 ```
 

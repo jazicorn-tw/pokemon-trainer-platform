@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD033 -->
 
-# 🎒 Pokémon Trainer Inventory Service
+# 🎒 Pokémon Trainer Platform
 
 <p align="center">
   <em>
@@ -20,7 +20,7 @@
 
 ## 🚀 Overview
 
-The **Pokémon Trainer Inventory Service** is a backend API that allows trainers to:
+The **Pokémon Trainer Platform** is a backend API that allows trainers to:
 
 * Manage trainer profiles
 * Add and validate Pokémon (via **PokeAPI**)

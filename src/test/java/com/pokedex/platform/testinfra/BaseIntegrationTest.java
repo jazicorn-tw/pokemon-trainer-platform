@@ -1,4 +1,4 @@
-package com.pokedex.inventory.testinfra;
+package com.pokedex.platform.testinfra;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

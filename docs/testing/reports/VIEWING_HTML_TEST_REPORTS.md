@@ -21,7 +21,7 @@ build/reports/tests/test/classes/
 Example:
 
 ```bash
-build/reports/tests/test/classes/com.pokedex.inventory.InventoryApplicationTest.html
+build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTest.html
 ```
 
 ---
@@ -31,7 +31,7 @@ build/reports/tests/test/classes/com.pokedex.inventory.InventoryApplicationTest.
 Open the report directly in your default browser:
 
 ```bash
-open build/reports/tests/test/classes/com.pokedex.inventory.InventoryApplicationTest.html
+open build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTest.html
 ```
 
 ---
@@ -55,7 +55,7 @@ open build/reports/tests/test/classes/com.pokedex.inventory.InventoryApplication
 2. Paste the path:
 
    ```bash
-   build/reports/tests/test/classes/com.pokedex.inventory.InventoryApplicationTest.html
+   build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTest.html
    ```
 
 3. Press Enter  

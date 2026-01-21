@@ -1,8 +1,8 @@
-package com.pokedex.inventory;
+package com.pokedex.platform;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.pokedex.inventory.testinfra.BaseIntegrationTest;
+import com.pokedex.platform.testinfra.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,9 +19,9 @@ import org.springframework.test.context.ActiveProfiles;
  * <p>Note: We explicitly point {@code @SpringBootTest} at the application class to avoid "can't
  * locate @SpringBootConfiguration" failures if package structure changes.
  */
-@SpringBootTest(classes = InventoryApplication.class)
+@SpringBootTest(classes = PlatformApplication.class)
 @ActiveProfiles("test")
-class InventoryApplicationTest extends BaseIntegrationTest {
+class PlatformApplicationTest extends BaseIntegrationTest {
 
   @Autowired private ApplicationContext applicationContext;
 

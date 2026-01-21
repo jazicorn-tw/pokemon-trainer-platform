@@ -1,4 +1,4 @@
-package com.pokedex.inventory;
+package com.pokedex.platform;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

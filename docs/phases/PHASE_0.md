@@ -74,25 +74,26 @@ This test proves that:
 * the application can **actually start**
 
 In this repo, integration tests extend a shared Testcontainers base:
-`com.pokedex.inventory.testinfra.BaseIntegrationTest`.
+`com.pokedex.platform.testinfra.BaseIntegrationTest`.
 
 That base class:
+
 * defines a `@Container` PostgreSQL Testcontainer
 * starts it defensively (to avoid early Spring condition-check evaluation issues)
 * registers datasource properties via `@DynamicPropertySource`
 
 **File**
-`src/test/java/com/pokedex/inventory/InventoryApplicationTests.java`
+`src/test/java/com/pokedex/platform/PlatformApplicationTest.java`
 
 ```java
-package com.pokedex.inventory;
+package com.pokedex.platform;
 
-import com.pokedex.inventory.testinfra.BaseIntegrationTest;
+import com.pokedex.platform.testinfra.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class InventoryApplicationTests extends BaseIntegrationTest {
+class PlatformApplicationTest extends BaseIntegrationTest {
 
   @Test
   void contextLoads() {
@@ -113,10 +114,10 @@ This test verifies the HTTP boundary **without** starting a full server
 and **without touching the database**.
 
 **File**
-`src/test/java/com/pokedex/inventory/ping/PingControllerTest.java`
+`src/test/java/com/pokedex/platform/ping/PingControllerTest.java`
 
 ```java
-package com.pokedex.inventory.ping;
+package com.pokedex.platform.ping;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,10 +153,10 @@ class PingControllerTest {
 ### 3️⃣ Minimal Controller (Green)
 
 **File**
-`src/main/java/com/pokedex/inventory/ping/PingController.java`
+`src/main/java/com/pokedex/platform/ping/PingController.java`
 
 ```java
-package com.pokedex.inventory.ping;
+package com.pokedex.platform.ping;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -202,7 +203,7 @@ dependencies {
 `src/main/resources/application.properties`
 
 ```properties
-spring.application.name=inventory-service
+spring.application.name=platform-service
 
 spring.datasource.url=${SPRING_DATASOURCE_URL}
 spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
