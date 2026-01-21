@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+chmod +x scripts/*.sh 2>/dev/null || true
+chmod +x .githooks/* 2>/dev/null || true
+
 OS="$(uname -s)"
 if [[ "${OS}" != "Darwin" ]]; then
   echo "bootstrap-macos: non-macOS system detected (${OS}); skipping."
