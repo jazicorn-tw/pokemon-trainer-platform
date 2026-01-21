@@ -85,7 +85,7 @@ mem_gib="$(echo "$resources" | awk '{print $1}')"
 cpus="$(echo "$resources" | awk '{print $2}')"
 
 if meets_requirements "$mem_gib" "$cpus"; then
-  echo "✅ Docker resources OK: ${mem_gib}GiB RAM, ${cpus} CPUs"
+  echo "👍 Docker resources OK: ${mem_gib}GiB RAM, ${cpus} CPUs"
   exit 0
 fi
 
