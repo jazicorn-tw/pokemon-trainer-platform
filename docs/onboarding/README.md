@@ -160,8 +160,7 @@ All non-obvious rules are documented as Architecture Decision Records.
 
 📄 Docs:
 
-- [`DEV_ENVIRONMENT.md`](./DEV_ENVIRONMENT.md)
-- [`DEPENDENCIES.md`](./DEPENDENCIES.md)
+- [`./setup/LOCAL_ENVIRONMENT.md`](./setup/LOCAL_ENVIRONMENT.md)
 - [`.vscode/README.md`](../../.vscode/README.md)
 
 ---
