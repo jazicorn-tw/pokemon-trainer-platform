@@ -2,6 +2,7 @@ name: Build Image
 
 on:
   pull_request:
+    branches: [ main, staging, dev ]
   push:
     branches: [ main, staging, dev ]
   workflow_dispatch:
@@ -10,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: build-image-${{ github.ref }}
+  group: build-image-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -19,20 +20,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build image (no push)
+      - name: Build image (CI only, no push)
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false
-          # If you have a Dockerfile at repo root, this is optional.
           file: ./Dockerfile
-          tags: pokedex-inventory:ci
-          # Good default cache (keeps builds fast across runs)
+          push: false
+          platforms: linux/amd64
+          tags: pokemon-trainer-platform:ci
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
