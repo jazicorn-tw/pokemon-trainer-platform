@@ -18,7 +18,8 @@ ADRs capture *why* we made a decision, not just *what* we built.
 - **ADR-005** — Phase security implementation (deps first, enforcement later)
 - **ADR-006** - local-dev-experience
 - **ADR-007** - commit-msg
-
+- **ADR-008** - CI-managed releases with semantic-release
+  
 ---
 
 ## When to write an ADR
