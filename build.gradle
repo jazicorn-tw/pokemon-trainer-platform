@@ -16,7 +16,9 @@ plugins {
 }
 
 group = 'com.pokedex'
-version = '0.0.1-SNAPSHOT'
+// Prefer an explicit release version when provided by CI (semantic-release).
+// Local/dev remains SNAPSHOT by default.
+version = (findProperty('releaseVersion') ?: '0.0.1-SNAPSHOT')
 description = 'A Spring Boot 4 API for trainers to manage their Pokémon, trade with others, and participate in a marketplace - powered by PokeAPI and built with TDD'
 
 java {
