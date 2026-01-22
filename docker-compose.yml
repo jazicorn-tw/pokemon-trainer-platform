@@ -1,12 +1,11 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: pokemon_inventory_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-inventory}
-      POSTGRES_USER: ${POSTGRES_USER:-inventory}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-inventory}
+      POSTGRES_DB: ${POSTGRES_DB:-trainer}
+      POSTGRES_USER: ${POSTGRES_USER:-trainer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trainer}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -21,7 +20,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pokemon_inventory_app
     restart: unless-stopped
     depends_on:
       postgres:
@@ -30,9 +28,9 @@ services:
       - "${APP_PORT:-8080}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: local
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-inventory}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-inventory}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-inventory}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-trainer}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-trainer}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-trainer}
       SPRING_FLYWAY_ENABLED: "true"
       SERVER_PORT: "8080"
     healthcheck:

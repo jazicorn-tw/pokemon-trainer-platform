@@ -139,6 +139,26 @@ local-only helpers (`doctor.sh`) exit immediately.
 
 ---
 
+### 6. Docker container naming
+
+Docker Compose–managed services **must not use `container_name`**.
+
+Rationale:
+
+- `container_name` disables Docker Compose’s project scoping
+- Renaming repositories or services (e.g., inventory → trainer) can leave
+  orphaned containers that collide with new names
+- `docker compose down` cannot reliably clean up containers it does not own
+
+By allowing Docker Compose to auto-generate container names, we ensure:
+
+- Clean teardown with `docker compose down -v`
+- No cross-project or legacy-name collisions
+- Multiple compose projects can run simultaneously on the same machine
+
+All interaction with containers should use `docker compose exec`
+rather than `docker exec <container-name>`.
+
 ## Consequences
 
 ### Positive

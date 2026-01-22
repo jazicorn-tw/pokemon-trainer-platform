@@ -6,7 +6,26 @@ SHELL := /usr/bin/env bash
 # --- Developer settings ---
 LOCAL_SETTINGS ?= .config/local-settings.json
 
-.PHONY: help local-settings exec-bits hooks doctor clean clean-all format lint quality test verify test-ci bootstrap
+.PHONY: \
+  help \
+  local-settings \
+  exec-bits \
+  hooks \
+  doctor \
+  clean \
+  clean-all \
+  format \
+  lint \
+  quality \
+  test \
+  verify \
+  test-ci \
+  bootstrap \
+  docker-volume \
+  docker-up \
+  docker-down \
+  docker-reset \
+  db-shell
 
 help:
 	@echo ""
@@ -82,3 +101,29 @@ test-ci: doctor
 # Install hooks + run the full quality gate (recommended after clone)
 bootstrap: hooks quality
 	@echo "Bootstrap complete: hooks installed and quality gate passed."
+
+# List local Docker volumes related to Postgres (useful for spotting leftovers after renames)
+docker-volume:
+	@docker volume ls | grep -i postgres
+
+# Start application and Postgres containers using docker compose (non-destructive)
+docker-up:
+	@docker compose up -d
+
+# Stop containers without removing volumes (data preserved)
+docker-down:
+	@docker compose down
+
+# Fully reset local Docker environment:
+# - Stops containers
+# - Removes volumes (Postgres data)
+# - Recreates containers from scratch
+# Safe for local development only
+docker-reset:
+	@echo "⚠️  Resetting local Docker environment (containers + volumes)"
+	@docker compose down -v
+	@docker compose up -d
+
+# Open an interactive psql shell inside the Postgres service container
+db-shell:
+	@docker compose exec postgres psql -U $${POSTGRES_USER:-trainer} -d $${POSTGRES_DB:-trainer}
