@@ -2,9 +2,9 @@
 
 This project enforces **Conventional Commits** to ensure:
 
-- predictable versioning
+- predictable releases
 - meaningful changelogs
-- clean CI and release automation
+- clean, automated CI workflows
 
 Commit message validation is enforced **locally** via a `commit-msg` hook and **authoritatively** via CI.
 
@@ -12,9 +12,9 @@ Commit message validation is enforced **locally** via a `commit-msg` hook and **
 
 ## ✨ What this gives us
 
-- Consistent, machine-readable commit history
-- Automatic semantic version bumps
-- Auto-generated `CHANGELOG.md`
+- Consistent, machine-readable commit history  
+- Automated semantic versioning (via CI)
+- Auto-generated `CHANGELOG.md` (via CI)
 - Clear intent for refactors, breaking changes, and features
 
 ---
@@ -30,9 +30,9 @@ All commit messages must follow this format:
 ### Common types
 
 | Type        | Purpose                             |
-|-------------| ----------------------------------- |
-| `feat`      | New feature (minor version bump)    |
-| `fix`       | Bug fix (patch bump)                |
+|-------------|-------------------------------------|
+| `feat`      | New feature (minor version signal)  |
+| `fix`       | Bug fix (patch signal)              |
 | `refactor`  | Code change with no behavior change |
 | `test`      | Tests only                          |
 | `docs`      | Documentation only                  |
@@ -48,7 +48,8 @@ For this project (currently `0.x`):
 feat!: change API contract
 ```
 
-Breaking changes **do not** bump to `1.0.0` until we explicitly decide the API is stable.
+Breaking changes **do not** automatically bump to `1.0.0`.  
+Major version stability is an explicit, intentional decision.
 
 ---
 
@@ -57,9 +58,7 @@ Breaking changes **do not** bump to `1.0.0` until we explicitly decide the API i
 This repo uses **Commitizen** to:
 
 - validate commit messages
-- calculate semantic versions
-- generate `CHANGELOG.md`
-- create version tags
+- guide authors toward correct Conventional Commit syntax
 
 ### Interactive commits (recommended)
 
@@ -69,9 +68,43 @@ Instead of writing commit messages manually, run:
 cz commit
 ```
 
+This ensures every commit complies with the required format.
+
 ---
 
-## 🔍 commit-msg hook (local enforcement)
+## ⚠️ About `cz bump`
+
+Commitizen includes commands such as:
+
+```bash
+cz bump
+cz changelog
+```
+
+⚠️ **These commands are intentionally discouraged in this repository.**
+
+### Why?
+
+This project uses **semantic-release** in CI as the **single authority** for:
+
+- version calculation
+- changelog generation
+- tagging
+- GitHub releases
+
+Running `cz bump` locally can:
+
+- generate versions that do not match CI
+- create changelog conflicts
+- be rejected by CI guards
+
+> **Guideline:**  
+> Use Commitizen for **commit authoring only**.  
+> Let CI handle all release concerns.
+
+---
+
+## 🔍 `commit-msg` hook (local enforcement)
 
 We use a **repo-managed Git hook** at:
 
@@ -90,30 +123,36 @@ git config core.hooksPath .githooks
 - Runs on **every commit**
 - Validates the commit message using:
 
-  ```bash
-  cz check --commit-msg-file <file>
-  ```
+```bash
+cz check --commit-msg-file <file>
+```
 
-- Rejects invalid commit messages immediately
+- Rejects invalid commit messages immediately, before they reach CI
 
 ---
 
-## 🏷️ Versioning & changelog
+## 🏷️ Versioning & changelog (CI-owned)
 
-When you’re ready to cut a release:
+Releases are handled **exclusively in CI** via **semantic-release**.
 
-```bash
-cz bump
-```
+CI is responsible for:
+
+- calculating the next semantic version
+- generating and updating `CHANGELOG.md`
+- creating Git tags
+- publishing GitHub releases
+
+Local version bumps and changelog edits are allowed by tooling,
+but **guarded against in CI** to ensure consistency.
 
 ---
 
 ## 📌 Notes for contributors
 
 - You do **not** need Python to build the project
-- Commitizen is only required for committing
+- Commitizen is only required for authoring commits
 - Install Commitizen via:
 
-  ```bash
-  pipx install commitizen
-  ```
+```bash
+pipx install commitizen
+```

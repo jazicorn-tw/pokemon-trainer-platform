@@ -1,0 +1,98 @@
+name: Guard Release Artifacts
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  guard-release-artifacts:
+    name: Guard release artifacts (changelog/version)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce release artifact rules
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          PROTECTED_FILES=(
+            "CHANGELOG.md"
+            "gradle.properties"
+            "build.gradle"
+            "build.gradle.kts"
+            "settings.gradle"
+            "settings.gradle.kts"
+            "package.json"
+            "pom.xml"
+          )
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            BASE_SHA="$PR_BASE_SHA"
+          else
+            BASE_SHA="$PUSH_BEFORE_SHA"
+          fi
+
+          HEAD_SHA="$(git rev-parse HEAD)"
+
+          mapfile -t CHANGED < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" || true)
+
+          if [[ "${#CHANGED[@]}" -eq 0 ]]; then
+            echo "No file changes detected."
+            exit 0
+          fi
+
+          PROTECTED_CHANGED=()
+          for f in "${CHANGED[@]}"; do
+            for p in "${PROTECTED_FILES[@]}"; do
+              [[ "$f" == "$p" ]] && PROTECTED_CHANGED+=("$f")
+            done
+          done
+
+          if [[ "${#PROTECTED_CHANGED[@]}" -eq 0 ]]; then
+            echo "OK: no protected files changed."
+            exit 0
+          fi
+
+          echo "Protected files changed:"
+          printf ' - %s\n' "${PROTECTED_CHANGED[@]}"
+
+          # PRs: never allowed
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            echo "❌ PRs may not modify release artifacts."
+            echo "   Releases are handled by semantic-release on main."
+            exit 1
+          fi
+
+          # Pushes: only allow on main with semantic-release commit
+          if [[ "$REF_NAME" != "main" ]]; then
+            echo "❌ Release artifacts may only be modified on main."
+            exit 1
+          fi
+
+          HEAD_MSG="$(git log -1 --pretty=%B | tr -d '\r')"
+          HEAD_FIRST_LINE="$(printf '%s' "$HEAD_MSG" | head -n 1)"
+
+          echo "HEAD commit first line:"
+          echo "$HEAD_FIRST_LINE"
+
+          # Allow only: "chore(release): X.Y.Z [skip ci]"
+          if ! grep -Eq '^chore\(release\): [0-9]+\.[0-9]+\.[0-9]+ \[skip ci\]$' <<< "$HEAD_FIRST_LINE"; then
+            echo "❌ Release artifacts on main must be authored by semantic-release."
+            echo "   Expected: chore(release): X.Y.Z [skip ci]"
+            exit 1
+          fi
+
+          echo "✅ Release artifact change authorized (semantic-release)."

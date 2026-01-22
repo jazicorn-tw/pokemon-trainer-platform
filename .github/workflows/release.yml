@@ -1,0 +1,58 @@
+name: Release (semantic-release)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Mint a short-lived installation token for your GitHub App.
+      # Required when using a GitHub App instead of GITHUB_TOKEN/PAT.
+      - name: Generate GitHub App token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.GH_APP_ID }}
+          private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install semantic-release deps
+        run: npm ci
+
+      - name: Run semantic-release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: npm run release
