@@ -36,10 +36,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: gradle
 
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v2
+      # Replaces:
+      # - uses: gradle/wrapper-validation-action@v2
+      # and also provides Gradle caching
+      - name: Set up Gradle (wrapper validation + caching)
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Set up Node
         uses: actions/setup-node@v4
