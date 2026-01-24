@@ -10,6 +10,9 @@ SHELL := /usr/bin/env bash
 # --- Developer settings ---
 LOCAL_SETTINGS ?= .config/local-settings.json
 
+# Workflows to run when invoking `make act`
+ACT_WORKFLOWS ?= ci-fast ci-quality ci-test image-build image-publish
+
 # --- act (local GitHub Actions) ---
 ACT ?= act
 ACT_IMAGE ?= catthehacker/ubuntu:full-latest
@@ -206,9 +209,18 @@ db-shell: ## 🐘 Open a psql shell in the postgres container
 # act — Local GitHub Actions simulation
 # -------------------------------------------------------------------
 
-act: run-ci ## 🧪 Alias: run-ci
+act: act-all
 
-run-ci: ## 🧪 Run workflow/job via act (make run-ci [workflow] [job])
+act-all: ## 🧪 Run all local CI workflows via act
+	@for wf in $(ACT_WORKFLOWS); do \
+	  echo ""; \
+	  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
+	  echo "🧪 act → workflow=$$wf"; \
+	  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
+	  $(MAKE) run-ci $$wf || exit $$?; \
+	done
+
+run-ci: ## 🧪 Run workflow/job via act (auto-detect event)
 	@if [ ! -f "$(WORKFLOW_FILE)" ]; then \
 	  echo "❌ Workflow not found: $(WORKFLOW_FILE)"; \
 	  echo "👉 Try: ls .github/workflows"; \
@@ -218,13 +230,31 @@ run-ci: ## 🧪 Run workflow/job via act (make run-ci [workflow] [job])
 	@mkdir -p "$(ACT_GRADLE_CACHE_DIR_EFFECTIVE)"
 
 	@echo "🧪 act → workflow=$(WORKFLOW) job=$(JOB)"
-	@ACT=true $(ACT) push \
-		-W $(WORKFLOW_FILE) \
-		$(if $(JOB),-j $(JOB),) \
-		-P ubuntu-latest=$(ACT_IMAGE) \
-		--container-daemon-socket $(ACT_DOCKER_SOCK) \
-		--container-architecture $(ACT_PLATFORM) \
-		--container-options="--user 0:0 $(ACT_CONTAINER_OPTS)"
+	@events="push pull_request workflow_dispatch"; \
+	for ev in $$events; do \
+	  echo "🔎 trying event=$$ev"; \
+	  tmp="$$(mktemp)"; \
+	  set +e; \
+	  ACT=true $(ACT) $$ev \
+	    -W $(WORKFLOW_FILE) \
+	    $(if $(JOB),-j $(JOB),) \
+	    -P ubuntu-latest=$(ACT_IMAGE) \
+	    --container-daemon-socket $(ACT_DOCKER_SOCK) \
+	    --container-architecture $(ACT_PLATFORM) \
+	    --container-options="--user 0:0 $(ACT_CONTAINER_OPTS)" \
+	    2>&1 | tee "$$tmp"; \
+	  status="$$?"; \
+	  set -e; \
+	  if ! grep -q "Could not find any stages to run" "$$tmp"; then \
+	    rm -f "$$tmp"; \
+	    exit "$$status"; \
+	  fi; \
+	  rm -f "$$tmp"; \
+	done; \
+	echo "❌ No runnable jobs found for workflow=$(WORKFLOW) (tried: $$events)"; \
+	echo "👉 Tip: run: $(ACT) -W $(WORKFLOW_FILE) --list"; \
+	exit 1
+
 
 list-ci: ## 📋 List jobs for a workflow via act (make list-ci [workflow])
 	@if [ ! -f "$(WORKFLOW_FILE)" ]; then \
