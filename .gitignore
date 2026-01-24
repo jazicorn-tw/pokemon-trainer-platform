@@ -85,3 +85,6 @@ pnpm-debug.log*
 .yarn/
 .cache/
 .eslintcache
+
+# act / Gradle cache (local only)
+.gradle-act/

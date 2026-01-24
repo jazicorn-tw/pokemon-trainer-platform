@@ -16,6 +16,21 @@ ACT_IMAGE ?= catthehacker/ubuntu:full-latest
 ACT_PLATFORM ?= linux/amd64
 ACT_DOCKER_SOCK ?= /var/run/docker.sock
 
+# -----------------------------------------------------------------------------
+# act runner tuning (Gradle cache + safer networking defaults)
+# -----------------------------------------------------------------------------
+ACT_GRADLE_CACHE_DIR ?=
+ACT_GRADLE_CACHE_DIR_EFFECTIVE := $(or $(strip $(ACT_GRADLE_CACHE_DIR)),$(CURDIR)/.gradle-act)
+
+# Use JAVA_TOOL_OPTIONS to avoid quoting issues inside `--container-options`
+ACT_JAVA_TOOL_OPTIONS := -Djava.net.preferIPv4Stack=true -Dorg.gradle.internal.http.connectionTimeout=60000 -Dorg.gradle.internal.http.socketTimeout=60000
+
+# Use docker-short flags and single-quotes for values containing spaces
+ACT_CONTAINER_OPTS ?= \
+  -e JAVA_TOOL_OPTIONS='$(ACT_JAVA_TOOL_OPTIONS)' \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v $(ACT_GRADLE_CACHE_DIR_EFFECTIVE):/tmp/gradle
+
 # Capture positional args after the target name (for run-ci/list-ci)
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 WORKFLOW_ARG := $(word 1,$(ARGS))
@@ -35,11 +50,12 @@ WORKFLOW_FILE := .github/workflows/$(WORKFLOW).yml
   clean-all \
   format \
   lint \
-  quality \
   test \
   verify \
+  quality \
   test-ci \
   bootstrap \
+  pre-commit \
   docker-volume \
   docker-up \
   docker-down \
@@ -198,6 +214,9 @@ run-ci: ## 🧪 Run workflow/job via act (make run-ci [workflow] [job])
 	  echo "👉 Try: ls .github/workflows"; \
 	  exit 1; \
 	fi
+
+	@mkdir -p "$(ACT_GRADLE_CACHE_DIR_EFFECTIVE)"
+
 	@echo "🧪 act → workflow=$(WORKFLOW) job=$(JOB)"
 	@ACT=true $(ACT) push \
 		-W $(WORKFLOW_FILE) \
@@ -205,7 +224,7 @@ run-ci: ## 🧪 Run workflow/job via act (make run-ci [workflow] [job])
 		-P ubuntu-latest=$(ACT_IMAGE) \
 		--container-daemon-socket $(ACT_DOCKER_SOCK) \
 		--container-architecture $(ACT_PLATFORM) \
-		--container-options="--user 0:0"
+		--container-options="--user 0:0 $(ACT_CONTAINER_OPTS)"
 
 list-ci: ## 📋 List jobs for a workflow via act (make list-ci [workflow])
 	@if [ ! -f "$(WORKFLOW_FILE)" ]; then \

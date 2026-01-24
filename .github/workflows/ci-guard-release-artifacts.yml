@@ -1,4 +1,4 @@
-name: Guard Release Artifacts
+name: CI Guard Release Artifacts
 
 on:
   pull_request:

@@ -6,7 +6,7 @@
 This workflow builds the Docker image **for validation only**.  
 It is designed to catch Dockerfile, dependency, and Helm issues early — **without publishing anything**.
 
-Workflow file: `.github/workflows/build-image.yml`
+Workflow file: `.github/workflows/image-build.yml`
 
 ---
 
@@ -50,7 +50,7 @@ To avoid redundant builds on rapid pushes or PR updates:
 
 ```yaml
 concurrency:
-  group: build-image-${{ github.workflow }}-${{ github.ref }}
+  group: image-build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 ```
 
@@ -148,15 +148,3 @@ Publishing is handled separately by the **Publish Image** workflow, which runs *
 | **CI / Quality**  | Tests, linting, static analysis                 |
 
 This separation keeps CI **fast, safe, and predictable**.
-
----
-
-## Suggested file location
-
-Recommended location in-repo:
-
-- `docs/ci/BUILD_IMAGE.md`
-
-This pairs naturally with:
-
-- `docs/ci/PUBLISH_IMAGE.md`

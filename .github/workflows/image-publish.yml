@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   # Prevent duplicate publishes for the same tag
-  group: publish-image-${{ github.ref }}
+  group: image-publish-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
