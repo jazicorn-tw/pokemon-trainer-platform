@@ -8,9 +8,14 @@ set -euo pipefail
 # - Safe to run on macOS (Colima or Docker Desktop) + Linux (Docker Engine)
 #
 # Optional knobs:
-#   DOCTOR_REQUIRE_COLIMA=1        -> fail if Colima isn't installed (macOS-only preference)
-#   DOCTOR_MIN_DOCKER_MEM_GB=4     -> warn if Docker reports less (best-effort)
-#   DOCTOR_STRICT=1               -> treat warnings as failures
+#   DOCTOR_REQUIRE_COLIMA=1         -> fail if Colima isn't installed (macOS-only preference)
+#   DOCTOR_MIN_DOCKER_MEM_GB=4      -> warn if Docker reports less (best-effort)
+#   DOCTOR_MIN_DOCKER_CPUS=2        -> warn if Docker reports fewer CPUs (best-effort)
+#   DOCTOR_STRICT=1                 -> treat warnings as failures
+#
+# JSON output:
+#   ./scripts/doctor.sh --json
+#   or: DOCTOR_JSON=1 ./scripts/doctor.sh
 #
 # CI behavior:
 #   If CI=true/1, this script exits immediately (local convenience only).
@@ -18,25 +23,136 @@ set -euo pipefail
 # Intended to be run via `make doctor`, but safe to run directly.
 # CI remains the authoritative quality gate (ADR-000).
 
-say() { printf "%s\n" "$*"; }
-ok()  { say "✅ $*"; }
-warn(){ say "⚠️  $*"; }
-die() { say "❌ $*"; exit 1; }
-
-# CI guard (local-only helper)
-if [[ "${CI:-}" == "true" || "${CI:-}" == "1" ]]; then
-  say "CI detected; skipping local doctor checks."
-  exit 0
+# ----------------------------
+# Args / output mode
+# ----------------------------
+JSON_MODE="${DOCTOR_JSON:-0}"
+if [[ "${1:-}" == "--json" ]]; then
+  JSON_MODE="1"
+  shift || true
 fi
 
+WARNINGS=()
+ERRORS=()
+
+json_escape() {
+  # Escape for JSON string context
+  local s="${1:-}"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf "%s" "${s}"
+}
+
+json_array() {
+  # Prints JSON array from bash array name passed as $1
+  local -n arr="$1"
+  local out="["
+  local i
+  for i in "${!arr[@]}"; do
+    local item
+    item="$(json_escape "${arr[$i]}")"
+    out+="\"${item}\""
+    if [[ "$i" -lt "$((${#arr[@]} - 1))" ]]; then
+      out+=","
+    fi
+  done
+  out+="]"
+  printf "%s" "${out}"
+}
+
+say() {
+  if [[ "${JSON_MODE}" != "1" ]]; then
+    printf "%s\n" "$*"
+  fi
+}
+ok() {
+  if [[ "${JSON_MODE}" != "1" ]]; then
+    say "✅ $*"
+  fi
+}
+warn() {
+  WARNINGS+=("$*")
+  if [[ "${JSON_MODE}" != "1" ]]; then
+    say "⚠️  $*"
+  fi
+}
+
+# Will be set during execution
+STATUS="unknown"
+OS="$(uname -s 2>/dev/null || true)"
+GIT_BRANCH=""
+JAVA_VERSION_RAW=""
+JAVA_MAJOR=""
+GRADLEW_EXISTS=0
+GRADLEW_EXEC=0
+DOCKER_CLI=0
+DOCKER_COMPOSE=0
+DOCKER_DAEMON=0
+DOCKER_PROVIDER="unknown"
+DOCKER_CONTEXT=""
+DOCKER_CPUS=""
+DOCKER_MEM_GB=""
+DOCKER_SOCKET_OK=0
+HAS_COLIMA=0
+COLIMA_RUNNING=0
+COLIMA_MEM_ALLOC=""
+COLIMA_CPU_ALLOC=""
+
+emit_json_and_exit() {
+  local exit_code="${1:-0}"
+  local status_str="${2:-unknown}"
+
+  local json="{"
+  json+="\"status\":\"$(json_escape "${status_str}")\""
+  json+=",\"os\":\"$(json_escape "${OS}")\""
+  json+=",\"git_branch\":\"$(json_escape "${GIT_BRANCH}")\""
+  json+=",\"java_version_raw\":\"$(json_escape "${JAVA_VERSION_RAW}")\""
+  json+=",\"java_major\":\"$(json_escape "${JAVA_MAJOR}")\""
+  json+=",\"gradlew_exists\":${GRADLEW_EXISTS}"
+  json+=",\"gradlew_executable\":${GRADLEW_EXEC}"
+  json+=",\"docker_cli\":${DOCKER_CLI}"
+  json+=",\"docker_compose\":${DOCKER_COMPOSE}"
+  json+=",\"docker_daemon_reachable\":${DOCKER_DAEMON}"
+  json+=",\"docker_context\":\"$(json_escape "${DOCKER_CONTEXT}")\""
+  json+=",\"docker_provider\":\"$(json_escape "${DOCKER_PROVIDER}")\""
+  json+=",\"docker_cpus\":\"$(json_escape "${DOCKER_CPUS}")\""
+  json+=",\"docker_memory_gb\":\"$(json_escape "${DOCKER_MEM_GB}")\""
+  json+=",\"docker_socket_healthy\":${DOCKER_SOCKET_OK}"
+  json+=",\"colima_present\":${HAS_COLIMA}"
+  json+=",\"colima_running\":${COLIMA_RUNNING}"
+  json+=",\"colima_memory_alloc\":\"$(json_escape "${COLIMA_MEM_ALLOC}")\""
+  json+=",\"colima_cpu_alloc\":\"$(json_escape "${COLIMA_CPU_ALLOC}")\""
+  json+=",\"warnings\":$(json_array WARNINGS)"
+  json+=",\"errors\":$(json_array ERRORS)"
+  json+="}"
+
+  printf "%s\n" "${json}"
+  exit "${exit_code}"
+}
+
+die() {
+  ERRORS+=("$*")
+  if [[ "${JSON_MODE}" == "1" ]]; then
+    emit_json_and_exit 1 "fail"
+  fi
+  printf "❌ %s\n" "$*"
+  exit 1
+}
+
+# ----------------------------
+# Strict mode / thresholds
+# ----------------------------
 STRICT="${DOCTOR_STRICT:-0}"
 MIN_MEM_GB="${DOCTOR_MIN_DOCKER_MEM_GB:-4}"
+MIN_CPUS="${DOCTOR_MIN_DOCKER_CPUS:-2}"
 REQUIRE_COLIMA="${DOCTOR_REQUIRE_COLIMA:-0}"
 
+WARN_AS_FAIL=0
 if [[ "${STRICT}" == "1" ]]; then
   WARN_AS_FAIL=1
-else
-  WARN_AS_FAIL=0
 fi
 
 warn_or_die() {
@@ -47,53 +163,115 @@ warn_or_die() {
   fi
 }
 
+# ----------------------------
+# CI guard (local-only helper)
+# ----------------------------
+if [[ "${CI:-}" == "true" || "${CI:-}" == "1" ]]; then
+  if [[ "${JSON_MODE}" == "1" ]]; then
+    STATUS="skip"
+    WARNINGS+=("CI detected; skipping local doctor checks.")
+    emit_json_and_exit 0 "skip"
+  fi
+  say "CI detected; skipping local doctor checks."
+  exit 0
+fi
+
 say "🔎 Running local doctor checks..."
 
-# --- Java (project expects Java 21) ---
+# ----------------------------
+# Git branch (best-effort)
+# ----------------------------
+if command -v git >/dev/null 2>&1; then
+  GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+fi
+
+# ----------------------------
+# Java (project expects Java 21)
+# ----------------------------
 if ! command -v java >/dev/null 2>&1; then
   die "Java not found. Install Java 21 (Temurin recommended) and ensure 'java' is on PATH."
 fi
 
 JAVA_VERSION_RAW="$(java -version 2>&1 | head -n 1 || true)"
 JAVA_MAJOR="$(echo "${JAVA_VERSION_RAW}" | sed -E 's/.*version "([0-9]+).*/\1/' || true)"
+
+# Fallback parse if the simple parse fails
 if [[ -z "${JAVA_MAJOR}" || "${JAVA_MAJOR}" == "${JAVA_VERSION_RAW}" ]]; then
-  warn "Could not parse Java version from: ${JAVA_VERSION_RAW}"
-else
+  JAVA_MAJOR_FALLBACK="$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java\.version *= *//p' | head -n 1 | cut -d. -f1 || true)"
+  if [[ -n "${JAVA_MAJOR_FALLBACK}" && "${JAVA_MAJOR_FALLBACK}" =~ ^[0-9]+$ ]]; then
+    JAVA_MAJOR="${JAVA_MAJOR_FALLBACK}"
+  else
+    warn "Could not parse Java version from: ${JAVA_VERSION_RAW}"
+    JAVA_MAJOR=""
+  fi
+fi
+
+if [[ -n "${JAVA_MAJOR}" ]]; then
   if [[ "${JAVA_MAJOR}" -lt 21 ]]; then
     die "Java ${JAVA_MAJOR} detected; this project expects Java 21+. (${JAVA_VERSION_RAW})"
   fi
   ok "java OK (${JAVA_VERSION_RAW})"
 fi
 
-# --- Gradle wrapper ---
+# ----------------------------
+# Gradle wrapper
+# ----------------------------
 if [[ ! -f "./gradlew" ]]; then
+  GRADLEW_EXISTS=0
   die "Gradle wrapper not found (./gradlew). Run from the repo root, or ensure the wrapper is committed."
 fi
+GRADLEW_EXISTS=1
+
 if [[ ! -x "./gradlew" ]]; then
+  GRADLEW_EXEC=0
   warn_or_die "Gradle wrapper exists but is not executable. Fix with: chmod +x ./gradlew"
 else
+  GRADLEW_EXEC=1
   ok "gradle wrapper OK (./gradlew)"
 fi
 
-# --- docker CLI ---
+# ----------------------------
+# Docker CLI
+# ----------------------------
 if ! command -v docker >/dev/null 2>&1; then
+  DOCKER_CLI=0
   die "Docker CLI not found. Install Docker Desktop (macOS/Windows), Docker Engine (Linux), or Colima (macOS)."
 fi
+DOCKER_CLI=1
 ok "docker CLI found"
 
-OS="$(uname -s || true)"
+# docker compose plugin
+if docker compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE=1
+  ok "docker compose OK"
+else
+  DOCKER_COMPOSE=0
+  warn_or_die "docker compose not available. Install Docker Desktop / Engine with the Compose plugin."
+fi
 
-HAS_COLIMA=0
+# docker context (helps diagnose mismatches on macOS)
+DOCKER_CONTEXT="$(docker context show 2>/dev/null || true)"
+if [[ -n "${DOCKER_CONTEXT}" ]]; then
+  ok "docker context: ${DOCKER_CONTEXT}"
+fi
+
+# ----------------------------
+# Colima (optional)
+# ----------------------------
 if command -v colima >/dev/null 2>&1; then
   HAS_COLIMA=1
   ok "colima found"
-  if ! colima status >/dev/null 2>&1; then
+  if colima status >/dev/null 2>&1; then
+    COLIMA_RUNNING=1
+    ok "colima is running"
+  else
+    COLIMA_RUNNING=0
     die "Colima is installed but not running. Start it with: colima start"
   fi
-  ok "colima is running"
 else
+  HAS_COLIMA=0
   if [[ "${OS}" == "Darwin" && "${REQUIRE_COLIMA}" == "1" ]]; then
-    die "Colima not found but DOCTOR_REQUIRE_COLIMA=1. Install it (brew install colima) or unset DOCTOR_REQUIRE_COLIMA."
+    die "Colima not found but DOCTOR_REQUIRE_COLIMA=1. Install it or unset DOCTOR_REQUIRE_COLIMA."
   fi
   if [[ "${OS}" == "Darwin" ]]; then
     warn "colima not found. If you're using Docker Desktop, this is fine."
@@ -102,47 +280,171 @@ else
   fi
 fi
 
+# ----------------------------
+# Docker daemon
+# ----------------------------
 if ! docker info >/dev/null 2>&1; then
+  DOCKER_DAEMON=0
   if [[ "${OS}" == "Darwin" && "${HAS_COLIMA}" == "1" ]]; then
     die "Docker daemon not reachable. Colima may be misconfigured. Try: colima restart"
   fi
-  die "Docker daemon not reachable. Start Docker Desktop (macOS/Windows) or start the Docker service (Linux)."
+  die "Docker daemon not reachable. Start Docker Desktop or the Docker service."
 fi
+DOCKER_DAEMON=1
 ok "docker daemon reachable"
 
-PROVIDER="unknown"
 INFO="$(docker info 2>/dev/null || true)"
-if echo "${INFO}" | grep -qi "docker desktop"; then
-  PROVIDER="docker-desktop"
-elif echo "${INFO}" | grep -qi "colima"; then
-  PROVIDER="colima"
-elif echo "${INFO}" | grep -qi "rancher desktop"; then
-  PROVIDER="rancher-desktop"
-elif echo "${INFO}" | grep -qi "podman"; then
-  PROVIDER="podman"
-fi
-ok "docker provider: ${PROVIDER}"
 
-MEM_GB=""
+# Provider detection
+if echo "${INFO}" | grep -qi "docker desktop"; then
+  DOCKER_PROVIDER="docker-desktop"
+elif echo "${INFO}" | grep -qi "colima"; then
+  DOCKER_PROVIDER="colima"
+elif echo "${INFO}" | grep -qi "rancher desktop"; then
+  DOCKER_PROVIDER="rancher-desktop"
+elif echo "${INFO}" | grep -qi "podman"; then
+  DOCKER_PROVIDER="podman"
+else
+  DOCKER_PROVIDER="unknown"
+fi
+ok "docker provider: ${DOCKER_PROVIDER}"
+
+# Context/provider mismatch warning (macOS)
+if [[ "${OS}" == "Darwin" && -n "${DOCKER_CONTEXT}" ]]; then
+  if [[ "${DOCKER_PROVIDER}" == "colima" && "${DOCKER_CONTEXT}" != "colima" ]]; then
+    warn_or_die "Docker provider looks like Colima, but docker context is '${DOCKER_CONTEXT}'. Try: docker context use colima"
+  elif [[ "${DOCKER_PROVIDER}" == "docker-desktop" && "${DOCKER_CONTEXT}" == "colima" ]]; then
+    warn_or_die "Docker provider looks like Docker Desktop, but docker context is 'colima'. Try: docker context use default"
+  fi
+fi
+
+# CPUs (best-effort)
+DOCKER_CPUS="$(echo "${INFO}" | sed -n 's/^ *CPUs: *//p' | head -n 1 || true)"
+if [[ -n "${DOCKER_CPUS}" ]]; then
+  ok "cpu check: ${DOCKER_CPUS}"
+  if [[ "${DOCKER_CPUS}" =~ ^[0-9]+$ ]]; then
+    if (( DOCKER_CPUS < MIN_CPUS )); then
+      warn_or_die "Docker reports ${DOCKER_CPUS} CPUs; recommended >= ${MIN_CPUS} CPUs for Gradle + Testcontainers."
+    fi
+  fi
+else
+  warn "Could not determine Docker CPUs from 'docker info'. Skipping CPU check."
+fi
+
+# Memory (best-effort)
 MEM_LINE="$(echo "${INFO}" | sed -n 's/^ *Total Memory: *//p' | head -n 1 || true)"
 if [[ -n "${MEM_LINE}" ]]; then
   MEM_NUM="$(echo "${MEM_LINE}" | sed -E 's/[^0-9.].*$//' || true)"
   if [[ -n "${MEM_NUM}" ]]; then
-    MEM_GB="${MEM_NUM}"
+    DOCKER_MEM_GB="${MEM_NUM}"
   fi
 fi
 
-if [[ -n "${MEM_GB}" ]]; then
-  awk -v mem="${MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) }' \
-    || warn_or_die "Docker reports ~${MEM_GB} GiB memory; recommended >= ${MIN_MEM_GB} GiB for Gradle + Testcontainers."
-  ok "memory check: ~${MEM_GB} GiB"
+if [[ -n "${DOCKER_MEM_GB}" ]]; then
+  awk -v mem="${DOCKER_MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) }' \
+    || warn_or_die "Docker reports ~${DOCKER_MEM_GB} GiB memory; recommended >= ${MIN_MEM_GB} GiB."
+  ok "memory check: ~${DOCKER_MEM_GB} GiB"
 else
-  warn "Could not determine Docker memory from 'docker info' (provider=${PROVIDER}). Skipping memory check."
+  warn "Could not determine Docker memory from 'docker info'. Skipping memory check."
 fi
 
+# Standard socket check for act (Colima/macOS)
+if [[ "${OS}" == "Darwin" && "${DOCKER_PROVIDER}" == "colima" ]]; then
+  if [[ ! -S "/var/run/docker.sock" ]]; then
+    warn_or_die "Expected /var/run/docker.sock for local tooling (e.g., act). Consider: sudo ln -sf \"$HOME/.colima/default/docker.sock\" /var/run/docker.sock"
+  else
+    ok "standard docker socket present (/var/run/docker.sock)"
+  fi
+fi
+
+# Basic socket health
 if ! docker images >/dev/null 2>&1; then
+  DOCKER_SOCKET_OK=0
   die "Docker socket seems unhealthy (cannot list images). Restart your Docker provider."
 fi
+DOCKER_SOCKET_OK=1
 ok "docker socket healthy"
+
+# ----------------------------
+# Colima resource summary + suggestions (DX-only)
+# ----------------------------
+parse_colima_mem_gib() {
+  # Input examples:
+  #   "5.773GiB"
+  #   "6GiB"
+  # Output:
+  #   numeric float-ish string (e.g., "5.773") or empty
+  local s="${1:-}"
+  # strip everything after first non-number/dot
+  echo "${s}" | sed -E 's/[^0-9.].*$//' | grep -E '^[0-9]+(\.[0-9]+)?$' || true
+}
+
+if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
+  # Pull exact "memory:" and "cpu:" lines (best-effort; format can vary slightly)
+  COLIMA_MEM_ALLOC="$(colima status 2>/dev/null | sed -n 's/^.*memory: *//p' | head -n 1 || true)"
+  COLIMA_CPU_ALLOC="$(colima status 2>/dev/null | sed -n 's/^.*cpu: *//p' | head -n 1 || true)"
+
+  if [[ "${JSON_MODE}" != "1" && ( -n "${COLIMA_MEM_ALLOC}" || -n "${COLIMA_CPU_ALLOC}" ) ]]; then
+    say ""
+    say "ℹ️  Colima resources:"
+    [[ -n "${COLIMA_MEM_ALLOC}" ]] && say "   • memory: ${COLIMA_MEM_ALLOC}"
+    [[ -n "${COLIMA_CPU_ALLOC}" ]] && say "   • cpu:    ${COLIMA_CPU_ALLOC}"
+  fi
+
+  # Auto-suggest Colima flags when under thresholds (best-effort)
+  # - memory suggestion uses DOCTOR_MIN_DOCKER_MEM_GB
+  # - cpu suggestion uses DOCTOR_MIN_DOCKER_CPUS
+  if [[ "${OS}" == "Darwin" ]]; then
+    mem_num="$(parse_colima_mem_gib "${COLIMA_MEM_ALLOC}")"
+    cpu_num="$(echo "${COLIMA_CPU_ALLOC}" | sed -E 's/[^0-9].*$//' | grep -E '^[0-9]+$' || true)"
+
+    need_suggest=0
+    suggest_mem="${MIN_MEM_GB}"
+    suggest_cpu="${MIN_CPUS}"
+
+    if [[ -n "${mem_num}" ]]; then
+      awk -v mem="${mem_num}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) ? 0 : 1 }' \
+        && need_suggest=1
+    fi
+
+    if [[ -n "${cpu_num}" ]]; then
+      if (( cpu_num < MIN_CPUS )); then
+        need_suggest=1
+      fi
+    fi
+
+    # Also suggest if docker reports low resources (even if colima parse fails)
+    if [[ -n "${DOCKER_MEM_GB}" ]]; then
+      awk -v mem="${DOCKER_MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) ? 0 : 1 }' \
+        && need_suggest=1
+    fi
+    if [[ -n "${DOCKER_CPUS}" && "${DOCKER_CPUS}" =~ ^[0-9]+$ ]]; then
+      if (( DOCKER_CPUS < MIN_CPUS )); then
+        need_suggest=1
+      fi
+    fi
+
+    if [[ "${need_suggest}" == "1" ]]; then
+      # Keep suggestion informational (don’t fail; strict is handled elsewhere)
+      if [[ "${JSON_MODE}" != "1" ]]; then
+        say ""
+        say "💡 Tip: Increase Colima resources for Gradle + Testcontainers:"
+        say "   colima stop"
+        say "   colima start --cpu ${suggest_cpu} --memory ${suggest_mem}"
+        say ""
+        say "   (Colima persists these settings for future starts.)"
+      fi
+      WARNINGS+=("Colima resources may be undersized; consider: colima start --cpu ${suggest_cpu} --memory ${suggest_mem}")
+    fi
+  fi
+fi
+
+# ----------------------------
+# Done
+# ----------------------------
+STATUS="pass"
+if [[ "${JSON_MODE}" == "1" ]]; then
+  emit_json_and_exit 0 "pass"
+fi
 
 ok "Doctor checks passed."
