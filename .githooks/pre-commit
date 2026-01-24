@@ -62,18 +62,16 @@ debug "triggered by: $triggered_by"
 
 log "pre-commit: running ADR-000 quality gate (format + lint/static analysis)..."
 
-# Optional auto-format (mutates working tree).
-# If formatting changes files, we fail the commit so you can re-stage intentionally.
+# Spotless validation (does NOT mutate working tree).
+# If it fails, we fail the commit and tell you to run `make format` first.
 if [[ "${AUTO_FORMAT:-1}" != "0" ]]; then
-  ./gradlew --no-daemon --no-configuration-cache -q spotlessApply
-
-  if ! git diff --quiet; then
-    log "pre-commit: ✨ Spotless reformatted files."
-    log "pre-commit: please re-stage the changes and commit again."
+  if ! ./gradlew --no-daemon --no-configuration-cache -q spotlessCheck; then
+    log "pre-commit: ❌ Spotless check failed."
+    log "pre-commit: run \`make format\`, then stage intentionally and commit again."
     exit 1
   fi
 else
-  log "pre-commit: AUTO_FORMAT=0 set; skipping spotlessApply."
+  log "pre-commit: AUTO_FORMAT=0 set; skipping spotlessCheck."
 fi
 
 # Static analysis (main sources)
