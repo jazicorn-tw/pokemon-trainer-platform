@@ -1,4 +1,4 @@
-name: CI
+name: CI Test
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-test-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -25,8 +25,8 @@ jobs:
       # Ensure test profile is consistently used in CI
       SPRING_PROFILES_ACTIVE: test
 
-      # Optional: speed up Gradle; safe defaults
-      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
+      # Optional: speed up Gradle; safer on low-mem runners
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dorg.gradle.caching=true
 
       # Optional: some environments benefit from reuse, but it's not required
       TESTCONTAINERS_REUSE_ENABLE: false
@@ -53,11 +53,28 @@ jobs:
           docker version
           docker info
 
+      - name: Detect act
+        id: detect
+        shell: bash
+        run: |
+          if [[ "${ACT:-}" == "true" ]]; then
+            echo "is_act=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_act=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run tests
-        run: ./gradlew test --no-daemon --stacktrace
+        shell: bash
+        run: |
+          if [[ "${ACT:-}" == "true" ]]; then
+            echo "Running under act — disabling Ryuk"
+            export TESTCONTAINERS_RYUK_DISABLED=true
+          fi
+
+          ./gradlew test --no-daemon --stacktrace
 
       - name: Upload test reports (on failure)
-        if: failure()
+        if: ${{ failure() && steps.detect.outputs.is_act != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: test-reports

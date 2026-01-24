@@ -1,0 +1,40 @@
+name: CI Quality
+
+on:
+  pull_request:
+  push:
+    branches: [ main, staging, dev ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Spotless + static analysis (no Docker)
+    runs-on: ubuntu-latest
+
+    env:
+      CI: true
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Spotless check
+        run: ./gradlew spotlessCheck --no-daemon --stacktrace
+
+      - name: Static analysis (Checkstyle/PMD/SpotBugs)
+        run: ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest --no-daemon --stacktrace

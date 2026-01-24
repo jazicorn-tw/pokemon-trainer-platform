@@ -20,7 +20,7 @@ ACT_DOCKER_SOCK ?= /var/run/docker.sock
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 WORKFLOW_ARG := $(word 1,$(ARGS))
 JOB := $(word 2,$(ARGS))
-WORKFLOW := $(if $(WORKFLOW_ARG),$(WORKFLOW_ARG),ci)
+WORKFLOW := $(if $(WORKFLOW_ARG),$(WORKFLOW_ARG),ci-test)
 WORKFLOW_FILE := .github/workflows/$(WORKFLOW).yml
 
 .PHONY: \

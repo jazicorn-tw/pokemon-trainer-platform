@@ -1,0 +1,39 @@
+name: CI Fast
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-fast-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast:
+    name: Compile + unit tests (fast lane)
+    runs-on: ubuntu-latest
+
+    env:
+      CI: true
+      SPRING_PROFILES_ACTIVE: test
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Compile
+        run: ./gradlew classes --no-daemon --stacktrace
+
+      - name: Run tests (fast lane)
+        run: ./gradlew test --no-daemon --stacktrace
