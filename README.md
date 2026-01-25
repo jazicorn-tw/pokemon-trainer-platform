@@ -17,8 +17,8 @@
   <img src="https://img.shields.io/badge/docker-ready-blue" alt="Docker">
   <img src="https://img.shields.io/badge/tests-testcontainers-2496ED" alt="Testcontainers">
   <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/build-image.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/build-image.yml/badge.svg" alt="Build Image"></a>
-  <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/publish-image.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/publish-image.yml/badge.svg" alt="Publish Image"></a>
+  <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-build.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-build.yml/badge.svg" alt="Build Image"></a>
+  <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-publish.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-publish.yml/badge.svg" alt="Publish Image"></a>
 </p>
 
 ---
