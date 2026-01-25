@@ -7,6 +7,14 @@ This document covers common `act` failure modes on macOS, especially when using 
 
 ---
 
+## ❓ What is `act`?
+
+`act` is a **local CI simulator** that executes GitHub Actions workflows exactly as CI would, using Docker.
+
+It allows you to validate workflow logic, environment variables, and container behavior **before pushing** to GitHub.
+
+---
+
 ## ✅ Canonical setup (goal state)
 
 ```text
@@ -72,6 +80,60 @@ Our Make wrapper already passes this.
 
 ---
 
+## ❌ Architecture mismatch (arm64 host → linux/amd64 images)
+
+### Symptom
+
+* Containers fail to start
+* `exec format error`
+* Images pull successfully but jobs crash immediately
+
+### Cause
+
+On Apple Silicon, your host is **arm64**, but most GitHub Actions runner images (including `catthehacker/ubuntu:*`) run as **linux/amd64**.
+
+`act` defaults to `linux/amd64` to match CI, which can expose mismatches if the platform is not explicit.
+
+### Fix (repo standard)
+
+We intentionally run CI simulation as **linux/amd64** to match GitHub:
+
+* Ensure your Make wrapper or `act` invocation uses `--platform linux/amd64`
+* Or set this once in `~/.actrc`
+
+This avoids "works on my machine" drift between local and CI.
+
+---
+
+## ⚠️ "pip running as root" warning
+
+### Symptom
+
+```text
+WARNING: Running pip as the 'root' user can result in broken permissions
+```
+
+### Cause
+
+During `act` runs, some workflows install lightweight validation tools using `pip` inside the runner container, which runs as root by design.
+
+### Impact
+
+* Harmless in ephemeral CI containers
+* No effect on host system
+* Safe to ignore if output noise is acceptable
+
+### Optional quiet alternatives
+
+If you want cleaner logs:
+
+* Use `pipx` instead of `pip`
+* Replace Python tooling with a minimal validator (for example, required-field checks)
+
+If the warning does not bother you, **no action is required**.
+
+---
+
 ## ❌ Helm setup fails with EPERM chmod
 
 ### Symptom
@@ -88,8 +150,8 @@ Error: EPERM: operation not permitted, chmod '/opt/hostedtoolcache/helm/...'
 
 Use a split setup based on `env.ACT`:
 
-- GitHub runners: `azure/setup-helm`
-- act runs: `apt-get install helm`
+* GitHub runners: `azure/setup-helm`
+* act runs: `apt-get install helm`
 
 ---
 
@@ -120,8 +182,8 @@ Avoid running release/publish workflows locally.
 
 ## 🧠 Quick mental model
 
-- Symlink = correct default (`/var/run/docker.sock`)
-- `DOCKER_HOST` = nuclear override (avoid)
-- Runner user must be able to read the socket (we run root)
+* Symlink = correct default (`/var/run/docker.sock`)
+* `DOCKER_HOST` = nuclear override (avoid)
+* Runner user must be able to read the socket (we run root)
 
 One socket. One daemon. Everything works.
