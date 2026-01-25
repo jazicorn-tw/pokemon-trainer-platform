@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADR)
 
-This folder contains **Architecture Decision Records** for the Pokémon Trainer Inventory Service.
+This folder contains **Architecture Decision Records** for the **Pokémon Trainer Platform**.
 
 ADRs capture *why* we made a decision, not just *what* we built.
 
@@ -10,16 +10,19 @@ ADRs capture *why* we made a decision, not just *what* we built.
 
 > Keep this list in numeric order. Link each ADR file.
 
-- **ADR-000** — Linting & static analysis as the first architectural decision
-- **ADR-001** — PostgreSQL baseline (no H2)
-- **ADR-002** — Flyway for schema migrations
-- **ADR-003** — Testcontainers for integration testing
-- **ADR-004** — Actuator health endpoints + Docker healthchecks
-- **ADR-005** — Phase security implementation (deps first, enforcement later)
-- **ADR-006** - local-dev-experience
-- **ADR-007** - commit-msg
-- **ADR-008** - CI-managed releases with semantic-release
-  
+- **ADR-000** — Linting & static analysis as the first architectural decision  
+- **ADR-001** — PostgreSQL baseline (no H2)  
+- **ADR-002** — Flyway for schema migrations  
+- **ADR-003** — Testcontainers for integration testing  
+- **ADR-004** — Actuator health endpoints + Docker healthchecks  
+- **ADR-005** — Phased security implementation (dependencies first, enforcement later)  
+- **ADR-006** — Local developer experience  
+- **ADR-007** — Commit message policy  
+- **ADR-008** — CI-managed releases with semantic-release  
+- **ADR-009** — Deployment strategy  
+- **ADR-010** — Local CI simulation with `act`  
+- **ADR-011** — Modular monolith → microservices (planned)
+
 ---
 
 ## When to write an ADR
@@ -40,20 +43,21 @@ Write (or update) an ADR when a change affects any of the following:
 
 ### Security & compliance
 
-- Introducing authn/authz (JWT, sessions, OAuth)
-- New security posture (public vs private endpoints, CORS, rate limiting)
+- Introducing authentication or authorization (JWT, sessions, OAuth)
+- New security posture (public vs protected endpoints, CORS, rate limiting)
 - Secrets handling, encryption, PII handling, audit requirements
 
 ### Infrastructure & operability
 
-- Changing deployment topology (Docker/Compose/K8s), runtime, ports, health strategy
+- Changing deployment topology (Docker / Compose / Kubernetes)
+- Runtime, ports, or healthcheck strategy changes
 - Observability decisions (logging format, metrics, tracing, alerting)
-- CI/CD policy changes (branch protections, merge policies, release automation)
+- CI/CD policy changes (branch protection, merge rules, release automation)
 
 ### Testing strategy
 
-- Changing integration test strategy (Testcontainers wiring, profiles, container lifecycle)
-- Adding/removing test categories or quality gates (coverage thresholds, smoke tests)
+- Changing integration test strategy (Testcontainers wiring, profiles, lifecycle)
+- Adding or removing test categories or quality gates (coverage thresholds, smoke tests)
 
 ---
 
@@ -61,19 +65,21 @@ Write (or update) an ADR when a change affects any of the following:
 
 If you’re unsure, default to writing a *small* ADR:
 
-- 1 page max
-- clear decision + context + consequences
-- “Alternatives considered” can be brief (2–3 bullets)
+- One page maximum
+- Clear decision, context, and consequences
+- Alternatives can be brief (2–3 bullets)
 
 ---
 
 ## ADR review checklist
 
-- Is the decision clearly stated?
-- Is the context specific to this repo (not generic)?
-- Are alternatives noted?
-- Are consequences explicit (tradeoffs, future costs)?
-- Is the decision reflected in docs (PHASES / README) and code?
+Before marking an ADR as **Accepted**, confirm:
+
+- The decision is clearly stated
+- The context is specific to this repository (not generic advice)
+- Alternatives were considered
+- Consequences and tradeoffs are explicit
+- The decision is reflected in documentation and code
 
 ---
 
@@ -81,13 +87,13 @@ If you’re unsure, default to writing a *small* ADR:
 
 Recommended format:
 
-- Filename: `ADR-00X-short-title.md`
-- Title: `ADR-00X: Short Title`
-- Status: `Proposed` → `Accepted` → `Superseded` (with a link)
+- **Filename**: `ADR-00X-short-title.md`
+- **Title**: `ADR-00X: Short Title`
+- **Status**: `Proposed` → `Accepted` → `Superseded` (with a link)
 
 ---
 
 ## Cross-links
 
-- PHASES doc: phase-gate ADRs are referenced per phase
-- PR templates: include ADR checklist to keep decisions explicit
+- **PHASES**: phase-gated ADRs are referenced per phase
+- **Pull requests**: PR templates include an ADR checklist to keep decisions explicit
