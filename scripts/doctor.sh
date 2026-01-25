@@ -15,10 +15,12 @@ set -euo pipefail
 #
 # JSON output:
 #   ./scripts/doctor.sh --json
+#   ./scripts/doctor.sh --json --strict
 #   or: DOCTOR_JSON=1 ./scripts/doctor.sh
 #
 # CI behavior:
-#   If CI=true/1, this script exits immediately (local convenience only).
+#   If CI=true/1, this script exits immediately (local convenience only),
+#   unless you pass --allow-ci (useful for CI artifact snapshots).
 #
 # Intended to be run via `make doctor`, but safe to run directly.
 # CI remains the authoritative quality gate (ADR-000).
@@ -27,10 +29,46 @@ set -euo pipefail
 # Args / output mode
 # ----------------------------
 JSON_MODE="${DOCTOR_JSON:-0}"
-if [[ "${1:-}" == "--json" ]]; then
-  JSON_MODE="1"
-  shift || true
-fi
+STRICT="${DOCTOR_STRICT:-0}"
+ALLOW_CI="${DOCTOR_ALLOW_CI:-0}"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --json)
+      JSON_MODE="1"
+      shift
+      ;;
+    --strict)
+      STRICT="1"
+      shift
+      ;;
+    --allow-ci)
+      ALLOW_CI="1"
+      shift
+      ;;
+    -h|--help)
+      cat <<'EOF'
+doctor.sh — Local environment sanity checks
+
+Usage:
+  ./scripts/doctor.sh
+  ./scripts/doctor.sh --json
+  ./scripts/doctor.sh --json --strict
+  ./scripts/doctor.sh --json --allow-ci   (for CI artifacts)
+
+Flags:
+  --json       Emit structured JSON (no human output)
+  --strict     Treat warnings as failures
+  --allow-ci   Run even when CI=true (useful for artifact snapshots)
+EOF
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+done
 
 WARNINGS=()
 ERRORS=()
@@ -48,17 +86,31 @@ json_escape() {
 
 json_array() {
   # Prints JSON array from bash array name passed as $1
-  local -n arr="$1"
+  # Portable + nounset-safe; filters empty entries
+  local name="${1:-}"
+  local -a arr=()
+  if [[ -n "${name}" ]]; then
+    eval "arr=(\"\${${name}[@]-}\")"
+  fi
+
   local out="["
+  local first=1
   local i
-  for i in "${!arr[@]}"; do
+  for (( i=0; i<${#arr[@]}; i++ )); do
+    # Skip empty or whitespace-only entries
+    if [[ -z "${arr[$i]//[[:space:]]/}" ]]; then
+      continue
+    fi
+
     local item
     item="$(json_escape "${arr[$i]}")"
-    out+="\"${item}\""
-    if [[ "$i" -lt "$((${#arr[@]} - 1))" ]]; then
+    if (( first == 0 )); then
       out+=","
     fi
+    out+="\"${item}\""
+    first=0
   done
+
   out+="]"
   printf "%s" "${out}"
 }
@@ -68,15 +120,19 @@ say() {
     printf "%s\n" "$*"
   fi
 }
+
 ok() {
   if [[ "${JSON_MODE}" != "1" ]]; then
     say "✅ $*"
   fi
 }
+
 warn() {
-  WARNINGS+=("$*")
+  local msg="${1:-}"
+  [[ -z "${msg//[[:space:]]/}" ]] && return 0
+  WARNINGS+=("${msg}")
   if [[ "${JSON_MODE}" != "1" ]]; then
-    say "⚠️  $*"
+    say "⚠️  ${msg}"
   fi
 }
 
@@ -134,18 +190,19 @@ emit_json_and_exit() {
 }
 
 die() {
-  ERRORS+=("$*")
+  local msg="${1:-}"
+  [[ -z "${msg//[[:space:]]/}" ]] && msg="Unknown error"
+  ERRORS+=("${msg}")
   if [[ "${JSON_MODE}" == "1" ]]; then
     emit_json_and_exit 1 "fail"
   fi
-  printf "❌ %s\n" "$*"
+  printf "❌ %s\n" "${msg}"
   exit 1
 }
 
 # ----------------------------
 # Strict mode / thresholds
 # ----------------------------
-STRICT="${DOCTOR_STRICT:-0}"
 MIN_MEM_GB="${DOCTOR_MIN_DOCKER_MEM_GB:-4}"
 MIN_CPUS="${DOCTOR_MIN_DOCKER_CPUS:-2}"
 REQUIRE_COLIMA="${DOCTOR_REQUIRE_COLIMA:-0}"
@@ -166,7 +223,7 @@ warn_or_die() {
 # ----------------------------
 # CI guard (local-only helper)
 # ----------------------------
-if [[ "${CI:-}" == "true" || "${CI:-}" == "1" ]]; then
+if [[ ("${CI:-}" == "true" || "${CI:-}" == "1") && "${ALLOW_CI}" != "1" ]]; then
   if [[ "${JSON_MODE}" == "1" ]]; then
     STATUS="skip"
     WARNINGS+=("CI detected; skipping local doctor checks.")
@@ -192,7 +249,14 @@ if ! command -v java >/dev/null 2>&1; then
   die "Java not found. Install Java 21 (Temurin recommended) and ensure 'java' is on PATH."
 fi
 
-JAVA_VERSION_RAW="$(java -version 2>&1 | head -n 1 || true)"
+# Capture the first *actual* Java version line (skip JAVA_TOOL_OPTIONS noise)
+JAVA_VERSION_RAW="$(
+  java -version 2>&1 \
+    | grep -E 'version "[^"]+"' \
+    | head -n 1 \
+    || true
+)"
+
 JAVA_MAJOR="$(echo "${JAVA_VERSION_RAW}" | sed -E 's/.*version "([0-9]+).*/\1/' || true)"
 
 # Fallback parse if the simple parse fails
@@ -375,12 +439,10 @@ parse_colima_mem_gib() {
   # Output:
   #   numeric float-ish string (e.g., "5.773") or empty
   local s="${1:-}"
-  # strip everything after first non-number/dot
   echo "${s}" | sed -E 's/[^0-9.].*$//' | grep -E '^[0-9]+(\.[0-9]+)?$' || true
 }
 
 if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
-  # Pull exact "memory:" and "cpu:" lines (best-effort; format can vary slightly)
   COLIMA_MEM_ALLOC="$(colima status 2>/dev/null | sed -n 's/^.*memory: *//p' | head -n 1 || true)"
   COLIMA_CPU_ALLOC="$(colima status 2>/dev/null | sed -n 's/^.*cpu: *//p' | head -n 1 || true)"
 
@@ -391,9 +453,6 @@ if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
     [[ -n "${COLIMA_CPU_ALLOC}" ]] && say "   • cpu:    ${COLIMA_CPU_ALLOC}"
   fi
 
-  # Auto-suggest Colima flags when under thresholds (best-effort)
-  # - memory suggestion uses DOCTOR_MIN_DOCKER_MEM_GB
-  # - cpu suggestion uses DOCTOR_MIN_DOCKER_CPUS
   if [[ "${OS}" == "Darwin" ]]; then
     mem_num="$(parse_colima_mem_gib "${COLIMA_MEM_ALLOC}")"
     cpu_num="$(echo "${COLIMA_CPU_ALLOC}" | sed -E 's/[^0-9].*$//' | grep -E '^[0-9]+$' || true)"
@@ -413,7 +472,6 @@ if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
       fi
     fi
 
-    # Also suggest if docker reports low resources (even if colima parse fails)
     if [[ -n "${DOCKER_MEM_GB}" ]]; then
       awk -v mem="${DOCKER_MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) ? 0 : 1 }' \
         && need_suggest=1
@@ -425,7 +483,6 @@ if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
     fi
 
     if [[ "${need_suggest}" == "1" ]]; then
-      # Keep suggestion informational (don’t fail; strict is handled elsewhere)
       if [[ "${JSON_MODE}" != "1" ]]; then
         say ""
         say "💡 Tip: Increase Colima resources for Gradle + Testcontainers:"
@@ -443,7 +500,12 @@ fi
 # Done
 # ----------------------------
 STATUS="pass"
+
 if [[ "${JSON_MODE}" == "1" ]]; then
+  # In strict mode, any warnings fail the run (tooling-friendly).
+  if [[ "${STRICT}" == "1" && "${#WARNINGS[@]-0}" -gt 0 ]]; then
+    emit_json_and_exit 1 "fail"
+  fi
   emit_json_and_exit 0 "pass"
 fi
 

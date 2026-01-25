@@ -1,0 +1,171 @@
+name: Doctor (environment snapshot)
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Detect act (local runner)
+        id: detect_act
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${ACT:-}" == "true" || "${ACT:-}" == "1" ]]; then
+            echo "is_act=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_act=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run doctor (JSON snapshot)
+        if: always()
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/doctor
+          ./scripts/doctor.sh --json --allow-ci > build/doctor/doctor.json
+
+      - name: Validate doctor JSON (required fields)
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          json="build/doctor/doctor.json"
+
+          # Required top-level keys
+          required_keys=(
+            status
+            os
+            git_branch
+            java_major
+            docker_provider
+            warnings
+            errors
+          )
+
+          for key in "${required_keys[@]}"; do
+            if ! jq -e ".${key} != null" "$json" >/dev/null; then
+              echo "::error::doctor.json missing required key '${key}'"
+              exit 1
+            fi
+          done
+
+          # status must be pass|fail|skip
+          status="$(jq -r '.status' "$json")"
+          case "$status" in
+            pass|fail|skip) ;;
+            *)
+              echo "::error::invalid doctor status: ${status}"
+              exit 1
+              ;;
+          esac
+
+          # warnings/errors must be arrays
+          jq -e '.warnings | type == "array"' "$json" >/dev/null
+          jq -e '.errors   | type == "array"' "$json" >/dev/null
+
+          echo "✅ doctor.json structure validated (jq)"
+      
+      - name: Fail if doctor status is fail
+        if: always()
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          status="$(jq -r '.status' build/doctor/doctor.json)"
+          if [[ "$status" == "fail" ]]; then
+            echo "::error::doctor reported status=fail"
+            exit 1
+          fi
+
+      - name: Annotate doctor findings
+        if: always()
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+
+          json="build/doctor/doctor.json"
+
+          # Cap annotations to avoid noise
+          max_err=10
+          max_warn=10
+
+          err_count="$(jq -r '.errors | length' "$json")"
+          warn_count="$(jq -r '.warnings | length' "$json")"
+
+          # errors -> ::error::
+          if [[ "$err_count" -gt 0 ]]; then
+            jq -r --argjson max "$max_err" '.errors[:$max][]' "$json" \
+              | while IFS= read -r msg; do
+                  [[ -z "${msg//[[:space:]]/}" ]] && continue
+                  printf '::error::%s\n' "$msg"
+                done
+          fi
+
+          # warnings -> ::warning::
+          if [[ "$warn_count" -gt 0 ]]; then
+            jq -r --argjson max "$max_warn" '.warnings[:$max][]' "$json" \
+              | while IFS= read -r msg; do
+                  [[ -z "${msg//[[:space:]]/}" ]] && continue
+                  printf '::warning::%s\n' "$msg"
+                done
+          fi
+
+          echo "🔔 annotations emitted: errors=${err_count} warnings=${warn_count} (capped at ${max_err}/${max_warn})"
+      
+      - name: Doctor summary
+        if: always()
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+
+          status="$(jq -r '.status // "unknown"' build/doctor/doctor.json)"
+          warn_count="$(jq -r '.warnings | length' build/doctor/doctor.json)"
+          err_count="$(jq -r '.errors | length' build/doctor/doctor.json)"
+
+          echo "🩺 doctor: status=${status} warnings=${warn_count} errors=${err_count}"
+
+          {
+            echo "## 🩺 Doctor snapshot"
+            echo ""
+            echo "- **status:** \`${status}\`"
+            echo "- **warnings:** \`${warn_count}\`"
+            echo "- **errors:** \`${err_count}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Print doctor JSON (act/local)
+        if: ${{ always() && steps.detect_act.outputs.is_act == 'true' }}
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          cat build/doctor/doctor.json
+
+      - name: Upload doctor report
+        if: ${{ always() && steps.detect_act.outputs.is_act != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: doctor-report
+          path: build/doctor/doctor.json
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pokemon-trainer-platform.dev/schemas/doctor.schema.json",
+  "title": "Doctor Output Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "os",
+    "git_branch",
+    "java_version_raw",
+    "java_major",
+    "gradlew_exists",
+    "gradlew_executable",
+    "docker_cli",
+    "docker_compose",
+    "docker_daemon_reachable",
+    "docker_context",
+    "docker_provider",
+    "docker_cpus",
+    "docker_memory_gb",
+    "docker_socket_healthy",
+    "colima_present",
+    "colima_running",
+    "colima_memory_alloc",
+    "colima_cpu_alloc",
+    "warnings",
+    "errors"
+  ],
+  "properties": {
+    "status": { "type": "string", "enum": ["pass", "fail", "skip"] },
+    "os": { "type": "string" },
+    "git_branch": { "type": "string" },
+
+    "java_version_raw": { "type": "string" },
+    "java_major": { "type": "string" },
+
+    "gradlew_exists": { "type": "integer", "enum": [0, 1] },
+    "gradlew_executable": { "type": "integer", "enum": [0, 1] },
+
+    "docker_cli": { "type": "integer", "enum": [0, 1] },
+    "docker_compose": { "type": "integer", "enum": [0, 1] },
+    "docker_daemon_reachable": { "type": "integer", "enum": [0, 1] },
+
+    "docker_context": { "type": "string" },
+    "docker_provider": { "type": "string" },
+    "docker_cpus": { "type": "string" },
+    "docker_memory_gb": { "type": "string" },
+    "docker_socket_healthy": { "type": "integer", "enum": [0, 1] },
+
+    "colima_present": { "type": "integer", "enum": [0, 1] },
+    "colima_running": { "type": "integer", "enum": [0, 1] },
+    "colima_memory_alloc": { "type": "string" },
+    "colima_cpu_alloc": { "type": "string" },
+
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "errors": { "type": "array", "items": { "type": "string" } }
+  }
+}
