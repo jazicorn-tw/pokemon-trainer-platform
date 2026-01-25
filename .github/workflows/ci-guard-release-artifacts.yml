@@ -25,6 +25,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GUARD_RELEASE_ARTIFACTS: ${{ vars.GUARD_RELEASE_ARTIFACTS }}
         run: |
           set -euo pipefail
 
@@ -38,6 +39,11 @@ jobs:
             "package.json"
             "pom.xml"
           )
+          
+          if [[ "${GUARD_RELEASE_ARTIFACTS:-true}" != "true" ]]; then
+            echo "ℹ️ Guard disabled via vars.GUARD_RELEASE_ARTIFACTS"
+            exit 0
+          fi
 
           if [[ "$EVENT_NAME" == "pull_request" ]]; then
             BASE_SHA="$PR_BASE_SHA"
