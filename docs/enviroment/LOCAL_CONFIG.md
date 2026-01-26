@@ -1,7 +1,7 @@
 <!-- markdownlint-disable-file MD060 -->
 <!-- markdownlint-disable-file MD024 -->
 
-# 🌱 Local Environment Setup
+# 🌱 Local Configuration
 
 This document explains the **required local environment files** for this repository
 and how to create them correctly.

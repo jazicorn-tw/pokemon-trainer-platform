@@ -3,6 +3,9 @@
 Welcome! 👋  
 This repository is designed to provide **fast feedback**, **strong quality gates**, and **clear expectations** from day one.
 
+This project assumes familiarity with Git, pull requests, and basic JVM tooling.  
+The guardrails exist to make those workflows **safer and more predictable**, not to teach them from scratch.
+
 If you follow the steps below, you should be able to:
 
 - Get the project running locally
@@ -19,12 +22,12 @@ Before running Gradle, tests, or Docker-heavy workflows, always start with:
 make doctor
 ```
 
-This performs **local-only environment sanity checks** and fails fast with clear, actionable errors
+This performs **local-only environment sanity checks** and fails fast with clear, actionable errors  
 (e.g. missing Java 21, Docker not running, Colima misconfigured).
 
 All other commands assume `make doctor` already passes.
 
-📄 Details: [`DOCTOR.md`](./DOCTOR.md)
+📄 Details: [`DOCTOR.md`](../../DOCTOR.md)
 
 ---
 
@@ -38,6 +41,9 @@ make bootstrap
 
 This is the **single supported entry point** for new contributors.
 
+> `make bootstrap` is safe to re-run at any time.  
+> It only installs or fixes what’s missing.
+
 ### What `make bootstrap` does
 
 1. Installs repo-local Git hooks (including commit message validation)
@@ -46,7 +52,7 @@ This is the **single supported entry point** for new contributors.
 4. Fixes common macOS permission issues
 5. Fails fast if your environment is misconfigured
 
-📄 Details: [`MAKEFILE.md`](./files/MAKEFILE.md)
+📄 Details: [`MAKEFILE.md`](../MAKEFILE.md)
 
 ---
 
@@ -114,7 +120,7 @@ If the message is invalid:
 
 📄 Details:
 
-- [`docs/onboarding/setup/COMMITIZEN.md`](./setup/COMMITIZEN.md)
+- [`docs/commit/COMMITIZEN.md`](../commit/COMMITIZEN.md)
 - [`docs/adr/ADR-007-commit-msg.md`](../adr/ADR-007-commit-msg.md)
 
 ---
@@ -122,6 +128,8 @@ If the message is invalid:
 ## 🧱 Quality gates & ADRs
 
 All non-obvious rules are documented as Architecture Decision Records.
+
+If something passes locally but fails in CI, treat that as a **documentation gap**, not a contributor mistake.
 
 ### Core ADRs
 
@@ -141,7 +149,7 @@ All non-obvious rules are documented as Architecture Decision Records.
 
 📄 Start here:
 
-- [`SETUP_TESTING.md`](./setup/SETUP_TESTING.md)
+- [`docs/testing/LOCAL_TESTING.md`](../testing/LOCAL_TESTING.md)
 - [`docs/testing/TESTING.md`](../testing/TESTING.md)
 - [`docs/testing/CI_TROUBLESHOOTING.md`](../testing/CI_TROUBLESHOOTING.md)
 
@@ -151,7 +159,7 @@ All non-obvious rules are documented as Architecture Decision Records.
 
 📄 Docs:
 
-- [`SETUP_DOCKER.md`](./setup/SETUP_DOCKER.md)
+- [`DOCKER.md`](../enviroment/DOCKER.md)
 - [`docker-compose.yml`](../../docker-compose.yml)
 
 ---
@@ -160,8 +168,17 @@ All non-obvious rules are documented as Architecture Decision Records.
 
 📄 Docs:
 
-- [`./setup/LOCAL_ENVIRONMENT.md`](./setup/LOCAL_ENVIRONMENT.md)
+- [`LOCAL_ENVIRONMENT.md`](../enviroment/LOCAL_CONFIG.md)
 - [`.vscode/README.md`](../../.vscode/README.md)
+
+---
+
+## 🆘 If you’re stuck
+
+1. Re-run `make doctor`
+2. Check the relevant setup document
+3. Read the linked ADR
+4. If something is unclear, open a PR or issue — docs are part of the system
 
 ---
 
