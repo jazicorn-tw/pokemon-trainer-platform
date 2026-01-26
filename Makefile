@@ -570,13 +570,14 @@ run-ci: ## 🧪 Run workflow/job via act (auto-detect event)
 	  printf "%b\n" "$(GRAY)↳ trying event=$$ev$(RESET)"; \
 	  tmp="$$(mktemp)"; \
 	  set +e; \
+	  ACT_CACHE_MOUNT="-v $(ACT_GRADLE_CACHE_DIR_EFFECTIVE):/root/.gradle"; \
 	  ACT=true $(ACT) $$ev \
 	    -W $(WORKFLOW_FILE) \
 	    $(if $(JOB),-j $(JOB),) \
 	    -P ubuntu-latest=$(ACT_IMAGE) \
 	    --container-daemon-socket $(ACT_DOCKER_SOCK) \
 	    --container-architecture $(ACT_PLATFORM) \
-	    --container-options="--user 0:0 $(ACT_CONTAINER_OPTS)" \
+	    --container-options="--user 0:0 $$ACT_CACHE_MOUNT $(ACT_CONTAINER_OPTS)" \
 	    2>&1 | tee "$$tmp"; \
 	  status="$$?"; \
 	  set -e; \

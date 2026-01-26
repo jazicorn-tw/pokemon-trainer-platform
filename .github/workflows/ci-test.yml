@@ -41,18 +41,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Docker sanity check (for Testcontainers)
-        run: |
-          docker version
-          docker info
-
       - name: Detect act
         id: detect
         shell: bash
@@ -62,6 +50,28 @@ jobs:
           else
             echo "is_act=false" >> "$GITHUB_OUTPUT"
           fi
+
+      # setup-java's built-in Gradle cache can warn under act when paths don't exist at cleanup time.
+      # We keep caching enabled for real GitHub Actions runs, and disable it for act runs.
+      - name: Set up Java 21 (with Gradle cache)
+        if: ${{ steps.detect.outputs.is_act != 'true' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Set up Java 21 (no cache under act)
+        if: ${{ steps.detect.outputs.is_act == 'true' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Docker sanity check (for Testcontainers)
+        run: |
+          docker version
+          docker info
 
       - name: Run tests
         shell: bash
