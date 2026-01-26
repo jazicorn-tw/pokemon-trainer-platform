@@ -1,6 +1,8 @@
 <!-- markdownlint-disable MD033 -->
 
-# 🎒 Pokémon Trainer Platform
+<h1 align="center">
+  🎒 Pokémon Trainer Platform
+</h1>
 
 <p align="center">
   <em>
@@ -12,13 +14,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
   <img src="https://img.shields.io/badge/java-21-blue" alt="Java 21">
-  <img src="https://img.shields.io/badge/spring--boot-4.x-brightgreen" alt="Spring Boot 4">
   <img src="https://img.shields.io/badge/database-postgresql-blue" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/docker-ready-blue" alt="Docker">
-  <img src="https://img.shields.io/badge/tests-testcontainers-2496ED" alt="Testcontainers">
   <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-build.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-build.yml/badge.svg" alt="Build Image"></a>
-  <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-publish.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-publish.yml/badge.svg" alt="Publish Image"></a>
 </p>
 
 ---
@@ -28,16 +25,18 @@
 **Pokémon Trainer Platform** is a backend API that enables trainers to:
 
 - Manage trainer profiles
-- Validate and manage Pokémon (via PokéAPI)
+- Validate and manage Pokémon (**PokéAPI integration — phased**)
 - Trade Pokémon with other trainers
 - Buy and sell Pokémon in a marketplace
 
 The domain is playful.  
 The engineering is intentionally **serious**.
 
+> **Current state:** CI, infrastructure, and testing foundations are in place; domain features are delivered incrementally by phase.
+
 ---
 
-## 🧭 Developer Experience (Doctor‑first)
+## 🧭 Developer Experience (Doctor-first)
 
 This project demonstrates a **doctor-first onboarding model**:
 
@@ -47,7 +46,7 @@ make doctor
 
 - Validates Java 21, Docker, and local tooling
 - Fails fast with explicit remediation steps
-- Never replaces CI — CI remains authoritative
+- Doctor validates **environment readiness only** — it never replaces CI
 
 A single CI-aligned quality gate enforces correctness:
 
@@ -63,7 +62,7 @@ A single CI-aligned quality gate enforces correctness:
 
 ## 🧠 What this project demonstrates
 
-- **Test‑Driven Development (TDD)** from day one
+- **Test-Driven Development (TDD)** from day one
 - **CI parity** between local and remote environments
 - **Real infrastructure**
   - PostgreSQL everywhere
@@ -82,7 +81,7 @@ A single CI-aligned quality gate enforces correctness:
 - **Spring Boot 4**
 - **PostgreSQL + Flyway**
 - **JPA / Hibernate**
-- **Spring Security + JWT (phased)**
+- **Spring Security + JWT** *(planned — phased rollout)*
 - **Testcontainers**
 - **Gradle**
 - **Docker**
@@ -99,7 +98,8 @@ CI=true SPRING_PROFILES_ACTIVE=test ./gradlew clean check
 
 Includes:
 
-- Unit & integration tests
+- Unit tests
+- Integration tests (**PostgreSQL via Testcontainers**)
 - Formatting (Spotless)
 - Static analysis (Checkstyle, PMD, SpotBugs)
 
