@@ -157,5 +157,4 @@ if [[ "${#warnings[@]}" -gt 0 ]]; then
   exit 0
 fi
 
-echo ""
 printf "%b\n" "${GREEN}🎉 Required environment checks passed.${RESET}"
