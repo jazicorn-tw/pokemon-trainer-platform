@@ -171,8 +171,25 @@ endef
 
 LOCAL_SETTINGS ?= .config/local-settings.json
 
-# Workflows to run when invoking `make act-all`
-ACT_WORKFLOWS ?= ci-fast ci-quality ci-test image-build image-publish
+# -------------------------------------------------------------------
+# act workflow discovery
+#
+# - AUTO_DISCOVERED_WORKFLOWS: all workflows in .github/workflows
+# - CI_WORKFLOWS: CI-only (excludes image build/publish by default)
+# - IMAGE_WORKFLOWS: image-related workflows
+#
+# You can still override manually:
+#   make act-all CI_WORKFLOWS="ci-test ci-quality"
+# -------------------------------------------------------------------
+
+AUTO_DISCOVERED_WORKFLOWS := $(sort $(basename $(notdir $(wildcard .github/workflows/*.yml .github/workflows/*.yaml))))
+
+IMAGE_WORKFLOWS ?= image-build image-publish
+CI_WORKFLOWS ?= $(filter-out $(IMAGE_WORKFLOWS),$(AUTO_DISCOVERED_WORKFLOWS))
+
+# Final workflow lists used by make targets
+ACT_WORKFLOWS ?= $(sort $(AUTO_DISCOVERED_WORKFLOWS))
+ACT_CI_WORKFLOWS ?= $(sort $(CI_WORKFLOWS))
 
 # --- act (local GitHub Actions) ---
 ACT ?= act
@@ -203,7 +220,11 @@ ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 WORKFLOW_ARG := $(word 1,$(ARGS))
 JOB := $(word 2,$(ARGS))
 WORKFLOW := $(if $(WORKFLOW_ARG),$(WORKFLOW_ARG),ci-test)
-WORKFLOW_FILE := .github/workflows/$(WORKFLOW).yml
+
+# Support either .yml or .yaml workflow files (prefers .yml if present)
+WORKFLOW_FILE_YML := .github/workflows/$(WORKFLOW).yml
+WORKFLOW_FILE_YAML := .github/workflows/$(WORKFLOW).yaml
+WORKFLOW_FILE := $(if $(wildcard $(WORKFLOW_FILE_YML)),$(WORKFLOW_FILE_YML),$(WORKFLOW_FILE_YAML))
 
 # Detect current git branch (Phase 0)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
@@ -216,7 +237,7 @@ GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unkno
   clean clean-all \
   format lint test verify quality test-ci bootstrap pre-commit \
   docker-volume docker-up docker-down docker-reset db-shell \
-  act act-all run-ci list-ci \
+  act act-all act-all-ci run-ci list-ci \
   helm deploy
 
 # -------------------------------------------------------------------
@@ -258,7 +279,8 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make run-ci [wf] [job]" "→ run via act (default wf=ci-test)"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make list-ci [wf]" "→ list jobs for workflow via act"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make act" "→ alias: make run-ci"
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make act-all" "→ run all local CI workflows via act"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make act-all" "→ run ALL workflows (auto-discovered) via act"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make act-all-ci" "→ run CI-only workflows (skips image workflows) via act"
 	$(call println,)
 
 	$(call println,$(YELLOW)📦 Helm / Deploy (prep-only)$(RESET))
@@ -343,62 +365,62 @@ env-help: ## 📖 Environment setup docs
 
 env-init: ## 🌱 Create local env files from examples (non-destructive)
 	$(call section,🌱  Environment init)
-	@set -euo pipefail; \
-	changed=0; \
-	\
-	# .env (project root) \
-	if [[ -f ".env" ]]; then \
-	  $(call info,.env already exists (skipping)); \
+	@set -euo pipefail
+	@changed=0
+
+	# .env (project root)
+	@if [[ -f ".env" ]]; then \
+	  printf "%b\n" "$(GRAY).env already exists (skipping)$(RESET)"; \
 	else \
 	  if [[ -f ".env.example" ]]; then \
 	    cp ".env.example" ".env"; \
-	    $(call step,Created .env from .env.example); \
+	    printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)Created .env from .env.example$(RESET)"; \
 	    changed=1; \
 	  else \
-	    $(call warn,Missing .env.example — create .env manually (see docs/onboarding/ENVIRONMENT.md)); \
+	    printf "%b\n" "$(YELLOW)Missing .env.example — create .env manually (see docs/onboarding/ENVIRONMENT.md)$(RESET)"; \
 	  fi; \
-	fi; \
-	\
-	# ~/.actrc (home directory) \
-	if [[ -f "$$HOME/.actrc" ]]; then \
-	  $(call info,$$HOME/.actrc already exists (skipping)); \
+	fi
+
+	# ~/.actrc (home directory)
+	@if [[ -f "$$HOME/.actrc" ]]; then \
+	  printf "%b\n" "$(GRAY)$$HOME/.actrc already exists (skipping)$(RESET)"; \
 	else \
 	  if [[ -f ".actrc.example" ]]; then \
 	    cp ".actrc.example" "$$HOME/.actrc"; \
 	    chmod 600 "$$HOME/.actrc"; \
-	    $(call step,Created $$HOME/.actrc from .actrc.example (chmod 600)); \
+	    printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)Created $$HOME/.actrc from .actrc.example (chmod 600)$(RESET)"; \
 	    changed=1; \
 	  else \
-	    $(call warn,Missing .actrc.example — create $$HOME/.actrc manually (see docs/onboarding/ENVIRONMENT.md)); \
+	    printf "%b\n" "$(YELLOW)Missing .actrc.example — create $$HOME/.actrc manually (see docs/onboarding/ENVIRONMENT.md)$(RESET)"; \
 	  fi; \
-	fi; \
-	\
-	if [[ "$$changed" -eq 0 ]]; then \
-	  $(call println,$(GRAY)No changes made.$(RESET)); \
+	fi
+
+	@if [[ "$$changed" -eq 0 ]]; then \
+	  printf "%b\n" "$(GRAY)No changes made.$(RESET)"; \
 	else \
-	  $(call println,$(GREEN)Done. Re-run: make doctor$(RESET)); \
+	  printf "%b\n" "$(GREEN)Done. Re-run: make doctor$(RESET)"; \
 	fi
 
 env-init-force: ## 🚨 Force overwrite env files from examples (destructive)
 	$(call section,🚨  Environment init (force))
-	@set -euo pipefail; \
-	\
-	if [[ -f ".env.example" ]]; then \
+	@set -euo pipefail
+
+	@if [[ -f ".env.example" ]]; then \
 	  cp ".env.example" ".env"; \
-	  $(call step,Overwrote .env from .env.example); \
+	  printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)Overwrote .env from .env.example$(RESET)"; \
 	else \
-	  $(call warn,Missing .env.example — cannot overwrite .env); \
-	fi; \
-	\
-	if [[ -f ".actrc.example" ]]; then \
+	  printf "%b\n" "$(YELLOW)Missing .env.example — cannot overwrite .env$(RESET)"; \
+	fi
+
+	@if [[ -f ".actrc.example" ]]; then \
 	  cp ".actrc.example" "$$HOME/.actrc"; \
 	  chmod 600 "$$HOME/.actrc"; \
-	  $(call step,Overwrote $$HOME/.actrc from .actrc.example (chmod 600)); \
+	  printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)Overwrote $$HOME/.actrc from .actrc.example (chmod 600)$(RESET)"; \
 	else \
-	  $(call warn,Missing .actrc.example — cannot overwrite $$HOME/.actrc); \
-	fi; \
-	\
-	$(call println,$(GREEN)Done. Re-run: make doctor$(RESET))
+	  printf "%b\n" "$(YELLOW)Missing .actrc.example — cannot overwrite $$HOME/.actrc$(RESET)"; \
+	fi
+
+	@printf "%b\n" "$(GREEN)Done. Re-run: make doctor$(RESET)"
 
 # -------------------------------------------------------------------
 # CONFIG / UTIL
@@ -544,9 +566,16 @@ db-shell: ## 🐘 Open a psql shell in the postgres container
 
 act: run-ci ## 🧪 Alias: run one workflow via act
 
-act-all: ## 🧪 Run all local CI workflows via act
-	$(call section,🧪  act — running all workflows)
+act-all: ## 🧪 Run ALL workflows via act (auto-discovered)
+	$(call section,🧪  act — running ALL workflows)
 	@for wf in $(ACT_WORKFLOWS); do \
+	  printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)workflow$(RESET)=$$wf"; \
+	  $(MAKE) run-ci $$wf || exit $$?; \
+	done
+
+act-all-ci: ## 🧪 Run CI-only workflows via act (skips image workflows)
+	$(call section,🧪  act — running CI-only workflows)
+	@for wf in $(ACT_CI_WORKFLOWS); do \
 	  printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)workflow$(RESET)=$$wf"; \
 	  $(MAKE) run-ci $$wf || exit $$?; \
 	done
@@ -570,14 +599,13 @@ run-ci: ## 🧪 Run workflow/job via act (auto-detect event)
 	  printf "%b\n" "$(GRAY)↳ trying event=$$ev$(RESET)"; \
 	  tmp="$$(mktemp)"; \
 	  set +e; \
-	  ACT_CACHE_MOUNT="-v $(ACT_GRADLE_CACHE_DIR_EFFECTIVE):/root/.gradle"; \
 	  ACT=true $(ACT) $$ev \
 	    -W $(WORKFLOW_FILE) \
 	    $(if $(JOB),-j $(JOB),) \
 	    -P ubuntu-latest=$(ACT_IMAGE) \
 	    --container-daemon-socket $(ACT_DOCKER_SOCK) \
 	    --container-architecture $(ACT_PLATFORM) \
-	    --container-options="--user 0:0 $$ACT_CACHE_MOUNT $(ACT_CONTAINER_OPTS)" \
+	    --container-options "--user 0:0 $(ACT_CONTAINER_OPTS)" \
 	    2>&1 | tee "$$tmp"; \
 	  status="$$?"; \
 	  set -e; \
