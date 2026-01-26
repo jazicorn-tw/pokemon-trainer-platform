@@ -66,15 +66,6 @@ help-auto: ## 🧾 Auto-generated help (from ## comments)
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z0-9_.-]+:.*## / {printf "  $(BOLD)%-24s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	$(call println,)
 
-help-ci: ## 🧰 Show only CI-relevant targets
-	$(call section,🧰  CI-relevant Make Targets)
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "verify" "→ doctor + lint + test"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "quality" "→ doctor + spotlessCheck + clean check"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "test-ci" "→ clean test (CI-like)"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "run-ci" "→ run workflows via act"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "list-ci" "→ list act jobs"
-	$(call println,)
-
 explain: ## 🧠 Explain a target: make explain <target>
 	@t="$(word 2,$(MAKECMDGOALS))"; \
 	if [[ -z "$$t" ]]; then \
