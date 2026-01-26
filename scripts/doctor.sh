@@ -412,22 +412,53 @@ else
   warn "Could not determine Docker memory from 'docker info'. Skipping memory check."
 fi
 
-# Standard socket check for act (Colima/macOS)
+# ----------------------------
+# Socket expectation (act parity on macOS + Colima)
+# ----------------------------
+actrc_socket_override() {
+  # Returns a socket path if ~/.actrc explicitly sets --container-daemon-socket, else empty.
+  local actrc="${HOME}/.actrc"
+  if [[ ! -f "${actrc}" ]]; then
+    return 0
+  fi
+
+  awk '
+    $1=="--container-daemon-socket" && $2!="" { print $2; exit }
+    $1 ~ /^--container-daemon-socket=/ {
+      sub(/^--container-daemon-socket=/, "", $1); print $1; exit
+    }
+  ' "${actrc}" 2>/dev/null || true
+}
+
+docker_host_socket_override() {
+  # Returns a socket path if DOCKER_HOST is unix:///..., else empty.
+  if [[ -n "${DOCKER_HOST:-}" && "${DOCKER_HOST}" =~ ^unix:// ]]; then
+    printf "%s" "${DOCKER_HOST#unix://}"
+  fi
+}
+
+# Only warn if the user *explicitly configured* a socket for tooling (actrc or DOCKER_HOST).
+# If nothing is configured, we assume tooling will follow the active Docker context (which is healthy).
 if [[ "${OS}" == "Darwin" && "${DOCKER_PROVIDER}" == "colima" ]]; then
-  if [[ ! -S "/var/run/docker.sock" ]]; then
-    warn_or_die "Expected /var/run/docker.sock for local tooling (e.g., act). Consider: sudo ln -sf \"$HOME/.colima/default/docker.sock\" /var/run/docker.sock"
+  expected_sock="$(actrc_socket_override)"
+  source_of_expectation="~/.actrc"
+
+  if [[ -z "${expected_sock}" ]]; then
+    expected_sock="$(docker_host_socket_override)"
+    source_of_expectation="DOCKER_HOST"
+  fi
+
+  if [[ -n "${expected_sock}" ]]; then
+    if [[ -S "${expected_sock}" ]]; then
+      ok "docker socket present for local tooling (${expected_sock})"
+    else
+      warn_or_die "Expected docker socket for local tooling (e.g., act) at: ${expected_sock} (configured via ${source_of_expectation})"
+    fi
   else
-    ok "standard docker socket present (/var/run/docker.sock)"
+    ok "docker socket routing OK (no act socket override detected; tooling should follow docker context)"
   fi
 fi
 
-# Basic socket health
-if ! docker images >/dev/null 2>&1; then
-  DOCKER_SOCKET_OK=0
-  die "Docker socket seems unhealthy (cannot list images). Restart your Docker provider."
-fi
-DOCKER_SOCKET_OK=1
-ok "docker socket healthy"
 
 # ----------------------------
 # Colima resource summary + suggestions (DX-only)
