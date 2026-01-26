@@ -19,9 +19,13 @@ In this repo, `act` is used for:
 * Docker daemon running
 
   * macOS: **Colima** (recommended) or Docker Desktop
-* The standard Docker socket available at `/var/run/docker.sock`
 
-### macOS + Colima setup (recommended)
+By default, `act` follows your **active Docker context** (for example, `colima`)
+and does **not** require a system-wide Docker socket symlink.
+
+---
+
+### macOS + Colima (optional socket standardization)
 
 Colima exposes its Docker socket at:
 
@@ -29,13 +33,17 @@ Colima exposes its Docker socket at:
 ~/.colima/default/docker.sock
 ```
 
-To ensure `act`, Docker CLI, and GitHub Actions tooling all talk to the **same daemon**, we standardize on the system socket:
+Some contributors choose to standardize on the system socket path
+(`/var/run/docker.sock`) so all Docker-based tooling uses an identical entry point.
+
+If you prefer this setup, you may create a symlink:
 
 ```bash
 sudo ln -sf "$HOME/.colima/default/docker.sock" /var/run/docker.sock
 ```
 
-This avoids subtle bugs caused by tools talking to different Docker daemons.
+This is **optional**. The repo’s tooling (including `doctor` and `act`) works
+correctly without it as long as your Docker context is set to Colima.
 
 ---
 
@@ -63,6 +71,22 @@ This keeps local CI simulation **boringly close** to real CI.
 
 ---
 
+## 🩺 Interaction with `make doctor`
+
+The `doctor` command validates your local Docker setup before running CI workflows.
+
+Specifically:
+
+* If you explicitly configure a Docker socket (via `~/.actrc` or `DOCKER_HOST`),
+  `doctor` will verify that the socket exists and is usable.
+* If no socket override is configured, `doctor` assumes tooling will follow the
+  active Docker context (for example, Colima) and will **not** require
+  `/var/run/docker.sock`.
+
+This avoids false warnings while still catching real misconfigurations.
+
+---
+
 ## ⚠️ What `act` does NOT replicate perfectly
 
 `act` is excellent for workflow logic and most shell steps, but some behavior differs from GitHub-hosted runners:
@@ -77,7 +101,8 @@ In this repo, we guard certain steps using `env.ACT` to keep local runs stable w
 
 ## 🔐 Secrets and releases
 
-Workflows that require GitHub App tokens, signing keys, or production secrets (for example, **release** or **publish** workflows) are **not intended to be run locally**.
+Workflows that require GitHub App tokens, signing keys, or production secrets
+(for example, **release** or **publish** workflows) are **not intended to be run locally**.
 
 For local validation, use:
 

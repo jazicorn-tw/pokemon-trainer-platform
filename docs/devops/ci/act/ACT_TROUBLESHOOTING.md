@@ -20,26 +20,25 @@ It allows you to validate workflow logic, environment variables, and container b
 ```text
 Docker context        = colima
 Colima socket         = ~/.colima/default/docker.sock
-System socket         = /var/run/docker.sock (symlink)
 DOCKER_HOST           = (unset)
+System socket         = optional (/var/run/docker.sock symlink)
 ```
 
-One-time setup:
+This repo **does not require** a system-wide Docker socket symlink.
+By default, `act` and other tooling follow the **active Docker context**.
+
+### Optional socket standardization
+
+Some contributors prefer to standardize on `/var/run/docker.sock` so that
+all Docker-based tooling uses the same entry point.
+
+If you choose this setup:
 
 ```bash
-colima start
-docker context use colima
 sudo ln -sf "$HOME/.colima/default/docker.sock" /var/run/docker.sock
-unset DOCKER_HOST
 ```
 
-Verify:
-
-```bash
-docker context show
-ls -l /var/run/docker.sock
-echo "DOCKER_HOST=${DOCKER_HOST:-<unset>}"
-```
+This is **optional** and not required by repo tooling.
 
 ---
 
@@ -47,18 +46,27 @@ echo "DOCKER_HOST=${DOCKER_HOST:-<unset>}"
 
 ### Cause
 
-Almost always: pulls and creates happened against **different Docker daemons/sockets**.
+Almost always: pulls and creates happened against **different Docker daemons or sockets**.
+
+This can happen if:
+
+- `DOCKER_HOST` points somewhere unexpected
+- A system socket symlink points to a different daemon than your Docker context
 
 ### Fix
 
-Ensure `/var/run/docker.sock` exists and points at Colima:
+Ensure your Docker context is Colima and no conflicting overrides exist:
 
 ```bash
-sudo ln -sf "$HOME/.colima/default/docker.sock" /var/run/docker.sock
+docker context use colima
 unset DOCKER_HOST
 ```
 
-Then rerun.
+If you *do* use a system socket symlink, ensure it points at Colima:
+
+```bash
+ls -l /var/run/docker.sock
+```
 
 ---
 
@@ -66,7 +74,8 @@ Then rerun.
 
 ### What it means
 
-The runner container can see `/var/run/docker.sock`, but the user inside the container cannot access it.
+The runner container can see the Docker socket, but the user inside the
+container cannot access it.
 
 ### Fix (repo standard)
 
@@ -76,7 +85,7 @@ Run the runner container as root:
 --container-options="--user 0:0"
 ```
 
-Our Make wrapper already passes this.
+Our Make wrapper already enforces this.
 
 ---
 
@@ -84,24 +93,22 @@ Our Make wrapper already passes this.
 
 ### Symptom
 
-* Containers fail to start
-* `exec format error`
-* Images pull successfully but jobs crash immediately
+- Containers fail to start
+- `exec format error`
+- Images pull successfully but jobs crash immediately
 
 ### Cause
 
-On Apple Silicon, your host is **arm64**, but most GitHub Actions runner images (including `catthehacker/ubuntu:*`) run as **linux/amd64**.
-
-`act` defaults to `linux/amd64` to match CI, which can expose mismatches if the platform is not explicit.
+On Apple Silicon, your host is **arm64**, but GitHub Actions runners are
+**linux/amd64**.
 
 ### Fix (repo standard)
 
 We intentionally run CI simulation as **linux/amd64** to match GitHub:
 
-* Ensure your Make wrapper or `act` invocation uses `--platform linux/amd64`
-* Or set this once in `~/.actrc`
+- Ensure `--platform linux/amd64` is set (via Make wrapper or `~/.actrc`)
 
-This avoids "works on my machine" drift between local and CI.
+This avoids local/CI drift.
 
 ---
 
@@ -115,22 +122,21 @@ WARNING: Running pip as the 'root' user can result in broken permissions
 
 ### Cause
 
-During `act` runs, some workflows install lightweight validation tools using `pip` inside the runner container, which runs as root by design.
+Some workflows install lightweight validation tools using `pip` inside
+ephemeral CI containers that run as root.
 
 ### Impact
 
-* Harmless in ephemeral CI containers
-* No effect on host system
-* Safe to ignore if output noise is acceptable
+- Harmless in local CI containers
+- No effect on host system
+- Safe to ignore
 
 ### Optional quiet alternatives
 
 If you want cleaner logs:
 
-* Use `pipx` instead of `pip`
-* Replace Python tooling with a minimal validator (for example, required-field checks)
-
-If the warning does not bother you, **no action is required**.
+- Use `pipx`
+- Replace Python tooling with minimal validators
 
 ---
 
@@ -148,10 +154,10 @@ Error: EPERM: operation not permitted, chmod '/opt/hostedtoolcache/helm/...'
 
 ### Fix (repo standard)
 
-Use a split setup based on `env.ACT`:
+Split setup logic using `env.ACT`:
 
-* GitHub runners: `azure/setup-helm`
-* act runs: `apt-get install helm`
+- GitHub runners: `azure/setup-helm`
+- act runs: install Helm via `apt-get`
 
 ---
 
@@ -165,7 +171,7 @@ Input required and not supplied: app_id
 
 ### Cause
 
-Local `act` does not have GitHub Actions secrets unless you provide them.
+Local `act` runs do not have access to GitHub secrets unless explicitly provided.
 
 ### Fix
 
@@ -176,14 +182,15 @@ make run-ci
 make run-ci ci
 ```
 
-Avoid running release/publish workflows locally.
+Avoid running release or publish workflows locally.
 
 ---
 
-## 🧠 Quick mental model
+## 🧠 Updated mental model
 
-* Symlink = correct default (`/var/run/docker.sock`)
-* `DOCKER_HOST` = nuclear override (avoid)
-* Runner user must be able to read the socket (we run root)
+- Docker context is authoritative
+- Socket symlinks are optional
+- `DOCKER_HOST` overrides everything (avoid unless intentional)
+- Runner container must be able to read the socket (we run as root)
 
-One socket. One daemon. Everything works.
+One daemon. One context. Predictable results.

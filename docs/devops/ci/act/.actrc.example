@@ -14,5 +14,7 @@
 # Force CI parity (GitHub runners are amd64)
 --platform linux/amd64
 
-# Run runner as root (required for docker.sock access)
+# Run runner as root
+# (ensures the container can access the Docker daemon regardless of
+# socket or context routing)
 --container-options "--user 0:0"
