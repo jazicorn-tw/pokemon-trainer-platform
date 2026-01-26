@@ -45,6 +45,10 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make db-shell" "→ psql shell into local postgres container"
 	$(call println,)
 
+	$(call println,$(YELLOW)🧭 Inspection / Navigation$(RESET))
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make tree [path]" "→ inspect repo structure (read-only). Docs: docs/TREE.md"
+	$(call println,)
+
 	$(call println,$(YELLOW)🧪 act (local GitHub Actions)$(RESET))
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make run-ci [wf] [job]" "→ run via act (default wf=ci-test)"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make list-ci [wf]" "→ list jobs for workflow via act"
