@@ -1,195 +1,264 @@
-<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable-file MD033 MD036 -->
+<!-- markdownlint-disable-file MD033 MD060 -->
 
-# 🎒 Pokémon Trainer Platform
+# 📚 Documentation Guide — Pokémon Trainer Platform
 
-<p align="center">
-  <em>
-    A production-minded Spring Boot 4 REST API demonstrating test-driven backend design, CI-first quality gates, and real-world infrastructure parity
-  </em>
-</p>
+This folder contains the **authoritative documentation** for the Pokémon Trainer Platform.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
-  <img src="https://img.shields.io/badge/java-21-blue" alt="Java 21">
-  <img src="https://img.shields.io/badge/spring--boot-4.x-brightgreen" alt="Spring Boot 4">
-  <img src="https://img.shields.io/badge/database-postgresql-blue" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/docker-ready-blue" alt="Docker">
-  <img src="https://img.shields.io/badge/tests-testcontainers-2496ED" alt="Testcontainers">
-  <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml"><img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml"><img src="https://github.com/jazicorn-tw/pokemon-inventory-system/actions/workflows/build-image.yml/badge.svg" alt="Build Image"></a>
-</p>
+The goal of this documentation set is to explain **how and why the system is built the way it is**, not just how to run it.
+
+If something is non-obvious, opinionated, or easy to misuse — it belongs here.
 
 ---
 
-## 🚀 Overview
+## 🗂️ Documentation structure
 
-The **Pokémon Trainer Platform** is a backend API that allows trainers to:
+📄 **Documentation map:** [`DOCS_TOC.md`](./DOCS_TOC.md)
 
-* Manage trainer profiles
-* Add and validate Pokémon (via **PokeAPI**)
-* Trade Pokémon with other trainers
-* Buy and sell Pokémon in a marketplace
+This table of contents:
+
+- Lists **every top-level folder** in `docs/`
+- Describes the **purpose and scope** of each folder
+- Explains **where new documentation should go**
+
+If you are unsure where to add or find documentation, **start with `DOCS_TOC.md`**.
 
 ---
 
-## 🧭 Developer Experience
+## 🎯 Purpose of the docs folder
 
-This project uses a **doctor-first onboarding workflow** designed for fast feedback,
-strong quality gates, and production parity.
+The `docs/` directory exists to:
 
-New contributors start with:
+- Capture **architectural decisions** and their rationale
+- Provide **clear onboarding paths** for new contributors
+- Document **tooling, workflows, and guardrails**
+- Preserve **institutional knowledge** that would otherwise live in heads or Slack
 
-```bash
-make doctor
-```
+This is **living documentation**.  
+Docs are expected to evolve as the system evolves.
 
-to validate their local environment *before* running Gradle, Docker, or tests.
+---
 
-A single CI-aligned quality gate then enforces formatting, static analysis, and tests.
+## 🧭 How to use this documentation
 
-> **Fail fast locally.  
-> Enforce correctness in CI.  
-> Document every non-obvious rule with ADRs.**
+### New contributors (recommended order)
+
+1. `onboarding/`
+   - First-day and first-PR guides
+   - Common local setup failures
+   - Bootstrap and environment expectations
+
+2. `adr/`
+   - Architectural Decision Records
+   - Explains *why* key technical choices were made
+
+3. `phases/`
+   - High-level product and engineering roadmap
+   - What exists now vs what is planned
+
+4. `tooling/`
+   - Developer-experience tooling (doctor, tree, act, etc.)
+
+---
+
+## 🗂️ Folder-by-folder overview
+
+### `adr/` — Architecture Decision Records
+
+Authoritative records of **non-trivial architectural decisions**.
+
+Use ADRs when:
+
+- There are multiple reasonable options
+- The choice has long-term consequences
+- The decision may be questioned later
+
+Examples:
+
+- PostgreSQL everywhere (no H2)
+- Testcontainers for integration tests
+- Local CI simulation with `act`
+
+---
+
+### `onboarding/` — Contributor onboarding
+
+Everything a new contributor needs to become productive **without tribal knowledge**.
+
+Includes:
+
+- Day 1 / Day 2 onboarding guides
+- Environment setup
+- Common failure modes and fixes
+
+If a contributor asks:
+> “How do I get started?”  
+the answer should live here.
+
+---
+
+### `tooling/` — Developer experience & inspection tools
+
+Documentation for **local developer tooling** and inspection helpers.
+
+Includes:
+
+- Doctor checks and JSON output
+- Local CI simulation (`act`)
+- Repo inspection (`make tree`)
+
+This folder documents *how to work with the repo*, not the application itself.
 
 📄 Start here:
 
-* [`onboarding/DOCTOR.md`](./docs/onboarding/DOCTOR.md)
-* [`onboarding/ONBOARDING.md`](./docs/onboarding/ONBOARDING.md)
+- `tooling/DOCTOR_JSON.md`
+- `tooling/TREE.md`
 
 ---
 
-## 🚀 What This Project Demonstrates
+### `devops/` — CI, deployment, and operational docs
 
-This is **not a toy API**.
+Documentation for **CI/CD, security, and operational behavior**.
 
-This project showcases how a backend service can be built **correctly from day one**, with:
+Includes:
 
-* Strict **Test-Driven Development (TDD)**
-* **CI parity** enforced locally and remotely
-* Real infrastructure (PostgreSQL, Testcontainers)
-* Explicit architectural decisions (ADRs)
+- CI workflows and toggles
+- Image build & publish rules
+- Helm and deployment strategy
+- Health and security docs
 
-The domain is playful. The engineering is not.
-
----
-
-## 🧩 Tech Stack
-
-* **Java 21**
-* **Spring Boot 4**
-* **PostgreSQL + Flyway**
-* **JPA / Hibernate**
-* **Spring Security + JWT (phased)**
-* **Testcontainers**
-* **SpringDoc OpenAPI**
-* **MapStruct**
+This is the source of truth for anything that runs **outside your laptop**.
 
 ---
 
-## 🧠 Architectural Principles
+### `testing/` — Testing strategy & troubleshooting
 
-* **Production parity**  
-  Local, CI, and runtime environments behave the same.
+How testing works, how it fails, and how to debug it.
 
-* **Single quality gate**  
-  If `./gradlew clean check` fails, the change is incorrect.
+Includes:
 
-* **Fail fast, fail explicitly**  
-  Infrastructure and environment errors surface early.
+- Local vs CI testing behavior
+- Testcontainers + PostgreSQL
+- Common CI and container errors
+- Viewing and interpreting test reports
 
-* **Decisions are documented**  
-  Non-trivial choices are captured as ADRs.
-
-> Architectural trade-offs and decisions are documented in **ARCHITECTURE.md**.
+If tests fail in CI and the reason isn’t obvious, the fix should land here.
 
 ---
 
-## 🗺️ Feature Roadmap (Phased)
+### `services/` — External dependencies & integrations
 
-| Phase | Focus                                   |
-| ----: | --------------------------------------- |
-|     0 | Project skeleton, `/ping`, test harness |
-|     1 | Trainers & inventory                    |
-|     2 | PokeAPI integration                     |
-|     3 | Trades                                  |
-|     4 | Marketplace                             |
-|     5 | Integration hardening                   |
-|     6 | Security skeleton                       |
-|     7 | JWT authentication                      |
-|     8 | Developer-experience improvements       |
+Documentation for **infrastructure services** the platform depends on.
 
-> APIs may evolve between phases. Backward compatibility is not guaranteed yet.
+Currently includes:
+
+- PostgreSQL baseline and expectations
+
+Add docs here when:
+
+- The service has operational or schema expectations
+- Misconfiguration causes subtle failures
 
 ---
 
-## 🧪 Testing & Quality Gates
+### `quality/` — Linting & static analysis
 
-### CI-Equivalent Quality Gate (Authoritative)
+Documentation for **quality gates** enforced locally and in CI.
 
-```bash
-CI=true SPRING_PROFILES_ACTIVE=test ./gradlew clean check
-```
+Includes:
 
-This gate includes:
+- Linting philosophy
+- Static analysis tooling
 
-* Unit + integration tests
-* Formatting (Spotless)
-* Static analysis (Checkstyle, PMD, SpotBugs)
-* Build correctness
-
-> If a change does not pass this command, it is **not considered correct**, regardless of feature completeness.
+This explains *why* the bar is set where it is.
 
 ---
 
-### Integration Testing Strategy
+### `phases/` — Roadmap & evolution
 
-* Uses **real PostgreSQL via Testcontainers**
-* Containers start eagerly to avoid Spring bootstrap race conditions
-* No embedded or in-memory databases are permitted
+Describes the **planned evolution** of the platform.
 
-This ensures failures are **deterministic and production-realistic**.
+Includes:
 
----
+- Current phase scope
+- Future phases and constraints
 
-## 🧰 Local Workflow (Optional)
+This helps contributors understand:
 
-```bash
-make test      # fast feedback (tests only)
-make test-ci   # CI-equivalent gate
-make bootstrap # hooks + full quality gate
-```
-
-⚠️ `make test` does **not** catch formatting or static-analysis failures.  
-(Assumes `make doctor` already passes.)
+- Why certain things look incomplete
+- What is intentionally deferred
 
 ---
 
-## 🩺 Health Endpoints
+### `make/` — Makefile documentation
 
-| Endpoint | Purpose |
-| ------ | ------- |
-| `/ping` | Bootstrap check |
-| `/actuator/health` | Overall health |
-| `/actuator/health/liveness` | Liveness |
-| `/actuator/health/readiness` | Readiness |
+Documentation for the Make-based developer workflow.
 
----
+Includes:
 
-## 💡 Why This Project Exists
-
-This project exists to demonstrate **production-grade backend engineering**, not just feature delivery.
-
-It prioritizes:
-
-* Test-driven design
-* CI as the authority
-* Explicit architectural decisions
-* Developer ergonomics **without shortcuts**
+- Makefile structure
+- Roles and categories
+- How to discover available commands
 
 ---
 
-## 🤝 Contributing
+### `faq/` — Explanations of “weird” things
 
-Before opening a PR:
+Short, focused explanations for topics that commonly confuse contributors.
 
-* Read **CONTRIBUTING.md**
+Example:
+
+- Executable bits in Git
+
+If the question starts with:
+> “Why does this repo do *that*?”
+
+…it probably belongs here.
+
+---
+
+## 🧠 How to decide where new docs go
+
+Use this decision table:
+
+| Question | Put it in |
+|--------|-----------|
+| Why was a technical decision made? | `adr/` |
+| How do I get started or unstuck? | `onboarding/` |
+| How do I use local tooling? | `tooling/` |
+| How does CI / deploy work? | `devops/` |
+| Why did tests fail? | `testing/` |
+| What phase are we in? | `phases/` |
+| Why is this repo opinionated? | `quality/` |
+| Why is this weird? | `faq/` |
+
+If in doubt:
+
+- Prefer **clarity over cleverness**
+- Prefer **explicit docs over Slack answers**
+- Prefer **adding a doc over adding comments**
+
+---
+
+## ✨ Documentation principles
+
+- Docs explain **intent**, not just steps
+- Docs are written for **future contributors**
+- Docs should answer “why?” at least once
+- Docs are part of the product, not an afterthought
+
+If something surprised you while working in this repo, document it.
+
+---
+
+## 📌 Summary
+
+The `docs/` folder is the **memory of this project**.
+
+Good documentation:
+
+- Reduces onboarding time
+- Prevents repeated mistakes
+- Makes architectural intent durable
+
+If it matters, document it.
