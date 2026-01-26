@@ -8,7 +8,8 @@ help: ## 🧰 Show developer help (curated)
 	$(call section,🧰  Pokémon Trainer Platform — Make Targets)
 
 	$(call println,$(YELLOW)🚀 Recommended flow$(RESET))
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make demo" "→ onboarding walkthrough"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make help-categories" "→ discover help by category"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make make-roles" "→ discover role entrypoints"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make env-init" "→ create .env + ~/.actrc from examples"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make bootstrap" "→ first-time setup"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make verify" "→ before pushing"
@@ -48,14 +49,16 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make deploy" "→ not wired yet"
 	$(call println,)
 
-	$(call println,$(GRAY)More: make help-short | make help-auto | make banner | make demo-ci | make doctor-json-demo | NO_COLOR=1 make help$(RESET))
+	$(call println,$(GRAY)Discover more: make help-categories | make make-roles$(RESET))
 	$(call println,)
-
 
 help-short: ## 🧰 Quick help (minimal)
 	$(call section,🧰  Quick Make Targets)
-	@printf "  $(BOLD)%-16s$(RESET) %s\n" "demo" "onboarding walkthrough"
-	@printf "  $(BOLD)%-16s$(RESET) %s\n" "demo-ci" "onboarding walkthrough (no color)"
+	@printf "  $(BOLD)%-16s$(RESET) %s\n" "help" "curated help (recommended)"
+	@printf "  $(BOLD)%-16s$(RESET) %s\n" "help-categories" "discover help by category"
+	@printf "  $(BOLD)%-16s$(RESET) %s\n" "make-roles" "discover help by role (contributor/reviewer/maintainer)"
+	@printf "  $(BOLD)%-16s$(RESET) %s\n" "contributor" "role gate: run PR-ready checks"
+	@printf "  $(BOLD)%-16s$(RESET) %s\n" "doctor" "local environment sanity checks"
 	@printf "  $(BOLD)%-16s$(RESET) %s\n" "verify" "doctor + lint + test"
 	@printf "  $(BOLD)%-16s$(RESET) %s\n" "quality" "CI-parity gate"
 	@printf "  $(BOLD)%-16s$(RESET) %s\n" "run-ci" "simulate CI via act"

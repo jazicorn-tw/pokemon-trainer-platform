@@ -65,6 +65,10 @@ list-ci: ## 📋 List jobs for a workflow via act
 	@$(ACT) -W $(WORKFLOW_FILE) --list
 
 # Swallow extra args ONLY for targets that accept positionals
+POSITIONAL_TARGETS := run-ci list-ci
+
+ifneq (,$(filter $(POSITIONAL_TARGETS),$(firstword $(MAKECMDGOALS))))
+ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 .PHONY: $(ARGS)
-$(ARGS):
-	@:
+$(ARGS): ; @:
+endif

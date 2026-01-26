@@ -2,7 +2,7 @@
 # CONFIG / UTIL
 # -------------------------------------------------------------------
 
-.PHONY: local-settings exec-bits hooks doctor doctor-json doctor-json-strict doctor-json-pretty clean clean-all
+.PHONY: local-settings exec-bits hooks doctor doctor-json doctor-json-strict doctor-json-pretty clean clean-all list-make-files check-make-order
 
 # -------------------------------------------------------------------
 # EXEC BIT GUARDS (DX) — context-aware + polished
@@ -77,3 +77,22 @@ clean-all: ## 🧹 Clean build + purge local caches (use sparingly)
 	$(call info,Running Gradle…)
 	@./gradlew --no-daemon -q clean
 	@rm -rf .gradle build
+
+list-make-files: ## 📂 List all Make modules (sorted)
+	@ls -1 make | sort
+
+check-make-order: ## 🔢 Verify make/ modules use numeric prefixes (00-, 10-, etc.)
+	@bad=0; \
+	for f in make/*.mk; do \
+	  base="$$(basename "$$f")"; \
+	  if ! echo "$$base" | grep -Eq '^[0-9]{2}-.*\.mk$$'; then \
+	    printf "%b\n" "$(RED)❌ Invalid make module name: $$base$(RESET)"; \
+	    bad=1; \
+	  fi; \
+	done; \
+	if [ "$$bad" -eq 1 ]; then \
+	  printf "%b\n" "$(GRAY)Expected format: NN-name.mk (e.g. 00-core.mk, 31-help-categories.mk)$(RESET)"; \
+	  exit 1; \
+	else \
+	  printf "%b\n" "$(GREEN)✅ All make modules use numeric prefixes$(RESET)"; \
+	fi
