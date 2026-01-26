@@ -26,7 +26,7 @@
 HELP_CATEGORIES_SRC := $(lastword $(MAKEFILE_LIST))
 
 .PHONY: help-categories help-roles \
-        help-onboarding help-env help-quality help-docker help-act help-ci help-helm
+        help-onboarding help-env help-quality help-docker help-category-inspection help-act help-ci help-helm
 
 help-categories: ## 🧭 List available help-* categories
 	$(call section,🧭  Help Categories)
@@ -92,6 +92,12 @@ help-docker: ## 🐳 Docker & database workflows
 	@printf "  $(BOLD)%-16s$(RESET) %s\n" "db-shell" "→ psql shell into local postgres container"
 	@printf "  $(BOLD)%-16s$(RESET) %s\n" "db-logs" "→ tail postgres logs (if available)"
 	$(call println,)
+
+help-category-inspection: ## 🧭 Inspection / Navigation
+	@printf "$(YELLOW)🧭 Inspection / Navigation$(RESET)\n"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make tree [path]" "→ inspect repo structure (read-only)"
+	@printf "    %s\n" "Docs: docs/TREE.md"
+	@printf "\n"
 
 help-act: ## 🧪 Local CI with act
 	$(call section,🧪  act — Local GitHub Actions)
