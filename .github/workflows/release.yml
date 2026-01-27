@@ -1,9 +1,22 @@
 name: Release (semantic-release)
 
 on:
+  # Automatic releases from main *only* when explicitly enabled.
   push:
     branches:
       - main
+
+  # Manual run (useful for one-off releases)
+  workflow_dispatch:
+    inputs:
+      enable_release:
+        description: "Run semantic-release for this run (overrides repo variable gate)"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 permissions:
   contents: write
@@ -17,6 +30,12 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    # Gate releases behind an explicit boolean.
+    #
+    # Set repo variable ENABLE_SEMANTIC_RELEASE=true to allow push-based releases.
+    # For manual runs, set workflow input enable_release=true.
+    if: ${{ inputs.enable_release == 'true' || vars.ENABLE_SEMANTIC_RELEASE == 'true' }}
 
     steps:
       - name: Checkout
