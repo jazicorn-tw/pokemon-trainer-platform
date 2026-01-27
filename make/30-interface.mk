@@ -62,7 +62,7 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make deploy" "→ not wired yet"
 	$(call println,)
 
-	$(call println,$(GRAY)Discover more: make help-categories | make make-roles$(RESET))
+	$(call println,$(GRAY)Discover more: make help-categories | make help-roles$(RESET))
 	$(call println,)
 
 help-short: ## 🧰 Quick help (minimal)
