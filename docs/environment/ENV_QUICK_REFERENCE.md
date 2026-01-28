@@ -10,15 +10,26 @@ Detailed behavior and rationale live in the linked docs.
 ## 🔀 CI Feature Flags (GitHub Actions)
 
 ```text
-PUBLISH_DOCKER_IMAGE     # true|false — enable Docker image publishing on release tags
-CANONICAL_REPOSITORY    # <owner>/<repo> — only repo allowed to publish artifacts
+# Release control
+ENABLE_SEMANTIC_RELEASE   # true|false — allow semantic-release execution on main
+                          # (manual workflow_dispatch may override per run)
 
-PUBLISH_HELM_CHART      # true|false — (future) enable Helm chart publishing
-DEPLOY_ENABLED          # true|false — (future) global deployment kill switch
-ENABLE_SEMANTIC_RELEASE # true|false — optional gate for semantic-release
+# Artifact publishing
+PUBLISH_DOCKER_IMAGE      # true|false — enable Docker image publishing (after a release)
+PUBLISH_HELM_CHART        # true|false — (future) enable Helm chart publishing
+
+# Safety / scope
+CANONICAL_REPOSITORY      # <owner>/<repo> — only repo allowed to publish artifacts
+
+# Deployment (future)
+DEPLOY_ENABLED            # true|false — global deployment kill switch
 ```
 
-📄 See: `CI_FEATURE_FLAGS.md`
+📄 See:
+
+- `CI_FEATURE_FLAGS.md`
+- `RELEASES.md`
+- `ENV_REMOTE_SPEC.md`
 
 ---
 
@@ -32,19 +43,23 @@ SPRING_APPLICATION_NAME  # optional — app identity for logs/metrics
 SPRING_MAIN_BANNER_MODE  # optional — off|console|log (often off in CI)
 ```
 
-📄 See: `RUNTIME_APPLICATION.md`
+📄 See: `RUNTIME_APPLICATION.md`  
+📄 See also: `REPO_VARIABLES.md`
 
 ---
 
 ## 🗄️ Database (PostgreSQL)
 
 ```text
-SPRING_DATASOURCE_URL        # JDBC connection URL (may include SSL params)
-SPRING_DATASOURCE_USERNAME  # database username
-SPRING_DATASOURCE_PASSWORD  # database password (secret)
+SPRING_DATASOURCE_URL         # JDBC connection URL (may include SSL params)
+SPRING_DATASOURCE_USERNAME    # database username
+SPRING_DATASOURCE_PASSWORD    # database password (secret)
 
 SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE  # optional — pool sizing
-SPRING_FLYWAY_ENABLED                       # optional — enable/disable migrations
+SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE       # optional — pool sizing
+SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT # optional — pool timeout tuning
+
+SPRING_FLYWAY_ENABLED         # optional — enable/disable migrations
 ```
 
 📄 See: `DATABASE_POSTGRESQL.md`
@@ -70,6 +85,7 @@ JWT_AUDIENCE              # optional — expected audience (if enforced)
 MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE   # actuator endpoints to expose
 MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED  # readiness/liveness probes
 MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS    # never|when_authorized|always
+MANAGEMENT_SERVER_PORT                     # optional — separate actuator port
 ```
 
 📄 See: `OBSERVABILITY_LOGGING.md`
@@ -78,7 +94,9 @@ MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS    # never|when_authorized|always
 
 ## Notes
 
-- **CI variables** live in **GitHub Actions → Variables**
+- **CI feature flags** live in **GitHub Actions → Variables**
+- **Release and publish behavior is job-level gated** (see `RELEASES.md`)
+- **Publishing is blocked** for non-canonical repositories
 - **Runtime variables** are injected via **Render / Helm / Kubernetes**
 - **Secrets are never committed** — use platform secret managers only
 - Defaults are **fail-closed** where applicable

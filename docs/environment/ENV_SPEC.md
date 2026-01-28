@@ -2,7 +2,7 @@
 <!-- markdownlint-disable-file MD036 -->
 <!-- markdownlint-disable-file MD024 -->
 
-# ✅ Repo Variables & Environment Configuration
+# ✅ ENV Spec - Environment Configuration
 
 This document defines **feature flags** and **runtime environment variables**
 used across CI, local development, Render, and future Kubernetes deployments.
@@ -22,16 +22,17 @@ used across CI, local development, Render, and future Kubernetes deployments.
 🔗 See details: **[CI Feature Flags](#-ci-feature-flags-github-actions)**
 
 ```text
-PUBLISH_DOCKER_IMAGE   # optional — true|false — enable Docker image publishing on release tags
-CANONICAL_REPOSITORY   # required* — <owner>/<repo> — only repo allowed to publish artifacts
+PUBLISH_DOCKER_IMAGE     # optional — true|false — enable Docker image publishing on releases
+CANONICAL_REPOSITORY     # required* — <owner>/<repo> — only repo allowed to publish artifacts
 
-PUBLISH_HELM_CHART     # optional — true|false — (future) enable Helm chart publishing
-DEPLOY_ENABLED         # optional — true|false — (future) global deployment kill switch
+PUBLISH_HELM_CHART       # optional — true|false — enable Helm chart publishing (future)
+DEPLOY_ENABLED           # optional — true|false — global deployment kill switch (future)
 
-ENABLE_SEMANTIC_RELEASE  # optional — true|false — gate semantic-release (if used)
+ENABLE_SEMANTIC_RELEASE  # optional — true|false — gate semantic-release execution
 ```
 
-\* Required **only when publishing is enabled** (`PUBLISH_DOCKER_IMAGE=true`)
+\* Required **only when artifact publishing is enabled**
+(`PUBLISH_DOCKER_IMAGE=true` or `PUBLISH_HELM_CHART=true`)
 
 ---
 
@@ -41,11 +42,11 @@ ENABLE_SEMANTIC_RELEASE  # optional — true|false — gate semantic-release (if
 🔗 See details: **[Application runtime](#-application-runtime-all-environments-1)**
 
 ```text
-SPRING_PROFILES_ACTIVE  # required — dev|test|prod — active Spring profile
-SERVER_PORT             # optional — override default server port
+SPRING_PROFILES_ACTIVE   # required — dev|test|prod — active Spring profile
+SERVER_PORT              # optional — override default server port
 
-SPRING_APPLICATION_NAME # optional — app identity in logs/metrics
-SPRING_MAIN_BANNER_MODE # optional — off|console|log — reduce noise in CI
+SPRING_APPLICATION_NAME  # optional — app identity in logs/metrics
+SPRING_MAIN_BANNER_MODE  # optional — off|console|log — reduce noise in CI
 ```
 
 ---
@@ -121,7 +122,7 @@ MANAGEMENT_HEALTH_DB_ENABLED                # optional — true|false — DB hea
 ```text
 LOGGING_LEVEL_ROOT          # optional — e.g. INFO|DEBUG|WARN
 LOGGING_LEVEL_COM_POKEDEX   # optional — package-level override (example)
-LOGGING_PATTERN_CONSOLE     # optional — customize console output
+LOGGING_PATTERN_CONSOLE    # optional — customize console output
 ```
 
 ---
@@ -169,9 +170,9 @@ Legend: ✅ required, ⚪ optional, — not used / not applicable
 | `CANONICAL_REPOSITORY` | — | ✅* | — | — | Required only when publishing is enabled |
 | `PUBLISH_HELM_CHART` | — | ⚪ | — | — | Reserved |
 | `DEPLOY_ENABLED` | — | ⚪ | — | — | Reserved kill switch |
-| `ENABLE_SEMANTIC_RELEASE` | — | ⚪ | — | — | Optional gate for semantic-release |
+| `ENABLE_SEMANTIC_RELEASE` | — | ⚪ | — | — | Release gate |
 
-\* Required only when `PUBLISH_DOCKER_IMAGE=true`
+\* Required only when publishing is enabled
 
 ---
 
@@ -186,40 +187,46 @@ Create these under:
 #### Variables
 
 - `PUBLISH_DOCKER_IMAGE` = `true` | `false`  
-  Controls whether Docker images are published to GHCR on semantic-release tags.
+  Controls whether Docker images are published to GHCR **after a successful release**.
 
 - `CANONICAL_REPOSITORY` = `<owner>/<repo>`  
-  Defines the **single canonical repository** allowed to publish Docker images.
+  Defines the **single canonical repository** allowed to publish artifacts.
 
 ---
 
-#### Behavior
+#### Behavior (current)
 
-**Publishing requires *both* conditions to be true:**
+Docker publishing runs **only if all conditions are met**:
 
-1. `PUBLISH_DOCKER_IMAGE == true`
-2. The workflow is running in `CANONICAL_REPOSITORY`
+1. A semantic-release version (`vX.Y.Z`) was actually published
+2. `PUBLISH_DOCKER_IMAGE == true`
+3. `github.repository == CANONICAL_REPOSITORY`
 
 Outcomes:
 
-- `true` **and** canonical repo → images are built and pushed on `vX.Y.Z` tags
-- `false` → publish job is skipped (no registry login, no push)
-- non-canonical repo → publish job is skipped (safety guard)
+- All conditions met → image is published
+- Any condition fails → publish job is **skipped with a warning summary**
+
+This guard:
+
+- prevents publishing from forks
+- prevents publishing when no release occurred
+- avoids silent no-ops
 
 ---
 
 #### Used by
 
-- `.github/workflows/publish-image.yml`
+- `.github/workflows/release.yml` (publish job)
 
 ---
 
 #### Rationale
 
 - Allows **emergency shutdown** of publishing without code changes
-- Prevents **accidental publishing** from forks or mirrored repositories
+- Prevents **accidental publishing** from forks or mirrors
 - Decouples release versioning (ADR-008) from artifact delivery
-- Makes publishing policy **explicit, auditable, and configuration-driven**
+- Makes publishing policy **explicit, auditable, and observable**
 
 ---
 
@@ -227,16 +234,15 @@ Outcomes:
 
 - `PUBLISH_HELM_CHART` = `true` | `false`
 
-Reserved for future Helm chart publishing workflows.
+Planned behavior (when wired):
 
-Planned behavior:
-
-- `true` → Helm charts published on release tags
-- `false` → chart publishing skipped
+- Runs in the same **publish job**
+- Subject to the same canonical-repo and “version published” guards
+- Skipped with an explanatory summary when disabled
 
 Status:
 
-- **Not currently used**
+- **Scaffolded but not yet implemented**
 - Documented for forward compatibility
 
 ---
@@ -258,20 +264,45 @@ Status:
 
 ---
 
-### semantic-release gate (optional)
+### semantic-release gate
 
 - `ENABLE_SEMANTIC_RELEASE` = `true` | `false`
 
-If your release workflow is gated, this variable acts as an explicit switch.
+Behavior:
 
-Planned usage:
+- `true` → allows push-based releases from `main`
+- `false` → release job is skipped
+- manual `workflow_dispatch` with `enable_release=true` can override per run
 
-- `true` → allow push-based releases (per workflow gating)
-- `false` → skip the release job
+This variable ensures releases are **explicit and intentional**.
 
-Status:
+---
 
-- **Only used if your semantic-release workflow references it**
+## 🧾 CI Job Summaries (important)
+
+Release-related workflows emit **human-readable Job Summaries**:
+
+### Release job summary
+
+Includes:
+
+- Trigger (push vs manual)
+- Branch and repository
+- Release gate values
+- **Dry-run version preview**
+- Final outcome (published / skipped)
+
+### Publish job summary
+
+Includes:
+
+- Canonical repository check (pass/fail)
+- Published version
+- Docker / Helm enablement
+- Clear explanation when publishing is skipped
+
+These summaries appear in the **Summary tab** of GitHub Actions and are the
+primary way to understand *why* CI behaved the way it did.
 
 ---
 
@@ -289,87 +320,99 @@ The same variable names are used across **local**, **Render**, and **Kubernetes*
 
 ## 🧪 Application runtime (all environments)
 
-| Variable                 | Required | Description                                    |
-|--------------------------|----------|------------------------------------------------|
-| `SPRING_PROFILES_ACTIVE` | ✅       | Active Spring profile (`dev`, `test`, `prod`)  |
-| `SERVER_PORT`            | ❌       | Override default server port (optional)        |
-| `SPRING_APPLICATION_NAME` | ❌      | App identity used in logs/metrics (optional)   |
-| `SPRING_MAIN_BANNER_MODE` | ❌      | Banner mode: `off`, `console`, `log`           |
+These variables control **application behavior**, not delivery.
+They are stable across local dev, CI, Render, and Kubernetes.
+
+| Variable | Required | Description |
+|--------|----------|-------------|
+| `SPRING_PROFILES_ACTIVE` | ✅ | Active Spring profile (`dev`, `test`, `prod`) |
+| `SERVER_PORT` | ❌ | Override default server port (often injected by platform) |
+| `SPRING_APPLICATION_NAME` | ❌ | App identity used in logs/metrics |
+| `SPRING_MAIN_BANNER_MODE` | ❌ | Banner mode: `off`, `console`, `log` (often `off` in CI) |
 
 ---
 
 ## 🗄️ Database (PostgreSQL)
 
-| Variable                      | Required | Description |
-|------------------------------|----------|-------------|
-| `SPRING_DATASOURCE_URL`      | ✅       | JDBC connection URL |
-| `SPRING_DATASOURCE_USERNAME` | ✅       | Database username |
-| `SPRING_DATASOURCE_PASSWORD` | ✅       | Database password (**secret**) |
+Used by the application and Flyway migrations in **all environments**.
+
+| Variable | Required | Description |
+|--------|----------|-------------|
+| `SPRING_DATASOURCE_URL` | ✅ | JDBC connection URL |
+| `SPRING_DATASOURCE_USERNAME` | ✅ | Database username |
+| `SPRING_DATASOURCE_PASSWORD` | ✅ | Database password (**secret**) |
 
 ### Pooling (HikariCP)
 
+Connection pool tuning knobs. Defaults are usually fine for dev/test.
+
 | Variable | Required | Description |
-|---|---:|---|
+|--------|----------|-------------|
 | `SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE` | ❌ | Upper bound on DB connections |
 | `SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE` | ❌ | Idle connections to keep |
 | `SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT` | ❌ | How long to wait for a connection |
 
 Notes:
 
-- Pool defaults are often fine for local dev
-- In Render/K8s, pool sizing should match your instance resources and DB limits
+- Pool sizing matters in Render/K8s where resources are constrained
+- Align max pool size with DB connection limits
 
 ### Render Postgres note (SSL)
 
-If you use Render-managed Postgres, you may need SSL in production.
+If using Render-managed Postgres, SSL may be required in production.
 
 Common approaches:
 
 - Include SSL parameters **directly in the JDBC URL**, or
-- Configure SSL via standard Postgres/JDBC settings your deployment platform supports
+- Configure SSL via standard Postgres/JDBC settings supported by the platform
 
-**Recommendation:** Keep SSL configuration “in the URL” so your app stays 12-factor and portable.
+**Recommendation:** Keep SSL configuration in the JDBC URL to preserve 12‑factor portability.
 
 ---
 
 ## 🧭 Flyway (Migrations)
 
+Controls schema migration behavior per environment.
+
 | Variable | Required | Description |
-|---|---:|---|
+|--------|----------|-------------|
 | `SPRING_FLYWAY_ENABLED` | ❌ | Enable/disable migrations at startup |
 | `SPRING_FLYWAY_BASELINE_ON_MIGRATE` | ❌ | Baseline existing schema before migrate |
 | `SPRING_FLYWAY_LOCATIONS` | ❌ | Override migration locations |
 
 Notes:
 
-- Same variables are used by Flyway migrations
-- Values differ per environment (local, CI, Render, Kubernetes)
-- If you later move migrations into a separate “migrate” job, set `SPRING_FLYWAY_ENABLED=false` for the app
+- Same variables apply across local, CI, Render, and Kubernetes
+- If migrations move to a dedicated job later, set `SPRING_FLYWAY_ENABLED=false` for the app
 
 ---
 
 ## 🔐 Security / Authentication
 
-| Variable                 | Required | Description |
-|--------------------------|----------|-------------|
-| `JWT_SECRET`             | ✅       | Secret used to sign JWTs |
-| `JWT_EXPIRATION_SECONDS` | ❌       | Token lifetime override |
-| `JWT_ISSUER`             | ❌       | Expected issuer (if validated) |
-| `JWT_AUDIENCE`           | ❌       | Expected audience (if validated) |
+JWT configuration for authentication.
+
+| Variable | Required | Description |
+|--------|----------|-------------|
+| `JWT_SECRET` | ✅ | Secret used to sign JWTs |
+| `JWT_EXPIRATION_SECONDS` | ❌ | Token lifetime override |
+| `JWT_ISSUER` | ❌ | Expected issuer (if validated) |
+| `JWT_AUDIENCE` | ❌ | Expected audience (if validated) |
 
 Notes:
 
-- Secrets **must** be provided via platform secret storage
+- Secrets **must** come from platform secret managers
 - Never log or echo these values
-- If you enforce issuer/audience validation, treat `JWT_ISSUER` and `JWT_AUDIENCE` as required
+- If issuer/audience validation is enforced, treat them as required
 
 ---
 
 ## 🩺 Observability / Health
 
+Used by platforms and orchestrators for health checks.
+
 | Variable | Required | Description |
-|---|---:|---|
-| `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE` | ❌ | Actuator endpoint exposure |
+|--------|----------|-------------|
+| `MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE` | ❌ | Actuator endpoints to expose |
 | `MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED` | ❌ | Enable readiness/liveness probes |
 | `MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS` | ❌ | Health details: `never`, `when_authorized`, `always` |
 | `MANAGEMENT_SERVER_PORT` | ❌ | Run actuator on a dedicated port |
@@ -384,16 +427,27 @@ Used by:
 
 ## 🧾 Logging
 
+Logging behavior tuning without rebuilds.
+
 | Variable | Required | Description |
-|---|---:|---|
+|--------|----------|-------------|
 | `LOGGING_LEVEL_ROOT` | ❌ | Root log level |
-| `LOGGING_LEVEL_COM_POKEDEX` | ❌ | Package log override (example) |
-| `LOGGING_PATTERN_CONSOLE` | ❌ | Customize console log format |
+| `LOGGING_LEVEL_COM_POKEDEX` | ❌ | Package-level override (example) |
+| `LOGGING_PATTERN_CONSOLE` | ❌ | Customize console output |
 
 Notes:
 
-- Prefer raising verbosity only for targeted packages in prod
-- Keep secrets out of logs (especially request/headers)
+- Prefer targeted package overrides in prod
+- Never log secrets (especially headers or tokens)
+
+---
+
+## Summary
+
+- Runtime variables define **how the app behaves**
+- They are **independent of CI delivery logic**
+- Values vary per environment, names do not
+- Secrets always live outside source control
 
 ---
 
@@ -401,11 +455,11 @@ Notes:
 
 ### Render (Phase 1 – planned)
 
-- Environment variables are configured via the Render dashboard
-- Secrets are stored encrypted by Render
-- If using Render Postgres, ensure your JDBC URL includes any required SSL settings
+- Environment variables configured via the Render dashboard
+- Secrets stored encrypted by Render
+- JDBC URLs may include SSL parameters
 - Health checks should target:
-  - `/actuator/health` or
+  - `/actuator/health`
   - `/actuator/health/readiness`
 
 No CI-controlled deployment occurs in Phase 1 (see ADR-009).
@@ -420,7 +474,7 @@ Environment variables will be injected via:
 - Kubernetes `ConfigMap` (non-secrets)
 - Kubernetes `Secret` (sensitive values)
 
-Helm charts already support:
+Helm charts support:
 
 - image repository + tag injection
 - environment variable templating
@@ -442,7 +496,7 @@ See:
 
 ## Summary
 
-- CI feature flags control **when artifacts are published**
-- Runtime variables control **how the application behaves**
-- Variable names are stable across all platforms
-- Values are always environment-specific and secret-managed
+- CI feature flags control **when releases and publishing occur**
+- Publishing is **job-level gated**, canonical-repo enforced, and fork-safe
+- Runtime variables control **application behavior**, not delivery
+- CI behavior is always explained via **Job Summaries**

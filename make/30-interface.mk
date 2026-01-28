@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# 30-help.mk (30s — Interface)
+# 30-interface.mk (30s — Interface)
 #
 # Responsibility: Public Makefile API discoverability.
 # - help output, usage patterns, docs pointers
@@ -23,6 +23,13 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make bootstrap" "→ first-time setup"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make verify" "→ before pushing"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make run-ci" "→ simulate CI locally (act)"
+	$(call println,)
+
+	$(call println,$(YELLOW)🧑‍💼 Roles (opinionated entrypoints)$(RESET))
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make contributor" "→ run PR-ready checks (verify)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make reviewer" "→ CI-parity checks (quality)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make maintainer" "→ full local confidence (quality + extras)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make help-roles" "→ explain roles and expectations"
 	$(call println,)
 
 	$(call println,$(YELLOW)🧪 Quality gates$(RESET))
@@ -57,9 +64,13 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make act-all-ci" "→ run CI-only workflows (skips image workflows) via act"
 	$(call println,)
 
-	$(call println,$(YELLOW)📦 Helm / Deploy (prep-only)$(RESET))
+	$(call println,$(YELLOW)📦 Delivery (high consequence)$(RESET))
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make helm" "→ prep-only (ADR-009)"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make deploy" "→ not wired yet"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make docker-publish" "→ CI publish hook (guarded; scaffold fails by default)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make helm-publish" "→ CI publish hook (guarded; scaffold fails by default)"
+	$(call println,)
+	@printf "%b\n" "$(GRAY)Note: publish targets are invoked by CI only when feature flags are enabled; they fail locally by default to prevent accidental publishing.$(RESET)"
 	$(call println,)
 
 	$(call println,$(GRAY)Discover more: make help-categories | make help-roles$(RESET))
@@ -90,7 +101,7 @@ explain: ## 🧠 Explain a target: make explain <target>
 	  exit 1; \
 	fi; \
 	$(call section,🧠  explain → $${t}); \
-	case "$$t" in \
+		case "$$t" in \
 	  doctor)  printf "%b\n" "  $(BOLD)doctor$(RESET): runs local sanity checks (java, gradle, docker, colima, socket, env files)";; \
 	  check-env) printf "%b\n" "  $(BOLD)check-env$(RESET): verifies required local env files (.env and ~/.actrc) and permissions";; \
 	  env-init) printf "%b\n" "  $(BOLD)env-init$(RESET): create .env and ~/.actrc from example files (safe, non-destructive)";; \
@@ -99,14 +110,23 @@ explain: ## 🧠 Explain a target: make explain <target>
 	  bootstrap) printf "%b\n" "  $(BOLD)bootstrap$(RESET): env-init + hooks + exec-bits + full quality gate (first-time setup)";; \
 	  verify)  printf "%b\n" "  $(BOLD)verify$(RESET): doctor + lint + test (recommended before pushing)";; \
 	  quality) printf "%b\n" "  $(BOLD)quality$(RESET): doctor + spotlessCheck + clean + check (matches CI intent)";; \
-	  pre-commit) printf "%b\n" "  $(BOLD)pre-commit$(RESET): smart gate (main → quality, other branches → fast gate)";; \
+	  pre-commit) printf "%b\n" "  $(BOLD)pre-commit$(RESET): smart gate (main → strict CI parity, branches → faster checks)";; \
 	  run-ci)  printf "%b\n" "  $(BOLD)run-ci$(RESET): run GitHub Actions workflows locally via act (wf defaults to ci-test; optional job)";; \
+	  act-all) printf "%b\n" "  $(BOLD)act-all$(RESET): run ALL workflows locally via act (heavy; mirrors full CI surface)";; \
+	  act-all-ci) printf "%b\n" "  $(BOLD)act-all-ci$(RESET): run CI-only workflows via act (skips image/publish workflows)";; \
+	  contributor) printf "%b\n" "  $(BOLD)contributor$(RESET): contributor role gate (format + verify)";; \
+	  reviewer) printf "%b\n" "  $(BOLD)reviewer$(RESET): reviewer role gate (CI-parity quality checks)";; \
+	  maintainer) printf "%b\n" "  $(BOLD)maintainer$(RESET): maintainer gate (quality + optional act/helm via flags)";; \
+	  helm) printf "%b\n" "  $(BOLD)helm$(RESET): Helm is prep-only (ADR-009); no publishing or deploys occur";; \
+	  deploy) printf "%b\n" "  $(BOLD)deploy$(RESET): deployment placeholder; intentionally not wired yet";; \
+	  docker-publish) printf "%b\n" "  $(BOLD)docker-publish$(RESET): CI-only publish hook; scaffolded and fails closed by default";; \
+	  helm-publish) printf "%b\n" "  $(BOLD)helm-publish$(RESET): CI-only Helm publish hook; scaffolded and fails closed by default";; \
 	  *) \
 	    printf "%b\n" "$(YELLOW)⚠️  No extended explanation available for '$$t'.$(RESET)"; \
-	    printf "%b\n" "$(GRAY)Known: doctor check-env env-init env-init-force env-help bootstrap verify quality pre-commit run-ci$(RESET)"; \
-	    printf "%b\n" "$(GRAY)More: docs/MAKEFILE.md$(RESET)"; \
+	    printf "%b\n" "$(GRAY)Tip: try 'make help', 'make help-categories', or 'make help-roles'.$(RESET)"; \
+	    printf "%b\n" "$(GRAY)Docs: docs/MAKEFILE.md$(RESET)"; \
 	    ;; \
-	esac; \
+	esac;
 	$(call println,)
 
 debug: ## 🧾 Print effective tool configuration

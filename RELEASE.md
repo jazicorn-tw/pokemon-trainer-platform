@@ -1,23 +1,118 @@
 <!-- markdownlint-disable-file MD036 -->
+<!-- markdownlint-disable-file MD060 -->
 
 # 🚀 Releases (semantic-release)
 
-This repository uses **semantic-release** to automate versioning, changelogs, Git tags, and GitHub Releases.
+This repository uses **semantic-release** to automate versioning, changelogs, Git tags, GitHub Releases,
+and **optionally** downstream artifact publishing (Docker / Helm), all behind explicit CI gates.
+
+---
 
 ## ✅ What happens on release
 
-When a change lands on **`main`**, the release workflow will:
+When a change lands on **`main`** *and releases are enabled*, the release workflow performs:
 
-1. Analyze commit messages (Conventional Commits) to determine the next version
-2. Create a Git tag like `vX.Y.Z`
-3. Generate GitHub Release notes
-4. Build the Spring Boot **bootJar** **as `X.Y.Z`** (not `-SNAPSHOT`)
-5. Upload `build/libs/*.jar` to the GitHub Release
+### Release phase
+
+1. Evaluate **release gates** (repo variables or manual override)
+2. Analyze commit messages (Conventional Commits) to determine the next version
+3. **Preview** the next version (dry-run, no side effects)
+4. Create a Git tag like `vX.Y.Z`
+5. Generate GitHub Release notes
 6. Update `CHANGELOG.md`
 7. Commit the changelog back to `main` as:
-   - `chore(release): X.Y.Z [skip ci]`
 
-> **Note:** The release build passes `-PreleaseVersion=${nextRelease.version}` so the produced JAR filename/version matches the Git tag.
+   ```text
+   chore(release): X.Y.Z [skip ci]
+   ```
+
+### Delivery phase (optional, gated)
+
+After a version is successfully published:
+
+- 🐳 **Docker image publishing** (if enabled)
+- ⎈ **Helm chart publishing** (if enabled)
+
+> Delivery is **decoupled** from versioning. A release may occur without publishing any artifacts.
+
+---
+
+## 🚦 Release gating (important)
+
+Releases **do not run by default**.
+
+The release job executes only when **one of these is true**:
+
+- Repository variable:
+
+  ```text
+  ENABLE_SEMANTIC_RELEASE=true
+  ```
+
+- Manual workflow run with input:
+
+  ```text
+  enable_release=true
+  ```
+
+This prevents accidental releases from routine merges.
+
+---
+
+## 📦 Artifact publishing gates
+
+Artifact publishing is guarded even more strictly.
+
+Docker / Helm publishing runs **only if all conditions are met**:
+
+1. A release version was actually published (`vX.Y.Z`)
+2. The workflow is running in the **canonical repository**
+3. The corresponding feature flag is enabled
+
+### Canonical repository guard
+
+```yaml
+github.repository == vars.CANONICAL_REPOSITORY
+```
+
+This ensures:
+
+- forks can run CI safely
+- **only the official repo** can publish artifacts
+
+### Feature flags
+
+```text
+PUBLISH_DOCKER_IMAGE=true   # enable Docker publishing
+PUBLISH_HELM_CHART=true     # enable Helm publishing
+```
+
+If any gate fails, publishing is **skipped with a warning summary** (not silently ignored).
+
+---
+
+## 🧾 CI summaries (observability)
+
+The workflow emits **human-readable summaries** in GitHub Actions:
+
+### Release job summary
+
+- Trigger (push / manual)
+- Branch and repository
+- Release gates and feature flags
+- Dry-run preview result
+- Final outcome (published / skipped)
+
+### Publish job summary
+
+- Canonical repo check
+- Published version
+- Docker / Helm enablement
+- Gate pass / fail indicators
+
+These appear in the **Summary tab** of each job.
+
+---
 
 ## 🌿 Branch flow
 
@@ -26,11 +121,14 @@ When a change lands on **`main`**, the release workflow will:
 - Promote via PR from `staging` → `main`
 - **Releases are created only from `main`**
 
+---
+
 ## ✍️ Commit message requirements (this is what drives releases)
 
-semantic-release only reacts to **Conventional Commits** on `main` (or the squashed commit message that lands on `main`).
+semantic-release reacts only to **Conventional Commits** on `main`
+(or the squash commit message that lands on `main`).
 
-Use these patterns for the **squash merge commit message** on the PR into `main`:
+Use these patterns for the **squash merge commit message**:
 
 ### Minor release (new features)
 
@@ -52,7 +150,7 @@ feat(release)!: <summary>
 BREAKING CHANGE: <migration notes>
 ```
 
-### No release (docs/chores only)
+### No release (docs / chores only)
 
 ```text
 docs(release): <summary>
@@ -64,111 +162,113 @@ or
 chore(release): <summary>
 ```
 
-## 🧰 One-time setup (required)
+### Releasable commit types
 
-Install dependencies **before running anything else**:
+| Type | Effect |
+|---|---|
+| `feat` | Minor release |
+| `fix` | Patch release |
+| `perf` | Patch release |
+| `breaking change` | Major release |
 
-```bash
-npm install --save-dev \
-  semantic-release \
-  @semantic-release/commit-analyzer \
-  @semantic-release/release-notes-generator \
-  @semantic-release/changelog \
-  @semantic-release/exec \
-  @semantic-release/git \
-  @semantic-release/github
+### Non-releasing commit types
+
+| Type | Effect |
+|---|---|
+| `docs` | No release |
+| `chore` | No release |
+| `test` | No release |
+| `ci` | No release |
+| `refactor` | No release |
+
+### ⚠️ Intentional override for refactors (important)
+
+Refactor-only changes **do not cut releases by default** to reduce version noise.
+
+If you want to **intentionally cut a patch release** for a refactor batch
+(e.g. to create a rollback point or publish a new artifact), use an explicit
+releasable type in the **squash merge commit message**, for example:
+
+```text
+fix(release): internal refactor + stability
 ```
 
-Add script to `package.json`:
+or
 
-```json
-{
-  "scripts": {
-    "release": "semantic-release"
-  }
-}
+```text
+perf(release): refactor for performance
 ```
 
-At this point, semantic-release is installed and usable.
+This keeps releases **explicit and intentional**, even when triggered manually.
 
-## 🧪 Dry run (optional, after setup)
+---
 
-A dry run verifies your config is detected and the version calculation works **without** pushing tags or commits.
+## 🧪 Dry run (local or CI)
 
-From repo root:
+Dry runs calculate the next version **without publishing anything**.
+
+### Local
 
 ```bash
 npm ci
 npx semantic-release --dry-run
 ```
 
-- This **does not** create tags or releases.
-- It is only for confidence and debugging.
-- Real releases happen **only in CI on `main`**.
+### CI
 
-If you’re testing from a non-`main` branch, semantic-release may say it will not publish.
-That’s expected — you’re checking configuration + parsing.
+The release workflow always performs a **dry-run preview step** before publishing.
+This is for visibility only and has no side effects.
 
-## 🧱 Gradle version behavior (SNAPSHOT locally, real versions on release)
-
-Local development stays on SNAPSHOT by default, but release builds can override the version.
-
-In `build.gradle`, set:
-
-```groovy
-// Prefer an explicit release version when provided by CI (semantic-release).
-// Local/dev remains SNAPSHOT by default.
-version = (findProperty('releaseVersion') ?: '0.0.1-SNAPSHOT')
-```
-
-The release workflow (via semantic-release `prepare`) runs:
-
-```bash
-./gradlew --no-daemon -PreleaseVersion=<next version> clean bootJar
-```
+---
 
 ## 🔐 Required GitHub settings
 
-### GitHub App (required for releases)
+### GitHub App (required)
 
-This repo authenticates releases using a **GitHub App** (not the default `GITHUB_TOKEN`).
+Releases authenticate using a **GitHub App**, not the default `GITHUB_TOKEN`.
 
-1) Install the GitHub App on this repository (repo-only install is ideal).
+Add these **repository secrets**:
 
-2) Add these **Repository secrets**:
+- `GH_APP_ID`
+- `GH_APP_PRIVATE_KEY` (full PEM)
 
-   - `GH_APP_ID` — the GitHub App ID
-   - `GH_APP_PRIVATE_KEY` — the full PEM (including `BEGIN/END` lines)
+The workflow mints a short-lived installation token and passes it to semantic-release.
 
-3) The release workflow mints a short-lived installation token and passes it to semantic-release as `GH_TOKEN`.
+### Branch protection (main)
 
-### Branch rules: main must allow release automation
+Because `@semantic-release/git` pushes a changelog commit to `main`,
+the **GitHub App** must be allowed in the **Bypass list** for the `main` ruleset.
 
-Because `@semantic-release/git` pushes a changelog commit to `main`, your `main` ruleset must allow
-the **GitHub App** (release actor) in the **Bypass list**.
+If not configured, releases will fail with protected-branch errors.
 
-If bypass is not configured, releases will fail with a “protected branch update failed” style error.
-
-> If you switch back to `GITHUB_TOKEN`, add **GitHub Actions** to the bypass list instead.
+---
 
 ## 🆘 Troubleshooting
 
-### Release ran but no version was published
+### Release workflow ran but nothing was published
 
-- The commit that landed on `main` was not a Conventional Commit (`feat:`, `fix:`, etc.)
-- Fix: use a Conventional Commit **squash message** for the `staging → main` PR
+- No releasable commits (`docs:` / `chore:` only)
+- This is expected behavior
+- See the **Release Summary** panel for confirmation
+
+### Artifact publishing skipped
+
+- Non-canonical repository (fork)
+- Feature flag disabled
+- No release version published
+
+All cases are surfaced in the **Publish job summary**.
 
 ### Protected branch update failed
 
-- `main` ruleset blocks direct pushes and the release actor isn’t in the bypass list
-- Fix: add the **GitHub App** (or GitHub Actions, if using `GITHUB_TOKEN`) to **Bypass list** for the `main` ruleset
+- GitHub App not allowed to bypass `main` ruleset
+- Add the App to the bypass list
 
-### No JAR attached to GitHub Release
+---
 
-- `bootJar` did not run or output path differs
-- Fix: confirm the release workflow builds `bootJar` and that artifacts are in `build/libs/`
+## 🎯 Design principles
 
-### JAR still ends in `-SNAPSHOT`
-
-- `releaseVersion` was not passed to Gradle
-- Fix: confirm your semantic-release config runs Gradle with `-PreleaseVersion=${nextRelease.version}`
+- Explicit intent over automation magic
+- Versioning decoupled from delivery
+- Fork-safe by default
+- CI explains *why* something happened (or didn’t)

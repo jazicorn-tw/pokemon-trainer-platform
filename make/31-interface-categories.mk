@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# 31-help-categories.mk (30s — Interface)
+# 31-interface-categories.mk (30s — Interface)
 #
 # Responsibility: Help grouping taxonomy (categories).
 #
@@ -26,7 +26,7 @@
 HELP_CATEGORIES_SRC := $(lastword $(MAKEFILE_LIST))
 
 .PHONY: help-categories help-roles \
-        help-onboarding help-env help-quality help-docker help-category-inspection help-act help-ci help-helm
+        help-onboarding help-env help-quality help-docker help-category-inspection help-act help-ci
 
 help-categories: ## 🧭 List available help-* categories
 	$(call section,🧭  Help Categories)
@@ -41,13 +41,17 @@ help-categories: ## 🧭 List available help-* categories
 	@printf "$(GRAY)Tip: run 'make <category>' for focused help, or 'make help' for the curated overview.$(RESET)\n"
 	$(call println,)
 
-help-roles: ## 🧑‍🤝‍🧑 List role-based help entrypoints
-	$(call section,🧑‍🤝‍🧑  Make Roles)
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "help-contributor" "→ onboarding + env + quality (recommended for new contributors)"
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "help-reviewer" "→ CI-relevant targets (review / triage)"
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "help-maintainer" "→ maintainer workflow (ci + act + docker + helm)"
+help-roles: ## 🧑‍💼 Opinionated role/workflow entrypoints
+	$(call section,🧑‍💼  Roles & Workflow Entrypoints)
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "contributor" "→ PR-ready checks (format + verify)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "reviewer" "→ CI-parity checks (quality)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "maintainer" "→ heaviest local confidence (quality + optional act/helm)"
 	$(call println,)
-	@printf "$(GRAY)Note: role aliases are defined in make/32-help-roles.mk.$(RESET)\n"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "dev-up" "→ start local dev prerequisites (env-up)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "dev-down" "→ stop local dev prerequisites (env-down)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "dev-status" "→ show local dev prerequisite status (env-status)"
+	$(call println,)
+	@printf "$(GRAY)Note: role/workflow entrypoints live in make/51-role-entrypoint.mk.$(RESET)\n"
 	$(call println,)
 
 # -------------------------------------------------------------------
@@ -56,8 +60,6 @@ help-roles: ## 🧑‍🤝‍🧑 List role-based help entrypoints
 
 help-onboarding: ## 🧰 First-time setup & onboarding
 	$(call section,🧰  Onboarding & Setup)
-	@printf "  $(BOLD)%-18s$(RESET) %s\n" "demo" "→ onboarding walkthrough"
-	@printf "  $(BOLD)%-18s$(RESET) %s\n" "demo-ci" "→ onboarding walkthrough (no color)"
 	@printf "  $(BOLD)%-18s$(RESET) %s\n" "env-init" "→ create .env + ~/.actrc from examples"
 	@printf "  $(BOLD)%-18s$(RESET) %s\n" "env-help" "→ docs: local environment setup"
 	@printf "  $(BOLD)%-18s$(RESET) %s\n" "bootstrap" "→ first-time setup"
@@ -94,10 +96,10 @@ help-docker: ## 🐳 Docker & database workflows
 	$(call println,)
 
 help-category-inspection: ## 🧭 Inspection / Navigation
-	@printf "$(YELLOW)🧭 Inspection / Navigation$(RESET)\n"
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make tree [path]" "→ inspect repo structure (read-only)"
-	@printf "    %s\n" "Docs: docs/TREE.md"
-	@printf "\n"
+	$(call section,🧭  Inspection / Navigation)
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "tree [path]" "→ inspect repo structure (read-only)"
+	@printf "  $(GRAY)%s$(RESET)\n" "Docs: docs/TREE.md"
+	$(call println,)
 
 help-act: ## 🧪 Local CI with act
 	$(call section,🧪  act — Local GitHub Actions)
@@ -115,11 +117,4 @@ help-ci: ## 🧰 CI-relevant targets only
 	@printf "  $(BOLD)%-12s$(RESET) %s\n" "test-ci" "→ clean test (CI-like)"
 	@printf "  $(BOLD)%-12s$(RESET) %s\n" "run-ci" "→ run workflows via act"
 	@printf "  $(BOLD)%-12s$(RESET) %s\n" "list-ci" "→ list act jobs"
-	$(call println,)
-
-help-helm: ## 📦 Helm & deploy (prep-only)
-	$(call section,📦  Helm & Deploy (prep-only))
-	@printf "  $(BOLD)%-16s$(RESET) %s\n" "helm" "→ prep-only (ADR-009)"
-	@printf "  $(BOLD)%-16s$(RESET) %s\n" "helm-lint" "→ lint chart (if wired)"
-	@printf "  $(BOLD)%-16s$(RESET) %s\n" "deploy" "→ not wired yet"
 	$(call println,)

@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# 32-help-roles.mk (30s — Interface)
+# 32-interface-roles.mk (30s — Interface)
 #
 # Responsibility: Help grouping for roles/personas.
 #

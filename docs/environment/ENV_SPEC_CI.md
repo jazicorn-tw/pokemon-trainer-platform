@@ -27,28 +27,92 @@ It intentionally **excludes local-only configuration** (Docker Desktop, Colima,
 - Secrets are **always platform-managed**
 - Defaults are **fail-closed**
 - CI is **stricter than local development**
+- CI must be able to explain _why_ an action did or did not occur
 
 ---
 
 ## 🔀 CI & Platform Feature Flags
 
 These variables control **whether CI performs irreversible actions** such as
-publishing artifacts or deploying infrastructure.
+publishing artifacts, cutting releases, or deploying infrastructure.
 
 ```text
-PUBLISH_DOCKER_IMAGE     # true|false — allow Docker image publishing
-CANONICAL_REPOSITORY    # <owner>/<repo> — only repo allowed to publish artifacts
+# Release control
+ENABLE_SEMANTIC_RELEASE   # true|false — allow semantic-release execution on main
+                          # (manual workflow_dispatch may override per run)
 
-PUBLISH_HELM_CHART      # true|false — (future) allow Helm publishing
-DEPLOY_ENABLED          # true|false — (future) global deployment kill switch
-ENABLE_SEMANTIC_RELEASE # true|false — gate semantic-release execution
+# Artifact publishing
+PUBLISH_DOCKER_IMAGE      # true|false — allow Docker image publishing
+PUBLISH_HELM_CHART        # true|false — allow Helm chart publishing (future)
+
+# Safety / scope
+CANONICAL_REPOSITORY      # <owner>/<repo> — only repo allowed to publish artifacts
+
+# Deployment (future)
+DEPLOY_ENABLED            # true|false — global deployment kill switch
 ```
 
 ### Rules
 
-- Publishing or deployment **must be explicitly enabled**
-- If a flag is unset, the behavior is **disabled**
-- Non-canonical repositories are always blocked
+- Publishing, releasing, or deployment **must be explicitly enabled**
+- If a flag is unset or false, the behavior is **disabled**
+- Artifact publishing is **never allowed** from non-canonical repositories
+- Forks may run CI safely but can never publish
+
+---
+
+## 🧠 CI Gating Semantics (Important)
+
+### Release gating
+
+The release workflow evaluates release intent explicitly:
+
+A release job may run **only if**:
+
+- `ENABLE_SEMANTIC_RELEASE=true`, **or**
+- a manual `workflow_dispatch` run sets `enable_release=true`
+
+If neither is true, the release job is skipped with an explanatory summary.
+
+### Publishing gating (job-level)
+
+Publishing occurs in a **separate CI job** and requires **all** of the following:
+
+1. A release version (`vX.Y.Z`) was actually published
+2. The workflow is running in the canonical repository
+3. The relevant publish flag is enabled
+
+```yaml
+github.repository == vars.CANONICAL_REPOSITORY
+```
+
+If any condition fails:
+
+- publishing is skipped
+- a **warning summary** is emitted explaining why
+
+---
+
+## 🧾 CI Job Summaries (Observability)
+
+Release-related workflows emit **human-readable Job Summaries** in GitHub Actions.
+
+### Release job summary includes
+
+- Trigger (push vs manual)
+- Branch and repository
+- Release gate values
+- **Dry-run version preview**
+- Final outcome (published / skipped)
+
+### Publish job summary includes
+
+- Canonical repository check (pass/fail)
+- Published version (if any)
+- Docker / Helm enablement
+- Explicit explanation when publishing is skipped
+
+These summaries are the **primary debugging surface** for CI behavior.
 
 ---
 
@@ -60,19 +124,22 @@ These variables are expected to exist **only in CI**.
 CI                      # true — set automatically by CI runners
 GITHUB_ACTIONS          # true — GitHub Actions environment
 GITHUB_REF              # branch or tag ref
+GITHUB_REF_NAME         # short ref name
 GITHUB_SHA              # commit SHA
+GITHUB_REPOSITORY       # owner/repo
 ```
 
 Notes:
 
-- These values must never be relied on in application runtime code
+- These values must **never** be relied on in application runtime code
 - They are valid **only during workflow execution**
+- Application logic must not branch on CI-specific variables
 
 ---
 
 ## ☁️ Hosted Runtime Platforms (Render / AWS / Cloud)
 
-Variables typically injected by managed platforms.
+Variables typically injected by managed hosting platforms.
 
 ```text
 PORT                    # platform-provided port (Render)
@@ -83,8 +150,8 @@ AWS_REGION              # AWS region (if applicable)
 Rules:
 
 - Platform-provided ports **must be respected**
-- Applications must not assume fixed ports in prod
-- Presence-based flags (`RENDER=true`) are acceptable for diagnostics only
+- Applications must not assume fixed ports in production
+- Presence-based flags (`RENDER=true`) are acceptable **for diagnostics only**
 
 ---
 
@@ -119,8 +186,14 @@ Common examples:
 ```text
 JWT_SECRET
 DATABASE_PASSWORD
+GH_APP_PRIVATE_KEY
 GHCR_TOKEN
 ```
+
+Rules:
+
+- Secrets must never appear in logs or summaries
+- CI summaries must redact or avoid secret-derived values
 
 ---
 
@@ -137,6 +210,7 @@ Rules:
 
 - Health endpoints must be reachable without auth (platform-scoped)
 - Failure to report health should prevent traffic routing
+- Health misconfiguration is considered a deployment failure
 
 ---
 
@@ -148,6 +222,7 @@ The following must **never** be required in remote environments:
 - interactive prompts
 - host-specific paths
 - Docker Desktop / Colima assumptions
+- local filesystem secrets
 
 ---
 
@@ -156,6 +231,7 @@ The following must **never** be required in remote environments:
 - `ENV_SPEC.md` — Authoritative variable specification
 - `ENV_QUICK_REFERENCE.md` — High-level index
 - `CI_FEATURE_FLAGS.md` — Detailed CI gating behavior
+- `ENV_SPEC.md` — Full variable matrix (local + remote)
 - `PLATFORM_NOTES.md` — Platform-specific nuances
 
 ---
@@ -164,5 +240,6 @@ The following must **never** be required in remote environments:
 
 - This spec governs **remote, non-local environments**
 - CI and hosted platforms inject configuration
-- Publishing and deployment are always **opt-in**
-- Secrets are platform-managed and never committed
+- Releasing, publishing, and deployment are always **opt-in**
+- Canonical-repo enforcement prevents unsafe publishing
+- CI always explains _why_ an action did or did not occur

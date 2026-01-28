@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# 51-roles.mk (Roles entrypoints)
+# 51-role-entrypoint.mk (Roles entrypoints)
 #
 # Responsibility: Role-based orchestration targets (e.g., contributor/maintainer).
 #
@@ -21,11 +21,20 @@
 #   make maintainer
 # -------------------------------------------------------------------
 
-.PHONY: contributor reviewer maintainer
+.PHONY: dev-up dev-down dev-status contributor reviewer maintainer
 
 # Allow devs to skip expensive parts explicitly (still defaults to safe).
 RUN_ACT ?= 1
 RUN_HELM ?= 0
+
+dev-up: ## 🔼 Start local dev prerequisites (env-up)
+	@$(MAKE) --no-print-directory env-up
+
+dev-down: ## 🔽 Stop local dev prerequisites (env-down)
+	@$(MAKE) --no-print-directory env-down
+
+dev-status: ## 📋 Show local dev env status (env-status)
+	@$(MAKE) --no-print-directory env-status
 
 contributor: ## 🧑‍💻 Run contributor gate (verify)
 	@$(MAKE) --no-print-directory format verify
