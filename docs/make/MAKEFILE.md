@@ -1,141 +1,150 @@
-# 🧰 Makefile Commands Overview
+<!-- markdownlint-disable MD036 -->
 
-This project uses a small set of **simple, memorable Makefile commands** to standardize local development and provide **fast feedback aligned with CI**, as defined in **ADR-000**.
+# 🛠️ Makefile Guide
 
-Formatting, linting, static analysis, and tests together form a **single quality gate**.
-CI is the **authoritative enforcer** of that gate.
+This repository uses **GNU Make** as a **developer-experience framework**, not a collection of ad-hoc shell aliases.
 
----
+The Makefile system is intentionally structured, layered, and documented.  
+This file explains **how to use Make** and **how to navigate the Makefile system** — not the detailed decade semantics.
 
-## ✅ What this gives you
-
-### Simple, memorable commands
-
-| Command          | Purpose                        |
-| ---------------- | ------------------------------ |
-| `make help`      | List available targets         |
-| `make hooks`     | Install repo-local git hooks   |
-| `make doctor`    | Environment sanity (local)     |
-| `make lint`      | Static analysis                |
-| `make test`      | Unit tests                     |
-| `make quality`   | Matches CI intent              |
-| `make verify`    | “Am I good to push?”           |
-| `make bootstrap` | First-time setup               |
-| `make test-ci`   | CI-parity run (no auto-format) |
+The decade contract itself lives in a **dedicated document** and is treated as authoritative.
 
 ---
 
-## 🔍 What each command actually runs
+## 🎯 What Make is (and is not)
 
-### `make help`
+**Make is:**
 
-Prints a quick list of the most common targets.
+- A stable, documented CLI for developers
+- A local mirror of CI behavior
+- A way to encode guardrails and intent
+- A coordination layer over scripts and tools
 
----
+**Make is not:**
 
-### `make hooks`
+- A replacement for CI
+- A dumping ground for one-off commands
+- A place to restate architectural contracts
 
-Sets up local safeguards.
-
-- Installs repo-local git hooks (`core.hooksPath = .githooks`)
-- Ensures hook files are executable
-- Ensures `scripts/*.sh` are executable (prevents `Permission denied` when running `make doctor/quality`)
-
-Run once after cloning.
-
----
-
-### `make doctor`
-
-Runs **local environment sanity checks** (Java 21, Gradle wrapper, Docker/Colima, memory, socket health).
-
-- Fails fast if infrastructure is misconfigured
-- Never blocks CI (doctor should exit early when `CI=true`)
-- Keeps errors actionable (tells you what to run next)
-- Uses `bash ./scripts/doctor.sh` so you don’t get blocked by a missing executable bit
-- Also runs `make exec-bits` first (warns if tracked scripts lost the executable bit in git)
-
-See: [`PRECHECK.md`](./PRECHECK.md)
+CI remains the source of truth.  
+Make exists to provide **fast, local feedback**.
 
 ---
 
-### `make exec-bits`
-
-Checks that tracked scripts are **executable in Git** (mode `100755`), so teammates/CI don’t hit `Permission denied`.
-
-- Warns locally by default
-- In CI, set `STRICT=1` to fail fast
-
-If `scripts/check-executable-bits.sh` doesn’t exist yet, this target prints a skip message.
-
----
-
-### `make quality` (full local quality gate)
-
-Runs a **local approximation of the CI quality gate**, with developer-friendly behavior:
-
-1. **Environment sanity**
-   - `make doctor` → `bash ./scripts/doctor.sh`
-
-2. **Formatting (local convenience)**
-   - `./gradlew spotlessApply`
-   - Auto-formats code to avoid format-only CI failures
-   - Clears Gradle configuration cache after formatting to avoid cache-related surprises
-
-3. **Verification, linting & static analysis**
-   - `./gradlew clean check`
-   - Includes:
-     - Spotless (format verification)
-     - Checkstyle
-     - PMD
-     - SpotBugs
-     - Tests
-
-⚠️ **Source of truth**
-
-CI always runs:
+## 🚀 Quick start
 
 ```bash
-./gradlew clean check
+make help
 ```
 
-CI does **not** auto-format and is the only authoritative quality gate.
-
----
-
-### `make verify`
-
-Runs **everything a developer should check before pushing**:
-
-1. Environment sanity (`make doctor`)
-2. Static analysis (`make lint`)
-3. Unit tests (`make test`)
-
-This is a **developer-experience umbrella command**, not a CI replacement.
-
----
-
-### `make test-ci`
-
-Runs the CI-style gate locally (no auto-format), useful for reproducing CI failures:
+Common entry points:
 
 ```bash
-CI=true SPRING_PROFILES_ACTIVE=test ./gradlew clean check
+make doctor      # Environment capability checks
+make verify      # CI-aligned correctness checks
+make start       # Start local runtime prerequisites
+make run-ci      # Simulate CI locally via act
 ```
 
 ---
 
-## 📌 Recommended usage
+## 🧭 Repository structure
 
-- Run `make hooks` once after cloning
-- Run `make quality` before pushing any change
-- Use `make test` during day-to-day development
-- Use `make verify` when you want confidence before opening a PR
+Makefiles live under the `make/` directory and are loaded in numeric order.
 
-For first-time setup, prefer:
-
-```bash
-make bootstrap
+```text
+make/
+├── 00-kernel.mk
+├── 10-presentation.mk
+├── 20-configuration.mk
+├── 30-interface.mk
+├── 31-interface-categories.mk
+├── 32-interface-roles.mk
+├── 40-preconditions.mk
+├── 50-library.mk
+├── 51-role-entrypoints.mk
+├── 60-verification.mk
+├── 70-runtime.mk
+├── 71-runtime-lifecycle.mk
+├── 80-simulation.mk
+├── 81-tree.mk
+└── 90-delivery.mk
 ```
 
-This installs hooks **and** verifies the full local quality gate passes on your machine.
+The numeric prefixes are **not arbitrary**.  
+They represent responsibility layers that scale over time.
+
+---
+
+## 🧱 Decade model (authoritative source)
+
+This file intentionally **does not** define decade responsibilities.
+
+The canonical definition lives here:
+
+- 📄 `docs/make/MAKEFILE_DECADES.md` (authoritative)
+
+If there is ever a discrepancy between this guide and the decade document,  
+**the decade document wins**.
+
+---
+
+## 🧪 The `doctor` model
+
+`doctor` answers a single question:
+
+> *Is this machine capable of working on this repository?*
+
+```bash
+make doctor
+```
+
+Doctor:
+
+- Runs local-only checks
+- Fails fast with actionable errors
+- Can emit structured JSON for automation
+
+Doctor is advisory.  
+CI remains authoritative.
+
+---
+
+## 🔍 Mental model
+
+Think in layers:
+
+- **Interface (30s)** → what users invoke
+- **Verification (60s)** → correctness
+- **Runtime (70s)** → local services
+- **Simulation (80s)** → CI parity
+- **Delivery (90s)** → shipping
+
+If a target feels out of place, it probably is.
+
+---
+
+## 🧠 Adding new targets
+
+When adding a target:
+
+- Choose the **correct decade**
+- Prefer reuse via `50-library.mk`
+- Keep interface targets stable
+- Document intent when placement is non-obvious
+
+If placement is unclear, consult the decade guide **before** adding a new band.
+
+---
+
+## Philosophy
+
+This Makefile system favors:
+
+- Explicit structure over convenience
+- Stable contracts over churn
+- Clear intent over clever shortcuts
+
+If a command matters, it should be:
+
+> **One Make target away — and in the right layer**
