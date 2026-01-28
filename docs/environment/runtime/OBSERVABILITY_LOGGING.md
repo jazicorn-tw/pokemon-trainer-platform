@@ -1,0 +1,24 @@
+# 🩺 Observability & Logging
+
+## Actuator / Health
+
+```text
+MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS
+MANAGEMENT_SERVER_PORT
+MANAGEMENT_HEALTH_DB_ENABLED
+```
+
+## Logging
+
+```text
+LOGGING_LEVEL_ROOT
+LOGGING_LEVEL_COM_POKEDEX
+LOGGING_PATTERN_CONSOLE
+```
+
+## Notes
+
+- Prefer targeted log-level overrides in prod
+- Health probes are required for Kubernetes
