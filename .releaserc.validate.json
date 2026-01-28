@@ -1,0 +1,125 @@
+{
+  "purpose": "Human-readable validation + rationale for .releaserc.json (future-you insurance). This file is not used by semantic-release; it's documentation in JSON form so it can be linted/queried.",
+  "assumptions": [
+    "Releases are cut only from main.",
+    "Tags use the vX.Y.Z format.",
+    "Gradle builds should publish a non-SNAPSHOT bootJar whose version matches the release tag.",
+    "CHANGELOG.md is the single changelog source of truth committed back to main.",
+    "GitHub Releases should attach the built JAR from build/libs/*.jar.",
+    "Authentication in CI uses a GitHub App token (GH_APP_ID + GH_APP_PRIVATE_KEY) and passes it as GH_TOKEN/GITHUB_TOKEN."
+  ],
+  "config_review": {
+    "branches": {
+      "value": [
+        "main"
+      ],
+      "why": "Ensures semantic-release only publishes from main. Matches your dev\u2192staging\u2192main promotion flow and prevents accidental releases from feature branches."
+    },
+    "tagFormat": {
+      "value": "v${version}",
+      "why": "Produces familiar SemVer tags like v1.2.3. Aligns with GitHub Releases, changelog links, and downstream publish triggers."
+    }
+  },
+  "plugins_rationale": [
+    {
+      "plugin": "@semantic-release/commit-analyzer",
+      "role": "Determines whether a release happens and what type (major/minor/patch) by analyzing Conventional Commits.",
+      "why_in_this_repo": [
+        "Your repository uses conventional commits + squash-merge discipline to drive releases.",
+        "Explicit releaseRules keep docs/chores/tests from cutting releases.",
+        "Treating refactor as patch is a deliberate choice to ship safer, smaller version increments."
+      ],
+      "notes": [
+        "Major releases are triggered by breaking changes (e.g., 'feat!:' or 'BREAKING CHANGE:').",
+        "If you ever add commit types (style/build), decide whether they should release."
+      ]
+    },
+    {
+      "plugin": "@semantic-release/release-notes-generator",
+      "role": "Generates human-friendly release notes from commits selected for the release.",
+      "why_in_this_repo": [
+        "Keeps GitHub Release notes consistent and automatic.",
+        "Pairs with changelog generation for a single narrative."
+      ]
+    },
+    {
+      "plugin": "@semantic-release/changelog",
+      "role": "Updates CHANGELOG.md during the prepare step.",
+      "why_in_this_repo": [
+        "CHANGELOG.md is committed back to main so it stays in sync with tags and releases.",
+        "Makes changelog maintenance automatic and repeatable."
+      ],
+      "expected_files": [
+        "CHANGELOG.md"
+      ]
+    },
+    {
+      "plugin": "@semantic-release/exec",
+      "role": "Runs project-specific build steps using the calculated nextRelease.version.",
+      "why_in_this_repo": [
+        "Builds a Spring Boot bootJar with a version that matches the Git tag (not -SNAPSHOT).",
+        "Ensures the artifact attached to the GitHub Release corresponds exactly to the released version."
+      ],
+      "prepareCmd": "./gradlew --no-daemon -PreleaseVersion=${nextRelease.version} clean bootJar",
+      "contracts": [
+        "Gradle must honor -PreleaseVersion (or the property name used here).",
+        "The bootJar output must land in build/libs/."
+      ]
+    },
+    {
+      "plugin": "@semantic-release/github",
+      "role": "Creates/updates the GitHub Release and uploads release assets.",
+      "why_in_this_repo": [
+        "Attaches build/libs/*.jar to the GitHub Release for easy consumption.",
+        "Uses GitHub App auth in CI to bypass protections and avoid GITHUB_TOKEN limitations."
+      ],
+      "assets": [
+        {
+          "path": "build/libs/*.jar",
+          "label": "Spring Boot JAR (bootJar)"
+        }
+      ]
+    },
+    {
+      "plugin": "@semantic-release/git",
+      "role": "Commits back generated files (e.g., CHANGELOG.md) to the release branch.",
+      "why_in_this_repo": [
+        "Keeps CHANGELOG.md in repo history aligned with releases.",
+        "Uses [skip ci] to avoid triggering CI loops on the changelog commit."
+      ],
+      "assets": [
+        "CHANGELOG.md"
+      ],
+      "message_template": "chore(release): ${nextRelease.version} [skip ci]\\n\\n${nextRelease.notes}",
+      "branch_protection_note": "The GitHub App (or GitHub Actions) must be allowed to bypass main branch protections for this commit to succeed."
+    }
+  ],
+  "release_rules_commentary": {
+    "refactor_as_patch": {
+      "current_policy": "refactor commits do NOT trigger releases by default.",
+      "why": [
+        "Reduces release noise from large internal refactors.",
+        "Keeps version history focused on externally meaningful changes."
+      ],
+      "how_to_force_release_when_needed": [
+        "Use an explicit releasable commit type in the squash merge to main.",
+        "Recommended patterns:",
+        "  - fix(release): internal refactor + stability",
+        "  - perf(release): refactor for performance"
+      ],
+      "manual_release_note": [
+        "The workflow supports manual execution via workflow_dispatch with enable_release=true.",
+        "Manual execution still respects commit-analyzer rules; a releasable commit is required."
+      ],
+      "tradeoff_acknowledged": [
+        "Refactor-only changes will not automatically produce a versioned artifact.",
+        "When a rollback point is desired, the release intent must be explicit in the commit message."
+      ]
+    }
+  },
+  "checks_you_can_run": [
+    "npx semantic-release --dry-run",
+    "Verify expected next version and that it would publish only on main.",
+    "Confirm build/libs/*.jar exists after the exec prepareCmd in CI logs."
+  ]
+}
