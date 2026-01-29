@@ -40,6 +40,59 @@ fi
 cz check --commit-msg-file "$1"
 
 # ---------------------------------------------------------------------
+# 1.5) Guard: reserve (release) scope for automation only
+# ---------------------------------------------------------------------
+#
+# Rationale:
+# - Humans should never manually create release-scoped commits
+# - semantic-release uses `chore(release): x.y.z [skip ci]`
+# - CI automation must be allowed
+#
+# Escape hatch (rare, intentional):
+#   ALLOW_RELEASE_SCOPE=1 git commit ...
+# ---------------------------------------------------------------------
+
+header="$(head -n 1 "$1" | tr -d '\r')"
+
+if [[ "${header}" =~ ^[a-zA-Z0-9]+\(release\): ]]; then
+  # Always allow CI automation
+  if [[ "${CI:-}" == "true" ]]; then
+    :
+  # Explicit local override (discouraged, but intentional)
+  elif [[ "${ALLOW_RELEASE_SCOPE:-0}" == "1" ]]; then
+    :
+  else
+    cat >&2 <<'EOF'
+
+❌ Invalid commit scope: (release)
+
+The (release) scope is **reserved for CI automation only**.
+
+This repository treats releases as an operational concern handled by
+semantic-release and GitHub Actions.
+
+✅ Use one of these instead:
+
+  • CI / wiring changes:
+      chore(ci): <description>
+
+  • Release documentation or intent:
+      docs(release-notes): <description>
+
+  • General changes:
+      refactor: <description>
+      docs: <description>
+
+If you intend to publish a release, do so via the release workflow —
+not a manual commit message.
+
+EOF
+    exit 1
+  fi
+fi
+
+
+# ---------------------------------------------------------------------
 # 2) Release-trigger confirmation (synced to semantic-release if available)
 # ---------------------------------------------------------------------
 # Opt-out for one commit:

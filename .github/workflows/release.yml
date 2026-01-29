@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      published_version: ${{ steps.semrel.outputs.published_version }}
+      published_version: ${{ steps.semrel-publish.outputs.published_version }}
       preview_next_version: ${{ steps.semrel-preview.outputs.next_version }}
 
     # Gate releases behind an explicit boolean.
@@ -53,6 +53,28 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/empty-git-hooks
           git config core.hooksPath /tmp/empty-git-hooks
+
+      # ------------------------------------------------------------
+      # Runner temp dirs (act only)
+      # ------------------------------------------------------------
+
+      - name: Ensure runner temp dirs (act only)
+        if: ${{ github.actor == 'nektos/act' }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/runner-temp /tmp/runner-tool-cache
+          echo "RUNNER_TEMP=/tmp/runner-temp" >> "$GITHUB_ENV"
+          echo "RUNNER_TOOL_CACHE=/tmp/runner-tool-cache" >> "$GITHUB_ENV"
+
+      # ------------------------------------------------------------
+      # Gradle cache isolation (important for act stability)
+      # ------------------------------------------------------------
+
+      - name: Set Gradle user home
+        run: |
+          set -euo pipefail
+          # Prefer RUNNER_TEMP when available; fall back to /tmp for portability.
+          echo "GRADLE_USER_HOME=${RUNNER_TEMP:-/tmp}/gradle-home" >> "$GITHUB_ENV"
 
       - name: Generate GitHub App token
         id: app-token
@@ -79,6 +101,7 @@ jobs:
 
       - name: Release gate summary
         run: |
+          set -euo pipefail
           echo "::group::🚦 Release gate evaluation"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🚦 Release gate evaluation"
@@ -89,8 +112,8 @@ jobs:
           echo "Repo gate var:      ${{ vars.ENABLE_SEMANTIC_RELEASE || 'unset' }}"
           echo "Docker publish var: ${{ vars.PUBLISH_DOCKER_IMAGE || 'unset' }}"
           echo "Helm publish var:   ${{ vars.PUBLISH_HELM_CHART || 'unset' }}"
-          echo "Canonical repo:    ${{ vars.CANONICAL_REPOSITORY || 'unset' }}"
-          echo "This repo:         ${{ github.repository }}"
+          echo "Canonical repo:     ${{ vars.CANONICAL_REPOSITORY || 'unset' }}"
+          echo "This repo:          ${{ github.repository }}"
           echo ""
           echo "Gate result: ALLOWED"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -123,21 +146,12 @@ jobs:
 
       - name: Gradle (act only — lightweight)
         if: ${{ github.actor == 'nektos/act' }}
-        env:
-          # Keep Gradle isolated & predictable under act
-          GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
         run: |
           set -euo pipefail
           echo "::group::🐘 Gradle (act)"
+          echo "GRADLE_USER_HOME=${GRADLE_USER_HOME}"
           ./gradlew --version
           echo "::endgroup::"
-
-      - name: Ensure runner temp dirs (act only)
-        if: ${{ github.actor == 'nektos/act' }}
-        run: |
-          mkdir -p /tmp/runner-temp /tmp/runner-tool-cache
-          echo "RUNNER_TEMP=/tmp/runner-temp" >> "$GITHUB_ENV"
-          echo "RUNNER_TOOL_CACHE=/tmp/runner-tool-cache" >> "$GITHUB_ENV"
 
       - name: Set up Node (CI only)
         if: ${{ github.actor != 'nektos/act' }}
@@ -190,8 +204,29 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "::endgroup::"
 
-      - name: Run semantic-release
+      - name: Run semantic-release (act dry-run only)
+        if: ${{ github.actor == 'nektos/act' }}
         id: semrel
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          echo "::group::🚫 semantic-release (act) — dry-run only (no publish)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🚫 semantic-release (act) — dry-run only (no publish)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          # Never publish from local act runs.
+          npx semantic-release --dry-run --no-ci | tee semantic-release.log
+          echo "::endgroup::"
+
+          # Intentionally do NOT set published_version in act mode.
+
+      - name: Run semantic-release (publish)
+        if: ${{ github.actor != 'nektos/act' }}
+        id: semrel-publish
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -226,8 +261,8 @@ jobs:
           echo "📦 Release outcome"
           echo ""
 
-          if [ "${{ steps.semrel.outputs.published_version }}" != "" ]; then
-            echo "✅ Published: ${{ steps.semrel.outputs.published_version }}"
+          if [ "${{ steps.semrel-publish.outputs.published_version }}" != "" ]; then
+            echo "✅ Published: ${{ steps.semrel-publish.outputs.published_version }}"
           elif [ "${{ steps.semrel-preview.outputs.next_version }}" != "" ]; then
             echo "ℹ️ No publish detected. Preview suggested: ${{ steps.semrel-preview.outputs.next_version }}"
             echo "   (Common cause: semantic-release found no releasable commits or publish step exited early.)"
@@ -237,11 +272,10 @@ jobs:
 
           echo ""
           echo "Where to look:"
-          echo "  - semantic-release.log      (publish run)"
+          echo "  - semantic-release.log        (publish run)"
           echo "  - semantic-release-dryrun.log (preview run)"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-      
       - name: Write release summary (job summary)
         if: always()
         run: |
@@ -258,9 +292,9 @@ jobs:
             echo "- PUBLISH_DOCKER_IMAGE: **${{ vars.PUBLISH_DOCKER_IMAGE || 'unset' }}**"
             echo "- PUBLISH_HELM_CHART: **${{ vars.PUBLISH_HELM_CHART || 'unset' }}**"
             echo ""
-            if [ "${{ steps.semrel.outputs.published_version }}" != "" ]; then
+            if [ "${{ steps.semrel-publish.outputs.published_version }}" != "" ]; then
               echo "## Outcome"
-              echo "✅ Published version **${{ steps.semrel.outputs.published_version }}**"
+              echo "✅ Published version **${{ steps.semrel-publish.outputs.published_version }}**"
             elif [ "${{ steps.semrel-preview.outputs.next_version }}" != "" ]; then
               echo "## Outcome"
               echo "ℹ️ No release published"
@@ -284,7 +318,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
 
       - name: Publish summary
         run: |

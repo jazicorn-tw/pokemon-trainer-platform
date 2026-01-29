@@ -1,23 +1,25 @@
 {
-  "purpose": "Human-readable validation + rationale for .releaserc.json (future-you insurance). This file is not used by semantic-release; it's documentation in JSON form so it can be linted/queried.",
+  "purpose": "Human-readable validation + rationale for .releaserc.json (future-you insurance). This file is NOT used by semantic-release; it is documentation in JSON form so it can be linted/queried.",
+  "last_updated": "2026-01-28",
   "assumptions": [
     "Releases are cut only from main.",
     "Tags use the vX.Y.Z format.",
-    "Gradle builds should publish a non-SNAPSHOT bootJar whose version matches the release tag.",
+    "Phase 0 safety: semantic-release execution is gated in CI via an explicit boolean (e.g., ENABLE_SEMANTIC_RELEASE=false by default).",
+    "Gradle release builds should publish a non-SNAPSHOT bootJar whose version matches the release tag.",
     "CHANGELOG.md is the single changelog source of truth committed back to main.",
     "GitHub Releases should attach the built JAR from build/libs/*.jar.",
-    "Authentication in CI uses a GitHub App token (GH_APP_ID + GH_APP_PRIVATE_KEY) and passes it as GH_TOKEN/GITHUB_TOKEN."
+    "Authentication in CI uses a GitHub App token (GH_APP_ID + GH_APP_PRIVATE_KEY) and passes it as GH_TOKEN."
   ],
   "config_review": {
     "branches": {
       "value": [
         "main"
       ],
-      "why": "Ensures semantic-release only publishes from main. Matches your dev\u2192staging\u2192main promotion flow and prevents accidental releases from feature branches."
+      "why": "Ensures semantic-release only publishes from main. Matches your dev→staging→main promotion flow and prevents accidental releases from feature branches."
     },
     "tagFormat": {
       "value": "v${version}",
-      "why": "Produces familiar SemVer tags like v1.2.3. Aligns with GitHub Releases, changelog links, and downstream publish triggers."
+      "why": "Produces familiar SemVer tags like v1.2.3. Aligns with GitHub Releases and downstream publish triggers."
     }
   },
   "plugins_rationale": [
@@ -25,13 +27,13 @@
       "plugin": "@semantic-release/commit-analyzer",
       "role": "Determines whether a release happens and what type (major/minor/patch) by analyzing Conventional Commits.",
       "why_in_this_repo": [
-        "Your repository uses conventional commits + squash-merge discipline to drive releases.",
+        "You use Conventional Commits + squash-merge discipline to drive releases.",
         "Explicit releaseRules keep docs/chores/tests from cutting releases.",
-        "Treating refactor as patch is a deliberate choice to ship safer, smaller version increments."
+        "Refactor is explicitly non-releasing to reduce noise during Phase 0/early build-out."
       ],
       "notes": [
         "Major releases are triggered by breaking changes (e.g., 'feat!:' or 'BREAKING CHANGE:').",
-        "If you ever add commit types (style/build), decide whether they should release."
+        "If you add commit types (style/build), decide whether they should release."
       ]
     },
     {
@@ -71,7 +73,7 @@
       "role": "Creates/updates the GitHub Release and uploads release assets.",
       "why_in_this_repo": [
         "Attaches build/libs/*.jar to the GitHub Release for easy consumption.",
-        "Uses GitHub App auth in CI to bypass protections and avoid GITHUB_TOKEN limitations."
+        "Uses GitHub App auth in CI (via GH_TOKEN) to avoid GITHUB_TOKEN limitations and satisfy branch protection needs."
       ],
       "assets": [
         {
@@ -85,35 +87,56 @@
       "role": "Commits back generated files (e.g., CHANGELOG.md) to the release branch.",
       "why_in_this_repo": [
         "Keeps CHANGELOG.md in repo history aligned with releases.",
-        "Uses [skip ci] to avoid triggering CI loops on the changelog commit."
+        "Uses [skip ci] to avoid triggering CI loops on the changelog commit.",
+        "The generated commit message uses the reserved scope 'chore(release): ...' so humans can spot automation commits quickly."
       ],
       "assets": [
         "CHANGELOG.md"
       ],
       "message_template": "chore(release): ${nextRelease.version} [skip ci]\\n\\n${nextRelease.notes}",
-      "branch_protection_note": "The GitHub App (or GitHub Actions) must be allowed to bypass main branch protections for this commit to succeed."
+      "branch_protection_note": "The GitHub App must be allowed to bypass main branch protections for this commit to succeed.",
+      "important_nuance": "The bot-authored 'chore(release): …' changelog commit does not itself trigger a new release because 'chore' is non-releasing in releaseRules."
     }
   ],
   "release_rules_commentary": {
-    "refactor_as_patch": {
-      "current_policy": "refactor commits do NOT trigger releases by default.",
+    "current_policy": {
+      "feat": "minor",
+      "fix": "patch",
+      "perf": "patch",
+      "refactor": "false (no release)",
+      "docs": "false (no release)",
+      "chore": "false (no release)",
+      "test": "false (no release)",
+      "ci": "false (no release)",
+      "style": "false (no release)",
+      "build": "false (no release)"
+    },
+    "why_refactor_is_non_releasing": [
+      "Avoids version noise while the project is still stabilizing (Phase 0).",
+      "Encourages explicit release intent only when a versioned artifact is actually needed."
+    ],
+    "how_to_force_a_release_when_needed": [
+      "Make the squash-merge commit into main an explicitly releasable type (feat/fix/perf) with a scope that reflects intent, e.g.:",
+      "  - fix(release): internal refactor that warrants a versioned artifact",
+      "  - perf(release): performance refactor worth tagging",
+      "Avoid using 'chore(release)' for manual commits; it is reserved for automation."
+    ],
+    "manual_release_flow": {
+      "what_it_is": "A workflow_dispatch manual run (enable_release=true) that allows semantic-release to run even when push-based releases are gated off.",
+      "important_nuance": "Manual execution still respects commit-analyzer rules; you still need at least one releasable commit on main since the last tag."
+    }
+  },
+  "commit_message_safety": {
+    "reserved_scope": {
+      "scope": "release",
+      "policy": "Reserved for automation (semantic-release) only. Humans should be blocked from committing '*(release): ...' locally.",
+      "enforcement": [
+        "commit-msg hook/script should reject human-authored commits matching '^type\\(release\\):' with a friendly message (e.g., 'scope \"release\" is reserved for automation').",
+        "CI/bot actors are exempt."
+      ],
       "why": [
-        "Reduces release noise from large internal refactors.",
-        "Keeps version history focused on externally meaningful changes."
-      ],
-      "how_to_force_release_when_needed": [
-        "Use an explicit releasable commit type in the squash merge to main.",
-        "Recommended patterns:",
-        "  - fix(release): internal refactor + stability",
-        "  - perf(release): refactor for performance"
-      ],
-      "manual_release_note": [
-        "The workflow supports manual execution via workflow_dispatch with enable_release=true.",
-        "Manual execution still respects commit-analyzer rules; a releasable commit is required."
-      ],
-      "tradeoff_acknowledged": [
-        "Refactor-only changes will not automatically produce a versioned artifact.",
-        "When a rollback point is desired, the release intent must be explicit in the commit message."
+        "Prevents accidental confusion between 'release intent' and 'automation output'.",
+        "Makes bot commits instantly recognizable."
       ]
     }
   },
