@@ -16,9 +16,31 @@ set -euo pipefail
 #
 # This script only inspects *tracked files* to avoid noise from local-only scripts.
 
-# Defaults
-STRICT="${STRICT:-0}"
-AUTO_STAGE="${AUTO_STAGE:-}"
+# -----------------------------------------------------------------------------
+# IMPORTANT:
+# We must distinguish "env var is unset" vs "env var has a value".
+# Using STRICT="${STRICT:-0}" makes STRICT always non-empty, which then incorrectly
+# overrides JSON config during precedence resolution.
+#
+# Capture whether the env var was set *before* applying defaults.
+# -----------------------------------------------------------------------------
+ENV_STRICT_SET=0
+ENV_AUTO_STAGE_SET=0
+ENV_STRICT_VAL=""
+ENV_AUTO_STAGE_VAL=""
+
+if [[ "${STRICT+x}" == "x" ]]; then
+  ENV_STRICT_SET=1
+  ENV_STRICT_VAL="${STRICT}"
+fi
+if [[ "${AUTO_STAGE+x}" == "x" ]]; then
+  ENV_AUTO_STAGE_SET=1
+  ENV_AUTO_STAGE_VAL="${AUTO_STAGE}"
+fi
+
+# Defaults (used only when env vars are unset and JSON/CLI don't override)
+STRICT_DEFAULT="0"
+AUTO_STAGE_DEFAULT=""
 
 # Config file
 CONFIG_FILE="${CHECK_EXECUTABLE_BITS_CONFIG:-.config/local-settings.json}"
@@ -34,6 +56,7 @@ Usage: scripts/check-executable-bits.sh [--print-config] [--strict N] [--auto-st
 Env vars (override JSON):
   STRICT=0|1|2
   AUTO_STAGE=0|1
+  CHECK_EXECUTABLE_BITS_CONFIG=path/to/config.json
 EOF
 }
 
@@ -130,7 +153,7 @@ if [[ -f "${CONFIG_FILE}" ]]; then
     esac
   done < <(resolve_config)
 else
-  RESOLVED_STRICT="0"
+  RESOLVED_STRICT="${STRICT_DEFAULT}"
   RESOLVED_AUTO_STAGE="0"
   BASE_CONFIG="${CONFIG_FILE}"
   OS_OVERRIDE=""
@@ -139,17 +162,29 @@ fi
 EFFECTIVE_STRICT="${RESOLVED_STRICT}"
 EFFECTIVE_AUTO_STAGE="${RESOLVED_AUTO_STAGE}"
 
-if [[ -n "${STRICT:-}" ]]; then
-  EFFECTIVE_STRICT="${STRICT}"
+# Precedence: env vars override JSON (but only if the env var was actually set)
+if (( ENV_STRICT_SET )) && [[ -n "${ENV_STRICT_VAL}" ]]; then
+  EFFECTIVE_STRICT="${ENV_STRICT_VAL}"
 fi
-if [[ -n "${AUTO_STAGE:-}" ]]; then
-  EFFECTIVE_AUTO_STAGE="${AUTO_STAGE}"
+if (( ENV_AUTO_STAGE_SET )) && [[ -n "${ENV_AUTO_STAGE_VAL}" ]]; then
+  EFFECTIVE_AUTO_STAGE="${ENV_AUTO_STAGE_VAL}"
 fi
+
+# Precedence: CLI overrides everything
 if [[ -n "${CLI_STRICT}" ]]; then
   EFFECTIVE_STRICT="${CLI_STRICT}"
 fi
 if [[ -n "${CLI_AUTO_STAGE}" ]]; then
   EFFECTIVE_AUTO_STAGE="${CLI_AUTO_STAGE}"
+fi
+
+# If AUTO_STAGE is still unset/empty, apply default (0)
+if [[ -z "${EFFECTIVE_AUTO_STAGE}" ]]; then
+  EFFECTIVE_AUTO_STAGE="0"
+fi
+# If STRICT is still unset/empty, apply default (0)
+if [[ -z "${EFFECTIVE_STRICT}" ]]; then
+  EFFECTIVE_STRICT="${STRICT_DEFAULT}"
 fi
 
 if [[ ! "${EFFECTIVE_STRICT}" =~ ^[0-2]$ ]]; then
