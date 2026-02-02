@@ -19,21 +19,116 @@ jobs:
     env:
       CI: true
       SPRING_PROFILES_ACTIVE: test
-      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
+
+      # Keep Gradle user home inside the workspace so `act` doesn't end up with
+      # caches in /tmp that can be mutated / cleaned unexpectedly.
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
+
+      # Gradle options for CI (daemon off is also enforced via --no-daemon below).
+      GRADLE_OPTS: >-
+        -Dorg.gradle.daemon=false
+        -Dorg.gradle.parallel=true
+        -Dorg.gradle.caching=true
+        -Dorg.gradle.vfs.watch=false
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
+      - name: "Act: use persisted Gradle user home"
+        shell: bash
+        run: |
+          if [[ "${ACT:-}" == "true" ]]; then
+            echo "ACT=true → using persisted Gradle cache dir: .gradle-act"
+            echo "GRADLE_USER_HOME=${GITHUB_WORKSPACE}/.gradle-act" >> "$GITHUB_ENV"
+            mkdir -p "${GITHUB_WORKSPACE}/.gradle-act"
+          fi
+
+      - name: "Act: reset Gradle immutable caches (prevents immutable workspace errors)"
+        if: ${{ github.actor == 'nektos/act' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "ACT=true → removing Gradle immutable caches that commonly break under bind mounts"
+          rm -rf "${GRADLE_USER_HOME}/caches/9.2.1/groovy-dsl" || true
+          rm -rf "${GRADLE_USER_HOME}/caches/9.2.1/transforms" || true
+          rm -rf "${GRADLE_USER_HOME}/caches/journal-1" || true
+          rm -rf "${GRADLE_USER_HOME}/caches/build-cache-1" || true
+
+      # For local runs via `act`, Testcontainers' Ryuk container can fail to start
+      # depending on Docker/Colima privileges. We only relax this for `act` runs,
+      # never for real GitHub Actions.
+      - name: "Act: configure Testcontainers"
+        shell: bash
+        run: |
+          if [[ "${ACT:-}" == "true" ]]; then
+            echo "ACT=true → applying local Testcontainers compatibility settings"
+            {
+              echo "DOCKER_HOST=unix:///var/run/docker.sock"
+              echo "TESTCONTAINERS_RYUK_DISABLED=true"
+              echo "TESTCONTAINERS_CHECKS_DISABLE=true"
+            } >> "$GITHUB_ENV"
+          fi
+      
+      - name: "Act: set HOME (required for setup-java)"
+        if: ${{ github.actor == 'nektos/act' }}
+        shell: bash
+        run: |
+          echo "HOME=${GITHUB_WORKSPACE}/.home" >> "$GITHUB_ENV"
+          echo "MAVEN_CONFIG=${GITHUB_WORKSPACE}/.home/.m2" >> "$GITHUB_ENV"
+          mkdir -p "${GITHUB_WORKSPACE}/.home/.m2"
+
+      - name: Set up Java 21 (act)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
-          cache: gradle
+          # cache: gradle  # intentionally disabled (act-safe)
 
       - name: Compile
         run: ./gradlew classes --no-daemon --stacktrace
 
       - name: Run tests (fast lane)
         run: ./gradlew test --no-daemon --stacktrace
+
+  planning-lint:
+    name: Lint planning files (IDEAS/TODO)
+    runs-on: ubuntu-latest
+
+    needs:
+    - fast
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load planning config
+        id: planning-config
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json, os
+
+          cfg = ".config/local-settings.json"
+
+          with open(cfg, "r", encoding="utf-8") as f:
+              data = json.load(f)
+
+          planning = data.get("planning", {})
+          base = planning.get("dir", "docs/planning")
+
+          env = {
+              "IDEAS_FILE": f"{base}/{planning.get('ideas', 'IDEAS.md')}",
+              "TODO_FILE": f"{base}/{planning.get('todo', 'TODO.md')}",
+              "CHECKLIST_FILE": f"{base}/{planning.get('checklist', 'PROMOTION_CHECKLIST.md')}",
+          }
+
+          with open(os.environ["GITHUB_ENV"], "a") as fh:
+              for k, v in env.items():
+                  fh.write(f"{k}={v}\n")
+          PY
+
+      - name: Run planning lint
+        shell: bash
+        run: |
+          bash scripts/planning/planning-lint.sh

@@ -18,6 +18,12 @@
     } 
   }, 
   "make": { 
-    "defaultTarget": "verify" 
+    "defaultTarget": "verify"
+  },
+  "planning": {
+    "dir": "docs/planning",
+    "ideas": "IDEAS.md",
+    "todo": "TODO.md",
+    "checklist": "PROMOTION_CHECKLIST.md"
   }
 }

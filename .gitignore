@@ -8,6 +8,7 @@ build/
 # macOS
 **.DS_Store**
 **/.DS_Store
+.home
 
 # env
 **.env**

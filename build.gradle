@@ -153,10 +153,10 @@ checkstyle {
   toolVersion = '10.17.0'
   ignoreFailures = false
 
-  // Commit config to repo at config/checkstyle/checkstyle.xml
-  configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
+  // Commit config to repo at .config/checkstyle/checkstyle.xml
+  configFile = file("$rootDir/.config/checkstyle/checkstyle.xml")
   configProperties = [
-    'configDir': file("$rootDir/config/checkstyle")
+    'configDir': file("$rootDir/.config/checkstyle")
   ]
 }
 
