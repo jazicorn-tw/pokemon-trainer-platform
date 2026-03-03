@@ -10,20 +10,13 @@
     # - Stops Colima (unless KEEP_COLIMA_RUNNING=1)
     # -----------------------------------------------------------------------------
 
-    log()  { printf '%s\n' "$*"; }
-    warn() { printf '⚠️  %s\n' "$*"; }
-    die()  { printf '❌ %s\n' "$*"; exit 1; }
-
-    have() { command -v "$1" >/dev/null 2>&1; }
+    _LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
+    # shellcheck source=scripts/lib/shell-utils.sh
+    source "${_LIB}/shell-utils.sh"
 
     stop_compose_if_present() {
-      local compose_file=""
-      for f in docker-compose.yml docker-compose.yaml compose.yml compose.yaml; do
-        if [[ -f "$f" ]]; then
-          compose_file="$f"
-          break
-        fi
-      done
+      local compose_file
+      compose_file="$(find_compose_file || true)"
 
       if [[ -z "$compose_file" ]]; then
         log "ℹ️  No compose file found. Skipping compose down."

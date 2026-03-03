@@ -28,6 +28,12 @@ set -euo pipefail
 #     "no space left on device" under /var/lib/containerd/.../overlayfs
 # -----------------------------------------------------------------------------
 
+_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib"
+# shellcheck source=scripts/lib/validators.sh
+source "${_LIB}/validators.sh"
+# shellcheck source=scripts/lib/colima-utils.sh
+source "${_LIB}/colima-utils.sh"
+
 cmd="${1:-clean}"
 
 remove_mode="${ACT_GRADLE_CACHE_REMOVE:-auto}"
@@ -41,14 +47,6 @@ min_free_inodes="${ACT_COLIMA_MIN_FREE_INODES:-5000}"
 die() {
   echo "❌ $*" >&2
   exit 2
-}
-
-is_bool() {
-  case "${1}" in true|false) return 0 ;; *) return 1 ;; esac
-}
-
-is_int() {
-  [[ "${1}" =~ ^[0-9]+$ ]]
 }
 
 validate() {
@@ -88,33 +86,16 @@ warn_if_large() {
   fi
 }
 
-colima_running() {
-  command -v colima >/dev/null 2>&1 || return 1
-  colima status --profile "${profile}" >/dev/null 2>&1
-}
-
-colima_containerd_free_gb() {
-  colima ssh --profile "${profile}" -- sh -lc \
-    'df -BG /var/lib/containerd 2>/dev/null | awk "NR==2 {gsub(/G/,\"\", \$4); print \$4}"' \
-    2>/dev/null || true
-}
-
-colima_containerd_free_inodes() {
-  colima ssh --profile "${profile}" -- sh -lc \
-    'df -Pi /var/lib/containerd 2>/dev/null | awk "NR==2 {print \$4}"' \
-    2>/dev/null || true
-}
-
 warn_containerd_pressure() {
   # IMPORTANT: this must be defined before main() calls it.
   # Best-effort; never fails the run.
-  if ! colima_running; then
+  if ! colima_running "${profile}"; then
     return 0
   fi
 
   local free_gb free_inodes warned="false"
-  free_gb="$(colima_containerd_free_gb)"
-  free_inodes="$(colima_containerd_free_inodes)"
+  free_gb="$(colima_containerd_free_gb "${profile}")"
+  free_inodes="$(colima_containerd_free_inodes "${profile}")"
 
   if [[ -n "${free_gb}" && "${free_gb}" =~ ^[0-9]+$ ]]; then
     if [[ "${free_gb}" -lt "${min_free_gb}" ]]; then
@@ -138,14 +119,14 @@ warn_containerd_pressure() {
 }
 
 should_remove_auto() {
-  if ! colima_running; then
+  if ! colima_running "${profile}"; then
     echo "ℹ️ Auto mode: colima profile '${profile}' not running or colima not installed; skipping cache removal"
     return 1
   fi
 
   local free_gb free_inodes
-  free_gb="$(colima_containerd_free_gb)"
-  free_inodes="$(colima_containerd_free_inodes)"
+  free_gb="$(colima_containerd_free_gb "${profile}")"
+  free_inodes="$(colima_containerd_free_inodes "${profile}")"
 
   if [[ -n "${free_gb}" && "${free_gb}" =~ ^[0-9]+$ ]]; then
     echo "🖥️  Colima containerd free disk: ${free_gb}GB (threshold: < ${min_free_gb}GB)"

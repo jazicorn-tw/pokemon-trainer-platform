@@ -36,6 +36,12 @@ set -euo pipefail
 # - So auto mode checks free space + inodes on the filesystem backing /var/lib/containerd.
 # -----------------------------------------------------------------------------
 
+_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib"
+# shellcheck source=scripts/lib/validators.sh
+source "${_LIB}/validators.sh"
+# shellcheck source=scripts/lib/colima-utils.sh
+source "${_LIB}/colima-utils.sh"
+
 cmd="${1:-prune}"
 
 mode="${CLEAN_DOCKER_MODE:-false}"
@@ -49,14 +55,6 @@ colima_profile="${CLEAN_DOCKER_COLIMA_PROFILE:-default}"
 die() {
   echo "❌ $*" >&2
   exit 2
-}
-
-is_bool() {
-  case "${1}" in true|false) return 0 ;; *) return 1 ;; esac
-}
-
-is_int() {
-  [[ "${1}" =~ ^[0-9]+$ ]]
 }
 
 validate() {
@@ -82,32 +80,15 @@ print_info() {
   docker_df
 }
 
-colima_running() {
-  command -v colima >/dev/null 2>&1 || return 1
-  colima status --profile "${colima_profile}" >/dev/null 2>&1
-}
-
-colima_containerd_free_gb() {
-  colima ssh --profile "${colima_profile}" -- sh -lc \
-    'df -BG /var/lib/containerd 2>/dev/null | awk "NR==2 {gsub(/G/,\"\", \$4); print \$4}"' \
-    2>/dev/null || true
-}
-
-colima_containerd_free_inodes() {
-  colima ssh --profile "${colima_profile}" -- sh -lc \
-    'df -Pi /var/lib/containerd 2>/dev/null | awk "NR==2 {print \$4}"' \
-    2>/dev/null || true
-}
-
 should_prune_auto() {
-  if ! colima_running; then
+  if ! colima_running "${colima_profile}"; then
     echo "ℹ️ Auto mode: colima profile '${colima_profile}' not running or colima not installed; skipping docker prune"
     return 1
   fi
 
   local free_gb free_inodes
-  free_gb="$(colima_containerd_free_gb)"
-  free_inodes="$(colima_containerd_free_inodes)"
+  free_gb="$(colima_containerd_free_gb "${colima_profile}")"
+  free_inodes="$(colima_containerd_free_inodes "${colima_profile}")"
 
   if [[ -z "${free_gb}" ]]; then
     echo "ℹ️ Auto mode: couldn't detect Colima free disk for /var/lib/containerd; skipping docker prune"

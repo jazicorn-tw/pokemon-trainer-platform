@@ -27,6 +27,10 @@ set -euo pipefail
 # - Resetting Colima deletes ALL images/containers/volumes inside the Colima VM.
 # -----------------------------------------------------------------------------
 
+_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib"
+# shellcheck source=scripts/lib/validators.sh
+source "${_LIB}/validators.sh"
+
 cmd="${1:-info}"
 
 reset="${CLEAN_COLIMA_RESET:-false}"
@@ -37,14 +41,6 @@ assume_yes="${CLEAN_COLIMA_ASSUME_YES:-false}"
 die() {
   echo "❌ $*" >&2
   exit 2
-}
-
-is_bool() {
-  case "${1}" in true|false) return 0 ;; *) return 1 ;; esac
-}
-
-is_int() {
-  [[ "${1}" =~ ^[0-9]+$ ]]
 }
 
 validate() {
