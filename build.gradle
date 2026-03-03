@@ -13,6 +13,12 @@ plugins {
   id 'checkstyle'
   id 'pmd'
   id 'com.github.spotbugs' version '6.0.26'
+
+  // ===============================
+  // Code Quality / Coverage
+  // ===============================
+  id 'org.sonarqube' version '5.1.0.4882'
+  id 'jacoco'
 }
 
 group = 'com.pokedex'
@@ -218,3 +224,30 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
 // tasks.named("spotbugsTest") { enabled = false }
 
 tasks.named("check") { dependsOn("spotlessCheck") }
+
+// ===============================
+// SonarCloud
+// ===============================
+// Usage:
+//   ./gradlew sonar   (requires SONAR_TOKEN env var)
+//
+// sonar.projectKey and sonar.organization must match the SonarCloud project.
+sonar {
+  properties {
+    property 'sonar.projectKey', 'jazicorn-tw_pokemon-trainer-platform'
+    property 'sonar.organization', 'jazicorn-tw'
+    property 'sonar.host.url', 'https://sonarcloud.io'
+    property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
+  }
+}
+
+// ===============================
+// Jacoco (coverage for Sonar)
+// ===============================
+jacocoTestReport {
+  dependsOn test
+  reports {
+    xml.required = true
+    html.required = false
+  }
+}

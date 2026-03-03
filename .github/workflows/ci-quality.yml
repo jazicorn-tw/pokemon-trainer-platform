@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write  # required for SonarCloud PR decoration
 
 concurrency:
   group: ci-quality-${{ github.ref }}
@@ -36,3 +37,26 @@ jobs:
 
       - name: Static analysis (Checkstyle/PMD/SpotBugs)
         run: ./gradlew checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest --no-daemon --stacktrace
+
+      - name: Cache SonarCloud packages
+        if: ${{ github.actor != 'nektos/act' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Sonar analysis
+        if: ${{ github.actor != 'nektos/act' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SONAR_TOKEN:-}" ]; then
+            echo "::warning::SONAR_TOKEN not set — skipping Sonar analysis"
+            exit 0
+          fi
+          echo "::group::🔍 Sonar analysis"
+          ./gradlew test jacocoTestReport sonar --no-daemon --info
+          echo "::endgroup::"
