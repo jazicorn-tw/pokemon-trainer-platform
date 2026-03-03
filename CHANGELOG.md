@@ -1,5 +1,19 @@
 # 📦 Release History
 
+## 📦 Release 1.2.1
+
+### 🐛 Fixes
+
+- **release:** use GITHUB_TOKEN for GHCR login to fix package permission denied (0b9db08)
+
+
+
+## 1.2.1
+
+### 🐛 Fixes
+
+- **release:** use GITHUB_TOKEN for GHCR login to fix package permission denied
+
 ## 📦 Release 1.2.0
 
 ### ✨ Features
