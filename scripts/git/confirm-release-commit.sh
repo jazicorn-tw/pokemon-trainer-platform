@@ -84,15 +84,20 @@ impact="none"
 used="heuristic"
 rule_label=""
 rule_detail=""
+sync_warn=""
 
 # -----------------------------------------------------------------------------
 # Try semantic-release analyzer (sync mode)
 # -----------------------------------------------------------------------------
-if command -v node >/dev/null 2>&1 \
-  && [[ -n "${repo_root}" ]] \
-  && [[ -f "${repo_root}/scripts/git/semantic-release-impact.mjs" ]]; then
-
-  if out="$(node "${repo_root}/scripts/git/semantic-release-impact.mjs" "${repo_root}" "${msg_file}" 2>/dev/null)"; then
+if ! command -v node >/dev/null 2>&1; then
+  sync_warn="node not found — install Node.js + run 'npm install' for accurate release detection"
+elif [[ -z "${repo_root}" || ! -f "${repo_root}/scripts/git/semantic-release-impact.mjs" ]]; then
+  sync_warn="semantic-release-impact.mjs not found in repo"
+else
+  _src_exit=0
+  out="$(node "${repo_root}/scripts/git/semantic-release-impact.mjs" "${repo_root}" "${msg_file}" 2>/dev/null)" \
+    || _src_exit=$?
+  if [[ "${_src_exit}" -eq 0 ]]; then
     while IFS= read -r line; do
       case "${line}" in
         impact=*) impact="${line#impact=}" ;;
@@ -101,6 +106,10 @@ if command -v node >/dev/null 2>&1 \
       esac
     done <<< "${out}"
     used="semantic-release"
+  elif [[ "${_src_exit}" -eq 3 ]]; then
+    sync_warn="@semantic-release/commit-analyzer not installed — run 'npm install' for accurate detection"
+  else
+    sync_warn="semantic-release-impact.mjs failed (exit ${_src_exit}) — using heuristic"
   fi
 fi
 
@@ -129,7 +138,7 @@ if [[ "${used}" == "heuristic" ]]; then
     impact="minor"
     rule_label="heuristic"
     rule_detail="type=feat"
-  elif [[ "${cc_type}" == "fix" || "${cc_type}" == "perf" || "${cc_type}" == "refactor" ]]; then
+  elif [[ "${cc_type}" == "fix" || "${cc_type}" == "perf" ]]; then
     impact="patch"
     rule_label="heuristic"
     rule_detail="type=${cc_type}"
@@ -178,6 +187,12 @@ if [[ -r /dev/tty && -w /dev/tty ]]; then
     strict_badge=" 🔒 ${BOLD}STRICT${RESET}"
   fi
 
+  # Prepend a newline so the warning line prints cleanly above the border.
+  _sync_warn_block=""
+  if [[ -n "${sync_warn}" && "${used}" == "heuristic" ]]; then
+    _sync_warn_block="${YELLOW}⚠️  Accuracy: ${sync_warn}${RESET}"$'\n'
+  fi
+
   if [[ "${impact}" == "patch" ]]; then
     cat <<EOF
 ${accent}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}
@@ -189,7 +204,7 @@ ${accent}${BOLD}${icon}  Release-triggering commit detected${RESET}${strict_badg
   ${BOLD}Message:${RESET} ${header}
 
 ${DIM}This commit message is likely to trigger semantic-release.${RESET}
-${accent}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}
+${_sync_warn_block}${accent}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}
 EOF
   else
     cat <<EOF
@@ -204,7 +219,7 @@ ${accent}${BOLD}${icon}  Release-triggering commit detected${RESET}${strict_badg
     ${header}
 
 ${DIM}This commit message is likely to trigger semantic-release.${RESET}
-${accent}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}
+${_sync_warn_block}${accent}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}
 EOF
   fi
 
@@ -233,4 +248,7 @@ fi
 
 echo "⚠️  Release-triggering commit detected (${impact}), but no TTY available."
 echo "    Proceeding without confirmation."
+if [[ -n "${sync_warn}" && "${used}" == "heuristic" ]]; then
+  echo "    Accuracy: ${sync_warn}"
+fi
 exit 0
