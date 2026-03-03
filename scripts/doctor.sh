@@ -31,6 +31,8 @@ set -euo pipefail
 JSON_MODE="${DOCTOR_JSON:-0}"
 STRICT="${DOCTOR_STRICT:-0}"
 ALLOW_CI="${DOCTOR_ALLOW_CI:-0}"
+FIX_CONTEXT="${DOCTOR_FIX_CONTEXT:-0}"
+COLIMA_AUTO_SCALE="${DOCTOR_COLIMA_AUTO_SCALE:-1}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -46,6 +48,14 @@ while [[ $# -gt 0 ]]; do
       ALLOW_CI="1"
       shift
       ;;
+    --fix-context)
+      FIX_CONTEXT="1"
+      shift
+      ;;
+    --scale-colima)
+      COLIMA_AUTO_SCALE="1"
+      shift
+      ;;
     -h|--help)
       cat <<'EOF'
 doctor.sh — Local environment sanity checks
@@ -55,11 +65,19 @@ Usage:
   ./scripts/doctor.sh --json
   ./scripts/doctor.sh --json --strict
   ./scripts/doctor.sh --json --allow-ci   (for CI artifacts)
+  ./scripts/doctor.sh --fix-context       (auto-fix Docker context mismatch)
+  ./scripts/doctor.sh --scale-colima      (auto-scale Colima to meet resource minimums — on by default)
 
 Flags:
-  --json       Emit structured JSON (no human output)
-  --strict     Treat warnings as failures
-  --allow-ci   Run even when CI=true (useful for artifact snapshots)
+  --json          Emit structured JSON (no human output)
+  --strict        Treat warnings as failures
+  --allow-ci      Run even when CI=true (useful for artifact snapshots)
+  --fix-context   Auto-fix Docker context mismatch by switching to the expected context.
+                  Note: docker context is a machine-wide setting; this affects all projects.
+  --scale-colima  Stop and restart Colima with enough CPU/memory to meet project minimums.
+                  Enabled by default. Disable with: DOCTOR_COLIMA_AUTO_SCALE=0
+                  Upper bounds: DOCTOR_MAX_COLIMA_MEM_GB (default 8) / DOCTOR_MAX_COLIMA_CPUS (default 4).
+                  Warning: this will interrupt any containers currently running in Colima.
 EOF
       exit 0
       ;;
@@ -72,6 +90,9 @@ done
 
 WARNINGS=()
 ERRORS=()
+
+NODE_VERSION_RAW=""
+NODE_MAJOR=""
 
 json_escape() {
   # Escape for JSON string context
@@ -177,6 +198,8 @@ emit_json_and_exit() {
   json+=",\"docker_cpus\":\"$(json_escape "${DOCKER_CPUS}")\""
   json+=",\"docker_memory_gb\":\"$(json_escape "${DOCKER_MEM_GB}")\""
   json+=",\"docker_socket_healthy\":${DOCKER_SOCKET_OK}"
+  json+=",\"node_version_raw\":\"$(json_escape "${NODE_VERSION_RAW}")\""
+  json+=",\"node_major\":\"$(json_escape "${NODE_MAJOR}")\""
   json+=",\"colima_present\":${HAS_COLIMA}"
   json+=",\"colima_running\":${COLIMA_RUNNING}"
   json+=",\"colima_memory_alloc\":\"$(json_escape "${COLIMA_MEM_ALLOC}")\""
@@ -206,6 +229,8 @@ die() {
 MIN_MEM_GB="${DOCTOR_MIN_DOCKER_MEM_GB:-4}"
 MIN_CPUS="${DOCTOR_MIN_DOCKER_CPUS:-2}"
 REQUIRE_COLIMA="${DOCTOR_REQUIRE_COLIMA:-0}"
+MAX_COLIMA_MEM_GB="${DOCTOR_MAX_COLIMA_MEM_GB:-8}"
+MAX_COLIMA_CPUS="${DOCTOR_MAX_COLIMA_CPUS:-4}"
 
 WARN_AS_FAIL=0
 if [[ "${STRICT}" == "1" ]]; then
@@ -295,6 +320,25 @@ else
 fi
 
 # ----------------------------
+# Node.js (required for semantic-release)
+# ----------------------------
+if ! command -v node >/dev/null 2>&1; then
+  warn_or_die "Node.js not found. Install Node 20+ (e.g. brew install node or nvm install 20). Required for semantic-release."
+else
+  NODE_VERSION_RAW="$(node --version 2>/dev/null || true)"
+  NODE_MAJOR="$(echo "${NODE_VERSION_RAW}" | sed -E 's/v([0-9]+).*/\1/' || true)"
+  if [[ -n "${NODE_MAJOR}" && "${NODE_MAJOR}" =~ ^[0-9]+$ ]]; then
+    if (( NODE_MAJOR < 20 )); then
+      warn_or_die "Node.js ${NODE_VERSION_RAW} detected; this project requires Node 20+ for semantic-release."
+    else
+      ok "node OK (${NODE_VERSION_RAW})"
+    fi
+  else
+    warn "Could not parse Node.js version from: ${NODE_VERSION_RAW}"
+  fi
+fi
+
+# ----------------------------
 # Docker CLI
 # ----------------------------
 if ! command -v docker >/dev/null 2>&1; then
@@ -359,26 +403,73 @@ ok "docker daemon reachable"
 
 INFO="$(docker info 2>/dev/null || true)"
 
-# Provider detection
-if echo "${INFO}" | grep -qi "docker desktop"; then
-  DOCKER_PROVIDER="docker-desktop"
-elif echo "${INFO}" | grep -qi "colima"; then
-  DOCKER_PROVIDER="colima"
-elif echo "${INFO}" | grep -qi "rancher desktop"; then
-  DOCKER_PROVIDER="rancher-desktop"
-elif echo "${INFO}" | grep -qi "podman"; then
-  DOCKER_PROVIDER="podman"
-else
-  DOCKER_PROVIDER="unknown"
-fi
+# Provider detection — context-first, docker info only for ambiguous cases.
+#
+# The active context name is the most reliable signal: it identifies which
+# daemon socket Docker CLI is actually talking to. Using docker info as the
+# primary signal causes false positives when multiple runtimes are installed
+# (e.g. Docker Desktop installed alongside Colima: docker info may mention
+# "Docker Desktop" even when the active context is "colima").
+#
+# The 'default' context is genuinely ambiguous (used by Docker Desktop, Docker
+# Engine, and sometimes Colima) so we fall back to docker info there.
+case "${DOCKER_CONTEXT}" in
+  colima*)
+    DOCKER_PROVIDER="colima"
+    ;;
+  desktop-linux)
+    # Docker Desktop on Linux uses this context name
+    DOCKER_PROVIDER="docker-desktop"
+    ;;
+  rancher-desktop)
+    DOCKER_PROVIDER="rancher-desktop"
+    ;;
+  default|"")
+    # Ambiguous context — inspect docker info to distinguish runtimes
+    if echo "${INFO}" | grep -qi "colima"; then
+      DOCKER_PROVIDER="colima"
+    elif echo "${INFO}" | grep -qi "docker desktop"; then
+      DOCKER_PROVIDER="docker-desktop"
+    elif echo "${INFO}" | grep -qi "rancher desktop"; then
+      DOCKER_PROVIDER="rancher-desktop"
+    elif echo "${INFO}" | grep -qi "podman"; then
+      DOCKER_PROVIDER="podman"
+    else
+      DOCKER_PROVIDER="docker-engine"
+    fi
+    ;;
+  *)
+    # Unknown context name — fall back to docker info
+    if echo "${INFO}" | grep -qi "colima"; then
+      DOCKER_PROVIDER="colima"
+    elif echo "${INFO}" | grep -qi "docker desktop"; then
+      DOCKER_PROVIDER="docker-desktop"
+    elif echo "${INFO}" | grep -qi "rancher desktop"; then
+      DOCKER_PROVIDER="rancher-desktop"
+    elif echo "${INFO}" | grep -qi "podman"; then
+      DOCKER_PROVIDER="podman"
+    else
+      DOCKER_PROVIDER="unknown"
+    fi
+    ;;
+esac
 ok "docker provider: ${DOCKER_PROVIDER}"
 
-# Context/provider mismatch warning (macOS)
+# Context/provider note (macOS): only flag genuinely ambiguous routing.
+# With context-first detection above, context=colima always maps to
+# provider=colima, so no false positives when multiple runtimes are installed.
 if [[ "${OS}" == "Darwin" && -n "${DOCKER_CONTEXT}" ]]; then
-  if [[ "${DOCKER_PROVIDER}" == "colima" && "${DOCKER_CONTEXT}" != "colima" ]]; then
-    warn_or_die "Docker provider looks like Colima, but docker context is '${DOCKER_CONTEXT}'. Try: docker context use colima"
-  elif [[ "${DOCKER_PROVIDER}" == "docker-desktop" && "${DOCKER_CONTEXT}" == "colima" ]]; then
-    warn_or_die "Docker provider looks like Docker Desktop, but docker context is 'colima'. Try: docker context use default"
+  # Colima detected via docker info but context is 'default' — routing is
+  # implicit. Suggest switching to the explicit colima context.
+  if [[ "${DOCKER_PROVIDER}" == "colima" && "${DOCKER_CONTEXT}" == "default" ]]; then
+    if [[ "${FIX_CONTEXT}" == "1" ]]; then
+      say "🔧 Auto-fixing Docker context → colima"
+      docker context use colima >/dev/null
+      DOCKER_CONTEXT="colima"
+      ok "docker context fixed: colima"
+    else
+      warn "Colima is the active runtime but context is 'default'. Consider: docker context use colima (or re-run with --fix-context)"
+    fi
   fi
 fi
 
@@ -514,15 +605,31 @@ if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
     fi
 
     if [[ "${need_suggest}" == "1" ]]; then
-      if [[ "${JSON_MODE}" != "1" ]]; then
-        say ""
-        say "💡 Tip: Increase Colima resources for Gradle + Testcontainers:"
-        say "   colima stop"
-        say "   colima start --cpu ${suggest_cpu} --memory ${suggest_mem}"
-        say ""
-        say "   (Colima persists these settings for future starts.)"
+      if [[ "${COLIMA_AUTO_SCALE}" == "1" ]]; then
+        # Cap targets at user-configured maximums (awk for float-safe comparison)
+        target_mem="$(awk -v s="${suggest_mem}" -v m="${MAX_COLIMA_MEM_GB}" 'BEGIN { print int((s+0 > m+0) ? m : s) }')"
+        target_cpu="$(awk -v s="${suggest_cpu}" -v m="${MAX_COLIMA_CPUS}" 'BEGIN { print int((s+0 > m+0) ? m : s) }')"
+        if [[ "${JSON_MODE}" != "1" ]]; then
+          say ""
+          say "🔧 Auto-scaling Colima to --cpu ${target_cpu} --memory ${target_mem}GiB"
+          say "   (Stopping Colima — running containers will be interrupted)"
+        fi
+        colima stop || true
+        colima start --cpu "${target_cpu}" --memory "${target_mem}"
+        ok "Colima restarted with --cpu ${target_cpu} --memory ${target_mem}GiB"
+      else
+        if [[ "${JSON_MODE}" != "1" ]]; then
+          say ""
+          say "💡 Tip: Increase Colima resources for Gradle + Testcontainers:"
+          say "   colima stop"
+          say "   colima start --cpu ${suggest_cpu} --memory ${suggest_mem}"
+          say ""
+          say "   Or re-run with --scale-colima to do this automatically"
+          say "   (upper bounds: DOCTOR_MAX_COLIMA_MEM_GB=${MAX_COLIMA_MEM_GB} / DOCTOR_MAX_COLIMA_CPUS=${MAX_COLIMA_CPUS})"
+          say "   (Colima persists these settings for future starts.)"
+        fi
+        WARNINGS+=("Colima resources may be undersized; consider: colima start --cpu ${suggest_cpu} --memory ${suggest_mem}")
       fi
-      WARNINGS+=("Colima resources may be undersized; consider: colima start --cpu ${suggest_cpu} --memory ${suggest_mem}")
     fi
   fi
 fi

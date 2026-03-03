@@ -83,7 +83,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          # cache: gradle  # intentionally disabled (act-safe)
+          # cache: gradle  # intentionally disabled — gradle/actions/setup-gradle below handles caching on real runners
+
+      - name: Set up Gradle (CI only — wrapper validation + caching)
+        if: ${{ github.actor != 'nektos/act' }}
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Compile
         run: ./gradlew classes --no-daemon --stacktrace

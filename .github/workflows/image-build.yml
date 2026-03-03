@@ -5,6 +5,13 @@ on:
     branches: [ main, staging, dev ]
   push:
     branches: [ main, staging, dev ]
+    paths:
+      - 'Dockerfile'
+      - 'src/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle/**'
+      - 'helm/**'
   workflow_dispatch:
 
 permissions:
