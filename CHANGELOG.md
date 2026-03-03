@@ -4,6 +4,30 @@
 
 ### ✨ Features
 
+- complete helm chart templates and wire docker/helm publishing to GHCR (42d3846)
+- **helm:** complete chart templates for serviceaccount, hpa, and deployment (840ca8d)
+
+### 🧹 Chores
+
+- **release:** 1.1.0 [skip ci] (8cdc0ae)
+
+
+
+## 1.1.0
+
+### ✨ Features
+
+- complete helm chart templates and wire docker/helm publishing to GHCR
+- **helm:** complete chart templates for serviceaccount, hpa, and deployment
+
+### 🧹 Chores
+
+- **release:** 1.1.0 [skip ci]
+
+## 📦 Release 1.1.0
+
+### ✨ Features
+
 - **helm:** complete chart templates for serviceaccount, hpa, and deployment (840ca8d)
 
 
