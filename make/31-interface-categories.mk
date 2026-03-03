@@ -144,10 +144,11 @@ help-act: ## 🧪 Local CI with act
 
 help-ci: ## 🧰 CI-relevant targets only
 	$(call section,🧰  CI-relevant Make Targets)
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "verify" "→ doctor + lint + test"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "quality" "→ doctor + spotlessCheck + clean check"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "test-ci" "→ clean test (CI-like)"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "bootstrap-act" "→ setup local CI simulation prereqs"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "run-ci" "→ run workflows via act"
-	@printf "  $(BOLD)%-12s$(RESET) %s\n" "list-ci" "→ list act jobs"
+	@printf "  $(BOLD)%-18s$(RESET) %s\n" "verify" "→ doctor + lint + test"
+	@printf "  $(BOLD)%-18s$(RESET) %s\n" "quality" "→ doctor + spotlessCheck + clean check"
+	@printf "  $(BOLD)%-18s$(RESET) %s\n" "test-ci" "→ clean test (CI-like)"
+	@printf "  $(BOLD)%-18s$(RESET) %s\n" "bootstrap-act" "→ setup local CI simulation prereqs"
+	@printf "  $(BOLD)%-18s$(RESET) %s\n" "run-ci" "→ run workflows via act"
+	@printf "  $(BOLD)%-18s$(RESET) %s\n" "list-ci" "→ list act jobs"
+	@printf "  $(BOLD)%-18s$(RESET) %s\n" "release-dry-run" "→ preview next semantic-release version (no publish)"
 	$(call println,)
