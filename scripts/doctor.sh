@@ -496,9 +496,16 @@ if [[ -n "${MEM_LINE}" ]]; then
 fi
 
 if [[ -n "${DOCKER_MEM_GB}" ]]; then
-  awk -v mem="${DOCKER_MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) }' \
-    || warn_or_die "Docker reports ~${DOCKER_MEM_GB} GiB memory; recommended >= ${MIN_MEM_GB} GiB."
-  ok "memory check: ~${DOCKER_MEM_GB} GiB"
+  if [[ "${DOCKER_PROVIDER}" == "colima" ]]; then
+    # For Colima, docker info reports usable-to-containers memory which is always
+    # slightly lower than the configured VM allocation (VM OS overhead ~0.2 GiB).
+    # The configured value is checked below in the Colima resource section.
+    ok "memory check: ~${DOCKER_MEM_GB} GiB (Colima VM; configured value checked below)"
+  else
+    awk -v mem="${DOCKER_MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) }' \
+      || warn_or_die "Docker reports ~${DOCKER_MEM_GB} GiB memory; recommended >= ${MIN_MEM_GB} GiB."
+    ok "memory check: ~${DOCKER_MEM_GB} GiB"
+  fi
 else
   warn "Could not determine Docker memory from 'docker info'. Skipping memory check."
 fi
@@ -565,8 +572,17 @@ parse_colima_mem_gib() {
 }
 
 if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
-  COLIMA_MEM_ALLOC="$(colima status 2>/dev/null | sed -n 's/^.*memory: *//p' | head -n 1 || true)"
-  COLIMA_CPU_ALLOC="$(colima status 2>/dev/null | sed -n 's/^.*cpu: *//p' | head -n 1 || true)"
+  # `colima status` no longer includes resource fields in its output; use
+  # `colima list` which has stable MEMORY/CPUS columns regardless of version.
+  _colima_list_out="$(colima list 2>/dev/null || true)"
+  COLIMA_MEM_ALLOC="$(echo "${_colima_list_out}" | awk '
+    NR==1 { for(i=1;i<=NF;i++) col[$i]=i }
+    NR>1 && $1=="default" { print $(col["MEMORY"]); exit }
+  ' 2>/dev/null || true)"
+  COLIMA_CPU_ALLOC="$(echo "${_colima_list_out}" | awk '
+    NR==1 { for(i=1;i<=NF;i++) col[$i]=i }
+    NR>1 && $1=="default" { print $(col["CPUS"]); exit }
+  ' 2>/dev/null || true)"
 
   if [[ "${JSON_MODE}" != "1" && ( -n "${COLIMA_MEM_ALLOC}" || -n "${COLIMA_CPU_ALLOC}" ) ]]; then
     say ""
@@ -583,22 +599,23 @@ if [[ "${HAS_COLIMA}" == "1" && "${COLIMA_RUNNING}" == "1" ]]; then
     suggest_mem="${MIN_MEM_GB}"
     suggest_cpu="${MIN_CPUS}"
 
+    # Memory: prefer Colima-configured value (authoritative); docker info is always
+    # slightly lower (VM overhead) so only use it as a fallback when colima status
+    # is unavailable (e.g. colima status parsing failed).
     if [[ -n "${mem_num}" ]]; then
       awk -v mem="${mem_num}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) ? 0 : 1 }' \
         && need_suggest=1
+    elif [[ -n "${DOCKER_MEM_GB}" ]]; then
+      awk -v mem="${DOCKER_MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) ? 0 : 1 }' \
+        && need_suggest=1
     fi
 
+    # CPU: same priority — Colima-configured first, docker info as fallback.
     if [[ -n "${cpu_num}" ]]; then
       if (( cpu_num < MIN_CPUS )); then
         need_suggest=1
       fi
-    fi
-
-    if [[ -n "${DOCKER_MEM_GB}" ]]; then
-      awk -v mem="${DOCKER_MEM_GB}" -v min="${MIN_MEM_GB}" 'BEGIN { exit (mem+0 < min+0) ? 0 : 1 }' \
-        && need_suggest=1
-    fi
-    if [[ -n "${DOCKER_CPUS}" && "${DOCKER_CPUS}" =~ ^[0-9]+$ ]]; then
+    elif [[ -n "${DOCKER_CPUS}" && "${DOCKER_CPUS}" =~ ^[0-9]+$ ]]; then
       if (( DOCKER_CPUS < MIN_CPUS )); then
         need_suggest=1
       fi
