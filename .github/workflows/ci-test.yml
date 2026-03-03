@@ -41,32 +41,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Detect act
-        id: detect
-        shell: bash
-        run: |
-          if [[ "${ACT:-}" == "true" ]]; then
-            echo "is_act=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_act=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # setup-java's built-in Gradle cache can warn under act when paths don't exist at cleanup time.
-      # We keep caching enabled for real GitHub Actions runs, and disable it for act runs.
-      - name: Set up Java 21 (with Gradle cache)
-        if: ${{ steps.detect.outputs.is_act != 'true' }}
-        uses: actions/setup-java@v4
+      - name: Set up Java 21
+        uses: ./.github/actions/setup-java-gradle
         with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Set up Java 21 (no cache under act)
-        if: ${{ steps.detect.outputs.is_act == 'true' }}
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
+          gradle-cache: 'true'
 
       - name: Docker sanity check (for Testcontainers)
         run: |
@@ -84,7 +62,7 @@ jobs:
           ./gradlew test --no-daemon --stacktrace
 
       - name: Upload test reports (on failure)
-        if: ${{ failure() && steps.detect.outputs.is_act != 'true' }}
+        if: ${{ failure() && github.actor != 'nektos/act' }}
         uses: actions/upload-artifact@v4
         with:
           name: test-reports

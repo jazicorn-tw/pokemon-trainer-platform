@@ -8,6 +8,7 @@ inputs:
   gradle-cache:
     description: >
       Enable setup-java's built-in Gradle dependency cache (cache: gradle).
+      Automatically disabled under act to avoid cleanup-time path warnings.
       Do not combine with setup-gradle: true.
     required: false
     default: 'false'
@@ -28,7 +29,7 @@ runs:
       with:
         distribution: temurin
         java-version: "21"
-        cache: ${{ inputs.gradle-cache == 'true' && 'gradle' || '' }}
+        cache: ${{ (inputs.gradle-cache == 'true' && github.actor != 'nektos/act') && 'gradle' || '' }}
 
     - name: Suppress job summary under act
       if: ${{ inputs.setup-gradle == 'true' && github.actor == 'nektos/act' }}
