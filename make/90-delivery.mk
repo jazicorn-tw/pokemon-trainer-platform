@@ -33,44 +33,27 @@ deploy: ## 🚧 Deploy is not wired yet
 	@echo "See: docs/onboarding/DEPLOY.md"
 
 # -------------------------------------------------------------------
-# CI publish hooks (called by GitHub Actions) — intentionally guarded
+# CI publish hooks (called by GitHub Actions)
 # -------------------------------------------------------------------
 #
-# The release workflow calls these targets only when the corresponding
-# repo variables are enabled:
-# - PUBLISH_DOCKER_IMAGE=true  -> make docker-publish
-# - PUBLISH_HELM_CHART=true    -> make helm-publish
+# Publishing is handled entirely by the release.yml publish job via
+# GitHub Actions steps (docker/build-push-action, helm push to GHCR).
+# These Make targets exist only to surface a clear error when called locally.
 #
-# Until these are implemented, they FAIL by default to avoid "silent" publishes
-# or false confidence. When you are ready to wire publishing, replace the body
-# with the real implementation (or delegate to scripts).
-#
-# To intentionally bypass the guard (e.g., while scaffolding in CI), you can set:
-#   ALLOW_UNWIRED_PUBLISH=1
-#
-# Recommended future wiring:
-# - docker-publish -> scripts/release/publish-docker.sh (or docker/build-push-action in workflow)
-# - helm-publish   -> scripts/release/publish-helm.sh (OCI to GHCR)
+# To enable publishing:
+# - Set PUBLISH_DOCKER_IMAGE=true as a GitHub repo variable
+# - Set PUBLISH_HELM_CHART=true as a GitHub repo variable
+# - Set CANONICAL_REPOSITORY=<owner>/<repo> as a GitHub repo variable
 # -------------------------------------------------------------------
 
-ALLOW_UNWIRED_PUBLISH ?= 0
+docker-publish: ## 🐳 Publish Docker image (CI only — release.yml publish job)
+	$(call step,🐳 Docker publish)
+	@printf "%b\n" "$(YELLOW)docker-publish$(RESET) runs in CI only (release.yml publish job)."
+	@echo "To publish: set PUBLISH_DOCKER_IMAGE=true as a repo variable, then push a releasable commit to main."
+	@exit 1
 
-# unwired_guard step_label target_name docs_path
-# Guards scaffold-only publish targets. Fails unless ALLOW_UNWIRED_PUBLISH=1.
-define unwired_guard
-	$(call step,$(1))
-	@printf "%b\n" "$(YELLOW)$(2)$(RESET) is not wired yet."
-	@echo "See: $(3)"
-	@if [ "$(ALLOW_UNWIRED_PUBLISH)" != "1" ]; then \
-	  printf "%b\n" "$(RED)❌ Refusing to publish: $(2) is scaffold-only.$(RESET)"; \
-	  echo "👉 Set ALLOW_UNWIRED_PUBLISH=1 to bypass while wiring (NOT recommended long-term)."; \
-	  exit 1; \
-	fi
-	@echo "✅ Bypass enabled (ALLOW_UNWIRED_PUBLISH=1). No-op."
-endef
-
-docker-publish: ## 🐳 Publish Docker image (guarded; not wired yet)
-	$(call unwired_guard,🐳 Docker publish,docker-publish,docs/onboarding/DOCKER_PUBLISH.md)
-
-helm-publish: ## ⎈ Publish Helm chart (guarded; not wired yet)
-	$(call unwired_guard,⎈ Helm publish,helm-publish,docs/onboarding/HELM_PUBLISH.md)
+helm-publish: ## ⎈ Publish Helm chart (CI only — release.yml publish job)
+	$(call step,⎈ Helm publish)
+	@printf "%b\n" "$(YELLOW)helm-publish$(RESET) runs in CI only (release.yml publish job)."
+	@echo "To publish: set PUBLISH_HELM_CHART=true as a repo variable, then push a releasable commit to main."
+	@exit 1

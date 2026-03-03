@@ -81,8 +81,8 @@ The publish steps should run **only when semantic-release publishes a version** 
 For most repos:
 
 - `ENABLE_SEMANTIC_RELEASE=false` (enable only when ready)
-- `PUBLISH_DOCKER_IMAGE=false` (enable once Docker publishing is wired)
-- `PUBLISH_HELM_CHART=false` (enable once Helm publishing is wired)
+- `PUBLISH_DOCKER_IMAGE=false` (set to `true` once `CANONICAL_REPOSITORY` is configured — publishing is wired)
+- `PUBLISH_HELM_CHART=false` (set to `true` once `CANONICAL_REPOSITORY` is configured — publishing is wired)
 - `CANONICAL_REPOSITORY=<owner>/<repo>` (always set)
 
 ---

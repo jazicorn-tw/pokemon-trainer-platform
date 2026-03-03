@@ -230,20 +230,21 @@ This guard:
 
 ---
 
-### Helm chart publishing (future)
+### Helm chart publishing
 
 - `PUBLISH_HELM_CHART` = `true` | `false`
 
-Planned behavior (when wired):
+Behavior:
 
 - Runs in the same **publish job**
 - Subject to the same canonical-repo and “version published” guards
 - Skipped with an explanatory summary when disabled
+- Packages the Helm chart with `helm package --version $VERSION --app-version $VERSION`
+- Pushes to `oci://ghcr.io/<owner>/charts` via `helm push`
 
 Status:
 
-- **Scaffolded but not yet implemented**
-- Documented for forward compatibility
+- **Wired** — enable by setting `PUBLISH_HELM_CHART=true` and `CANONICAL_REPOSITORY` as repo variables
 
 ---
 
