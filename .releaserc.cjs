@@ -207,7 +207,7 @@ module.exports = {
       '@semantic-release/exec',
       {
         prepareCmd:
-          "./gradlew --no-daemon --gradle-user-home '${RUNNER_TEMP:-/tmp}/gradle-home' -PreleaseVersion=${nextRelease.version} clean bootJar",
+          "./gradlew --no-daemon --gradle-user-home $GRADLE_USER_HOME -PreleaseVersion=${nextRelease.version} clean bootJar",
       },
     ],
 

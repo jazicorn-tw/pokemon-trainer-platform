@@ -120,7 +120,7 @@
         "Builds a Spring Boot bootJar with a version that matches the Git tag (not -SNAPSHOT).",
         "Ensures the artifact attached to the GitHub Release corresponds exactly to the released version."
       ],
-      "prepareCmd_current": "./gradlew --no-daemon --gradle-user-home '${RUNNER_TEMP:-/tmp}/gradle-home' -PreleaseVersion=${nextRelease.version} clean bootJar",
+      "prepareCmd_current": "./gradlew --no-daemon --gradle-user-home $GRADLE_USER_HOME -PreleaseVersion=${nextRelease.version} clean bootJar",
       "contracts": [
         "Gradle must honor -PreleaseVersion (or the property name used here).",
         "The bootJar output must land in build/libs/."
