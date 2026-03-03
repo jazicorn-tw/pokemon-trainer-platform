@@ -16,17 +16,15 @@
     _LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
     # shellcheck source=scripts/lib/shell-utils.sh
     source "${_LIB}/shell-utils.sh"
+    # shellcheck source=scripts/lib/colima-utils.sh
+    source "${_LIB}/colima-utils.sh"
 
     ensure_colima_running() {
       if ! have colima; then
         die "colima not found. Install it first: https://github.com/abiosoft/colima"
       fi
 
-      # `colima status` exits 0 even when stopped; inspect output.
-      local status
-      status="$(colima status 2>/dev/null || true)"
-
-      if echo "$status" | grep -qiE 'colima is running'; then
+      if colima_running; then
         log "✅ colima already running"
         return 0
       fi

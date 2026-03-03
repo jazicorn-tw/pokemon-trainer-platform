@@ -13,6 +13,8 @@
     _LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
     # shellcheck source=scripts/lib/shell-utils.sh
     source "${_LIB}/shell-utils.sh"
+    # shellcheck source=scripts/lib/colima-utils.sh
+    source "${_LIB}/colima-utils.sh"
 
     stop_compose_if_present() {
       local compose_file
@@ -44,9 +46,7 @@
         return 0
       fi
 
-      local status
-      status="$(colima status 2>/dev/null || true)"
-      if echo "$status" | grep -qiE 'colima is running'; then
+      if colima_running; then
         log "▶ Stopping colima…"
         colima stop
         log "✅ colima stopped"
