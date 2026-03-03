@@ -1,5 +1,19 @@
 # 📦 Release History
 
+## 📦 Release 1.2.0
+
+### ✨ Features
+
+- **ci:** add SonarCloud analysis with Jacoco coverage to ci-quality (3a7c63b)
+
+
+
+## 1.2.0
+
+### ✨ Features
+
+- **ci:** add SonarCloud analysis with Jacoco coverage to ci-quality
+
 ## 📦 Release 1.1.0
 
 ### ✨ Features
