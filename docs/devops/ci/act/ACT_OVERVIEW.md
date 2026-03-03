@@ -64,7 +64,7 @@ The wrapper exists because it enforces invariants that match GitHub Actions:
 
 * Pins the runner image mapping for `ubuntu-latest`
 * Forces container architecture to `linux/amd64` (matches CI runners)
-* Runs the runner container as root to allow Docker socket access
+* Runs the runner container as the `runner` user with Docker socket GID added via `--group-add`
 * Applies repo-wide defaults consistently across contributors
 
 This keeps local CI simulation **boringly close** to real CI.

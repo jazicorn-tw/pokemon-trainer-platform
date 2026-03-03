@@ -40,12 +40,19 @@ make run-ci build-image helm-lint
 Equivalent of `make run-ci ci test`:
 
 ```bash
-ACT=true act push   -W .github/workflows/ci.yml   -j test   -P ubuntu-latest=catthehacker/ubuntu:full-latest   --container-daemon-socket /var/run/docker.sock   --container-architecture linux/amd64   --container-options="--user 0:0"
+ACT=true act push   -W .github/workflows/ci.yml   -j test   -P ubuntu-latest=catthehacker/ubuntu:full-latest   --container-daemon-socket /var/run/docker.sock   --container-architecture linux/amd64   --container-options="--user runner --group-add <docker-gid>"
+```
+
+Replace `<docker-gid>` with the GID of `/var/run/docker.sock` inside the Colima VM:
+
+```bash
+colima ssh -- stat -c '%g' /var/run/docker.sock
 ```
 
 ---
 
 ## Notes
 
-- `--container-options="--user 0:0"` prevents Docker socket permission errors in the runner.
+- `--user runner --group-add <gid>` grants socket access without running as root.
+- The Make wrapper auto-detects the GID and sets `--group-add` automatically.
 - Some workflows (release/publish) are intentionally not run locally.

@@ -144,7 +144,7 @@ Should not mutate machine state.
 
 **Includes**
 
-- `make start / stop / status`
+- `make dev-up / dev-down / dev-status`
 - Container runtimes (Docker, Colima)
 - Compose stacks
 - Local emulators

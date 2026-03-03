@@ -13,7 +13,7 @@ If something is non-obvious, opinionated, or easy to misuse — it belongs here.
 
 ## 🗂️ Documentation structure
 
-📄 **Documentation map:** [`DOCS_TOC.md`](./DOCS_TOC.md)
+📄 **Documentation map:** [`README_TOC.md`](./README_TOC.md)
 
 This table of contents:
 
@@ -21,7 +21,7 @@ This table of contents:
 - Describes the **purpose and scope** of each folder
 - Explains **where new documentation should go**
 
-If you are unsure where to add or find documentation, **start with `DOCS_TOC.md`**.
+If you are unsure where to add or find documentation, **start with `README_TOC.md`**.
 
 ---
 
@@ -106,11 +106,13 @@ Includes:
 - Doctor checks and JSON output
 - Local CI simulation (`act`)
 - Repo inspection (`make tree`)
+- `tooling/make/` — Makefile structure, decade model, and target discovery
 
 This folder documents *how to work with the repo*, not the application itself.
 
 📄 Start here:
 
+- `tooling/DOCTOR.md`
 - `tooling/DOCTOR_JSON.md`
 - `tooling/TREE.md`
 
@@ -187,18 +189,6 @@ This helps contributors understand:
 
 - Why certain things look incomplete
 - What is intentionally deferred
-
----
-
-### `make/` — Makefile documentation
-
-Documentation for the Make-based developer workflow.
-
-Includes:
-
-- Makefile structure
-- Roles and categories
-- How to discover available commands
 
 ---
 

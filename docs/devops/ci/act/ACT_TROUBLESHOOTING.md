@@ -79,11 +79,15 @@ container cannot access it.
 
 ### Fix (repo standard)
 
-Run the runner container as root:
+The Make wrapper runs the container as the `runner` user and adds the Colima
+Docker socket GID as a supplementary group:
 
 ```text
---container-options="--user 0:0"
+--user runner --group-add <colima-docker-gid>
 ```
+
+The GID is auto-detected at build time via `colima ssh -- stat -c '%g' /var/run/docker.sock`.
+This avoids running as root while still granting the necessary socket access.
 
 Our Make wrapper already enforces this.
 
@@ -191,6 +195,6 @@ Avoid running release or publish workflows locally.
 - Docker context is authoritative
 - Socket symlinks are optional
 - `DOCKER_HOST` overrides everything (avoid unless intentional)
-- Runner container must be able to read the socket (we run as root)
+- Runner container uses `--user runner --group-add <gid>` for socket access (not root)
 
 One daemon. One context. Predictable results.

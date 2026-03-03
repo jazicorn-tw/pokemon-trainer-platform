@@ -187,6 +187,12 @@ Dry runs calculate the next version **without side effects**.
 ### Local
 
 ```bash
+make release-dry-run
+```
+
+Or directly:
+
+```bash
 npm ci
 npx semantic-release --dry-run
 ```
@@ -290,4 +296,4 @@ These three files are intentionally kept separate:
 
 - config (`.releaserc.cjs`)
 - policy (`.release.contract.json`)
-- behavior & usage (`RELEASES.md`)
+- behavior & usage (`docs/devops/RELEASE.md`)

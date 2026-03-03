@@ -65,12 +65,13 @@ Includes:
 - Image build & publish rules
 - Deployment strategies
 - Health and security docs
+- `RELEASE.md` — full semantic-release reference (gates, commit types, dry-run, troubleshooting)
 
 If it runs in CI or production, it’s documented here.
 
 ---
 
-### `enviroment/` — Local environment setup
+### `environment/` — Local environment setup
 
 Documentation for **local infrastructure and environment configuration**.
 
@@ -81,8 +82,6 @@ Includes:
 - Environment troubleshooting
 
 If something fails *before* the app starts, start here.
-
-> Note: folder name preserved for compatibility, despite the typo.
 
 ---
 
@@ -97,20 +96,6 @@ Includes:
 - Repo-specific conventions
 
 If the question starts with *“why does this repo do that?”*, it belongs here.
-
----
-
-### `make/` — Makefile documentation
-
-Documentation for the **Make-based developer workflow**.
-
-Includes:
-
-- Makefile structure
-- Roles and categories
-- How to discover and use Make targets
-
-If you’re unsure which `make` command to run, start here.
 
 ---
 
@@ -137,6 +122,7 @@ Includes:
 - Current phase scope
 - Future phases
 - Explicitly deferred work
+- `ROADMAP.md` — version-by-version feature roadmap
 
 Helps explain *why* some features are intentionally incomplete.
 
@@ -190,9 +176,10 @@ Documentation for **local developer tooling and inspection helpers**.
 
 Includes:
 
-- Doctor checks
+- `DOCTOR.md` — local environment sanity check (what it checks, how to configure)
 - Local CI simulation (`act`)
 - Repo inspection (`make tree`)
+- `tooling/make/` — Makefile structure, decade model, and target discovery
 
 If a tool helps you understand or validate the repo, it belongs here.
 
@@ -211,6 +198,22 @@ Explains:
 - How to decide where new documentation goes
 
 Start here if you’re unsure where to look.
+
+---
+
+### `ARCHITECTURE.md`
+
+High-level **architecture overview** — layers, boundaries, testing strategy, and design decisions.
+
+Start here if you want to understand how the system is structured.
+
+---
+
+### `BADGES.md`
+
+**Authoritative source** for all project badges: what each represents, why it exists, and when to update it.
+
+`README.md` surfaces a curated subset; `BADGES.md` is the full reference.
 
 ---
 

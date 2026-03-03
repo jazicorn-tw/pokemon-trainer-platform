@@ -28,7 +28,7 @@ DEPLOY_ENABLED            # true|false — global deployment kill switch
 📄 See:
 
 - `CI_FEATURE_FLAGS.md`
-- `RELEASES.md`
+- `../devops/RELEASE.md`
 - `ENV_SPEC_CI.md`
 
 ---
@@ -95,7 +95,7 @@ MANAGEMENT_SERVER_PORT                     # optional — separate actuator port
 ## Notes
 
 - **CI feature flags** live in **GitHub Actions → Variables**
-- **Release and publish behavior is job-level gated** (see `RELEASES.md`)
+- **Release and publish behavior is job-level gated** (see `../devops/RELEASE.md`)
 - **Publishing is blocked** for non-canonical repositories
 - **Runtime variables** are injected via **Render / Helm / Kubernetes**
 - **Secrets are never committed** — use platform secret managers only

@@ -37,7 +37,7 @@ This performs **local-only environment sanity checks** and fails fast with clear
 
 All other commands assume `make doctor` already passes.
 
-📄 Details: [`DOCTOR.md`](../../DOCTOR.md)
+📄 Details: [`DOCTOR.md`](../tooling/DOCTOR.md)
 
 ---
 
@@ -169,7 +169,7 @@ If something passes locally but fails in CI, treat that as a **documentation gap
 
 📄 Docs:
 
-- [`DOCKER.md`](../enviroment/DOCKER.md)
+- [`DOCKER.md`](../environment/local/DOCKER.md)
 - [`docker-compose.yml`](../../docker-compose.yml)
 
 ---
@@ -178,7 +178,7 @@ If something passes locally but fails in CI, treat that as a **documentation gap
 
 📄 Docs:
 
-- [`LOCAL_ENVIRONMENT.md`](../enviroment/LOCAL_CONFIG.md)
+- [`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_CONFIG.md)
 - [`.vscode/README.md`](../../.vscode/README.md)
 
 ---

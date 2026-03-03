@@ -66,7 +66,7 @@ Runs a fast, **local-only environment sanity check** to confirm:
 
 If this fails, fix the reported issue *before* continuing.
 
-📄 Details: `docs/DOCTOR.md`
+📄 Details: `docs/tooling/DOCTOR.md`
 
 ---
 

@@ -8,7 +8,7 @@ _A Spring Boot 4 backend for managing trainers, Pokémon inventories, trades, an
 This document is the **authoritative delivery contract** for the system.
 Each phase is completed **only** when its release criteria are met.
 
-For design rationale and trade‑offs, see **./ARCHITECTURE.md**.
+For design rationale and trade‑offs, see **../ARCHITECTURE.md**.
 
 ---
 

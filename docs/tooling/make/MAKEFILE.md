@@ -42,7 +42,7 @@ Common entry points:
 ```bash
 make doctor      # Environment capability checks
 make verify      # CI-aligned correctness checks
-make start       # Start local runtime prerequisites
+make dev-up      # Start local runtime prerequisites
 make run-ci      # Simulate CI locally via act
 ```
 
@@ -82,7 +82,7 @@ This file intentionally **does not** define decade responsibilities.
 
 The canonical definition lives here:
 
-- 📄 `docs/make/MAKEFILE_DECADES.md` (authoritative)
+- 📄 `docs/tooling/make/MAKEFILE_DECADES.md` (authoritative)
 
 If there is ever a discrepancy between this guide and the decade document,  
 **the decade document wins**.

@@ -31,7 +31,7 @@ DEPLOY_ENABLED            # true|false — global deployment kill switch
 
 - `ENV_SPEC_CI.md`
 - `CI_FEATURE_FLAGS.md`
-- `RELEASES.md`
+- `../devops/RELEASE.md`
 
 ---
 

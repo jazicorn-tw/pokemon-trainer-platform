@@ -27,7 +27,7 @@ replay_pid*
 
 # Docs / misc (optional but keeps context small)
 HELP.md
-ARCHITECTURE.md
+docs/
 architecture/
 
 # Exclude all JARs by default…
@@ -52,4 +52,3 @@ pnpm-debug.log*
 package.json
 package-lock.json
 .releaserc.json
-RELEASE.md

@@ -77,7 +77,7 @@ Install hooks and run the full local gate:
 make bootstrap
 ```
 
-See `docs/onboarding/PRECOMMIT.md` for details and override options.
+See `docs/commit/PRECOMMIT.md` for details and override options.
 
 ---
 
@@ -144,7 +144,7 @@ Do **not** disable or bypass checks without an approved ADR.
 See:
 
 * `docs/adr/ADR-000-linting.md`
-* `docs/onboarding/LINTING.md`
+* `docs/quality/LINTING.md`
 
 ---
 
@@ -184,7 +184,7 @@ docker context use colima
 ./gradlew test
 ```
 
-If tests fail, consult `docs/TESTING.md` first.
+If tests fail, consult `docs/testing/TESTING.md` first.
 
 ---
 

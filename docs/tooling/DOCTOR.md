@@ -81,6 +81,7 @@ This supports both Docker Desktop and Colima workflows.
 These checks provide **guidance**, not hard failures
 (unless strict mode is enabled):
 
+- **Node.js 20+** — required by `act` env setup and semantic-release scripts
 - Docker provider detection (Desktop, Colima, Rancher, Podman)
 - Docker CPU inspection
 - Docker memory inspection

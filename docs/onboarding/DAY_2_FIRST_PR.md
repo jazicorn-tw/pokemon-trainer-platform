@@ -22,7 +22,7 @@ in the best possible way.
 Skim these documents **once**:
 
 * `README.md` — project purpose & scope
-* `ARCHITECTURE.md` — layers and boundaries
+* `docs/ARCHITECTURE.md` — layers and boundaries
 * `PHASES.md` — current phase and constraints
 * `ADR/` — especially:
 
