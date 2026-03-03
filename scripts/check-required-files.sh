@@ -22,34 +22,9 @@ DOCS_ENV="docs/environment/ENV_SPEC.md"
 
 JSON_MODE="${DOCTOR_JSON:-0}"
 
-# ANSI colors (safe even if Make disables color upstream)
-RED="\033[1;31m"
-GREEN="\033[1;32m"
-GRAY="\033[90m"
-RESET="\033[0m"
-
-status="pass"
-errors=()
-warnings=()
-
-emit_json() {
-  jq -n \
-    --arg status "$status" \
-    --argjson errors "$(printf '%s\n' "${errors[@]:-}" | jq -R . | jq -s .)" \
-    --argjson warnings "$(printf '%s\n' "${warnings[@]:-}" | jq -R . | jq -s .)" '
-    {
-      check: "required-files-baseline",
-      status: $status,
-      errors: $errors,
-      warnings: $warnings
-    }
-  '
-}
-
-fail() {
-  status="fail"
-  errors+=("$1")
-}
+_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
+# shellcheck source=scripts/lib/doctor-check-utils.sh
+source "${_LIB}/doctor-check-utils.sh"
 
 # -----------------------
 # .env (project root)
@@ -64,7 +39,7 @@ fi
 # Output / exit
 # -----------------------
 if [[ "$JSON_MODE" == "1" ]]; then
-  emit_json
+  emit_json "required-files-baseline"
   [[ "$status" == "fail" ]] && exit 1 || exit 0
 fi
 

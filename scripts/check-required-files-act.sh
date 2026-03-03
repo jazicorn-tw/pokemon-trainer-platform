@@ -35,39 +35,9 @@ JSON_MODE="${DOCTOR_JSON:-0}"
 STRICT_ACTRC_PERMS="${STRICT_ACTRC_PERMS:-0}"
 REQUIRE_ACT_VARS="${REQUIRE_ACT_VARS:-1}"
 
-# ANSI colors (safe even if Make disables color upstream)
-ORANGE="\033[38;5;208m"
-RED="\033[1;31m"
-GREEN="\033[1;32m"
-GRAY="\033[90m"
-RESET="\033[0m"
-
-status="pass"
-errors=()
-warnings=()
-
-emit_json() {
-  jq -n \
-    --arg status "$status" \
-    --argjson errors "$(printf '%s\n' "${errors[@]:-}" | jq -R . | jq -s .)" \
-    --argjson warnings "$(printf '%s\n' "${warnings[@]:-}" | jq -R . | jq -s .)" '
-    {
-      check: "required-files-act",
-      status: $status,
-      errors: $errors,
-      warnings: $warnings
-    }
-  '
-}
-
-fail() {
-  status="fail"
-  errors+=("$1")
-}
-
-warn() {
-  warnings+=("$1")
-}
+_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
+# shellcheck source=scripts/lib/doctor-check-utils.sh
+source "${_LIB}/doctor-check-utils.sh"
 
 print_actrc_perm_warning() {
   local perms="$1"
@@ -153,7 +123,7 @@ fi
 # Output / exit
 # -----------------------
 if [[ "$JSON_MODE" == "1" ]]; then
-  emit_json
+  emit_json "required-files-act"
   [[ "$status" == "fail" ]] && exit 1 || exit 0
 fi
 
