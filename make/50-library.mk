@@ -18,6 +18,33 @@
 # EXEC BIT GUARDS (DX) — context-aware + polished
 # -------------------------------------------------------------------
 
+# copy_idempotent dest_label src_example dest_path missing_msg [post_copy_cmd]
+# Non-destructive: skips if dest already exists; increments $$changed if copied.
+define copy_idempotent
+	@if [[ -f "$(3)" ]]; then \
+	  printf "%b\n" "$(GRAY)$(1) already exists (skipping)$(RESET)"; \
+	elif [[ -f "$(2)" ]]; then \
+	  cp "$(2)" "$(3)"; \
+	  $(if $(5),$(5);) \
+	  printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)Created $(1) from $(2)$(RESET)"; \
+	  changed=$$((changed + 1)); \
+	else \
+	  printf "%b\n" "$(YELLOW)Missing $(2) — $(4)$(RESET)"; \
+	fi
+endef
+
+# copy_force dest_label src_example dest_path [post_copy_cmd]
+# Destructive: overwrites dest from src example if src exists.
+define copy_force
+	@if [[ -f "$(2)" ]]; then \
+	  cp "$(2)" "$(3)"; \
+	  $(if $(4),$(4);) \
+	  printf "%b\n" "$(CYAN)▶$(RESET) $(BOLD)Overwrote $(1) from $(2)$(RESET)"; \
+	else \
+	  printf "%b\n" "$(YELLOW)Missing $(2) — cannot overwrite $(1)$(RESET)"; \
+	fi
+endef
+
 define require_exec
 	@missing=""; \
 	for f in $(1); do \
@@ -80,10 +107,10 @@ doctor-json-pretty: ## 🧪 Doctor JSON output (pretty-printed for humans)
 clean: ## 🧹 Clean build outputs
 	$(call step,🧹 Gradle clean)
 	$(call info,Running Gradle…)
-	@./gradlew --no-daemon -q clean
+	@$(GRADLE) clean
 
 clean-all: ## 🧹 Clean build + purge local caches (use sparingly)
 	$(call step,🧹 Clean + purge local caches)
 	$(call info,Running Gradle…)
-	@./gradlew --no-daemon -q clean
+	@$(GRADLE) clean
 	@rm -rf .gradle build

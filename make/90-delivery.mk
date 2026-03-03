@@ -45,24 +45,22 @@ deploy: ## 🚧 Deploy is not wired yet
 
 ALLOW_UNWIRED_PUBLISH ?= 0
 
-docker-publish: ## 🐳 Publish Docker image (guarded; not wired yet)
-	$(call step,🐳 Docker publish)
-	@printf "%b\n" "$(YELLOW)docker-publish$(RESET) is not wired yet."
-	@echo "See: docs/onboarding/DOCKER_PUBLISH.md"
+# unwired_guard step_label target_name docs_path
+# Guards scaffold-only publish targets. Fails unless ALLOW_UNWIRED_PUBLISH=1.
+define unwired_guard
+	$(call step,$(1))
+	@printf "%b\n" "$(YELLOW)$(2)$(RESET) is not wired yet."
+	@echo "See: $(3)"
 	@if [ "$(ALLOW_UNWIRED_PUBLISH)" != "1" ]; then \
-	  printf "%b\n" "$(RED)❌ Refusing to publish: docker-publish is scaffold-only.$(RESET)"; \
+	  printf "%b\n" "$(RED)❌ Refusing to publish: $(2) is scaffold-only.$(RESET)"; \
 	  echo "👉 Set ALLOW_UNWIRED_PUBLISH=1 to bypass while wiring (NOT recommended long-term)."; \
 	  exit 1; \
 	fi
 	@echo "✅ Bypass enabled (ALLOW_UNWIRED_PUBLISH=1). No-op."
+endef
+
+docker-publish: ## 🐳 Publish Docker image (guarded; not wired yet)
+	$(call unwired_guard,🐳 Docker publish,docker-publish,docs/onboarding/DOCKER_PUBLISH.md)
 
 helm-publish: ## ⎈ Publish Helm chart (guarded; not wired yet)
-	$(call step,⎈ Helm publish)
-	@printf "%b\n" "$(YELLOW)helm-publish$(RESET) is not wired yet."
-	@echo "See: docs/onboarding/HELM_PUBLISH.md"
-	@if [ "$(ALLOW_UNWIRED_PUBLISH)" != "1" ]; then \
-	  printf "%b\n" "$(RED)❌ Refusing to publish: helm-publish is scaffold-only.$(RESET)"; \
-	  echo "👉 Set ALLOW_UNWIRED_PUBLISH=1 to bypass while wiring (NOT recommended long-term)."; \
-	  exit 1; \
-	fi
-	@echo "✅ Bypass enabled (ALLOW_UNWIRED_PUBLISH=1). No-op."
+	$(call unwired_guard,⎈ Helm publish,helm-publish,docs/onboarding/HELM_PUBLISH.md)

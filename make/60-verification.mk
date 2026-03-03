@@ -30,21 +30,21 @@ format: ## ✨ Auto-format sources
 	  rm -rf .gradle/configuration-cache .gradle/caches; \
 	fi
 	$(call info,Running Gradle…)
-	@./gradlew --no-daemon -q --no-configuration-cache spotlessApply
+	@$(GRADLE) --no-configuration-cache spotlessApply
 	$(call group_end)
 
 lint: ## 🔎 Static analysis only (fast-ish)
 	$(call group_start,lint)
 	$(call step,🔎 Static analysis)
 	$(call info,Running Gradle…)
-	@./gradlew --no-daemon -q --no-configuration-cache checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest
+	@$(GRADLE) --no-configuration-cache checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest
 	$(call group_end)
 
 test: ## 🧪 Unit tests
 	$(call group_start,test)
 	$(call step,🧪 Unit tests)
 	$(call info,Running Gradle…)
-	@./gradlew --no-daemon -q test
+	@$(GRADLE) test
 	$(call group_end)
 
 verify: doctor lint test ## ✅ Doctor + lint + test
@@ -54,14 +54,14 @@ quality: doctor ## ✅ Doctor + spotlessCheck + clean check (matches CI intent)
 	$(call group_start,quality)
 	$(call step,✅ CI-parity quality gate)
 	$(call info,Running Gradle…)
-	@./gradlew --no-daemon -q spotlessCheck clean check
+	@$(GRADLE) spotlessCheck clean check
 	$(call group_end)
 
 test-ci: ## CI: Run CI-equivalent test suite locally
 	$(call group_start,test-ci)
 	$(call step,🧪 CI-like test run)
 	$(call info,Running Gradle…)
-	@./gradlew --no-daemon -q clean test
+	@$(GRADLE) clean test
 	$(call group_end)
 
 bootstrap: env-init hooks exec-bits quality ## 🚀 Install env + hooks + run full local quality gate

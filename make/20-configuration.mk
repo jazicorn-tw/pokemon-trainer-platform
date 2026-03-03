@@ -13,6 +13,9 @@
 
 LOCAL_SETTINGS ?= .config/local-settings.json
 
+# Gradle wrapper shorthand (shared by all targets that invoke Gradle)
+GRADLE ?= ./gradlew --no-daemon -q
+
 # -------------------------------------------------------------------
 # act workflow discovery
 # -------------------------------------------------------------------
