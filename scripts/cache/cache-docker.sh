@@ -37,6 +37,8 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 
 _LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib"
+# shellcheck source=scripts/lib/shell-utils.sh
+source "${_LIB}/shell-utils.sh"
 # shellcheck source=scripts/lib/validators.sh
 source "${_LIB}/validators.sh"
 # shellcheck source=scripts/lib/colima-utils.sh
@@ -51,11 +53,6 @@ verbose="${CLEAN_DOCKER_VERBOSE:-false}"
 auto_min_free_gb="${CLEAN_DOCKER_AUTO_MIN_FREE_GB:-10}"
 auto_min_free_inodes="${CLEAN_DOCKER_AUTO_MIN_FREE_INODES:-5000}"
 colima_profile="${CLEAN_DOCKER_COLIMA_PROFILE:-default}"
-
-die() {
-  echo "❌ $*" >&2
-  exit 2
-}
 
 validate() {
   case "${mode}" in true|false|auto) ;; *) die "Invalid CLEAN_DOCKER_MODE=${mode} (use true|false|auto)" ;; esac

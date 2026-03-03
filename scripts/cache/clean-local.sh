@@ -21,13 +21,12 @@ set -euo pipefail
 
 cmd="${1:-clean}"
 
-die() {
-  echo "❌ $*" >&2
-  exit 2
-}
-
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd -- "${script_dir}/../.." && pwd)"
+
+_LIB="${repo_root}/scripts/lib"
+# shellcheck source=scripts/lib/shell-utils.sh
+source "${_LIB}/shell-utils.sh"
 
 act_script="${repo_root}/scripts/cache/cache-act-gradle.sh"
 docker_script="${repo_root}/scripts/cache/cache-docker.sh"

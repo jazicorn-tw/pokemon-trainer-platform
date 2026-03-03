@@ -28,6 +28,8 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 
 _LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib"
+# shellcheck source=scripts/lib/shell-utils.sh
+source "${_LIB}/shell-utils.sh"
 # shellcheck source=scripts/lib/validators.sh
 source "${_LIB}/validators.sh"
 
@@ -37,11 +39,6 @@ reset="${CLEAN_COLIMA_RESET:-false}"
 disk_gb="${CLEAN_COLIMA_DISK_GB:-80}"
 profile="${CLEAN_COLIMA_PROFILE:-default}"
 assume_yes="${CLEAN_COLIMA_ASSUME_YES:-false}"
-
-die() {
-  echo "❌ $*" >&2
-  exit 2
-}
 
 validate() {
   is_bool "${reset}" || die "Invalid CLEAN_COLIMA_RESET=${reset} (use true|false)"

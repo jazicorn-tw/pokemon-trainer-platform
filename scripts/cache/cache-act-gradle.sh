@@ -29,6 +29,8 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 
 _LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib"
+# shellcheck source=scripts/lib/shell-utils.sh
+source "${_LIB}/shell-utils.sh"
 # shellcheck source=scripts/lib/validators.sh
 source "${_LIB}/validators.sh"
 # shellcheck source=scripts/lib/colima-utils.sh
@@ -43,11 +45,6 @@ warn_gb="${ACT_GRADLE_CACHE_WARN_GB:-8}"
 min_free_gb="${ACT_COLIMA_DISK_MIN_FREE_GB:-6}"
 profile="${ACT_COLIMA_PROFILE:-default}"
 min_free_inodes="${ACT_COLIMA_MIN_FREE_INODES:-5000}"
-
-die() {
-  echo "❌ $*" >&2
-  exit 2
-}
 
 validate() {
   case "${remove_mode}" in true|false|auto) ;; *) die "Invalid ACT_GRADLE_CACHE_REMOVE=${remove_mode} (use true|false|auto)" ;; esac
