@@ -1,5 +1,19 @@
 # 📦 Release History
 
+## 📦 Release 1.1.0
+
+### ✨ Features
+
+- **helm:** complete chart templates for serviceaccount, hpa, and deployment (840ca8d)
+
+
+
+## 1.1.0
+
+### ✨ Features
+
+- **helm:** complete chart templates for serviceaccount, hpa, and deployment
+
 ## 📦 Release 1.0.0
 
 ### ✨ Features
