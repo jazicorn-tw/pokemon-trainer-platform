@@ -52,6 +52,12 @@ define act_run_workflow
 	  exit 1; \
 	fi
 
+	@if ! docker -H "unix://$(ACT_DOCKER_SOCK)" info >/dev/null 2>&1; then \
+	  printf "%b\n" "$(RED)❌ Docker daemon not reachable at $(ACT_DOCKER_SOCK).$(RESET)"; \
+	  printf "%b\n" "$(GRAY)Start it with: make env-up$(RESET)"; \
+	  exit 1; \
+	fi
+
 	@# Preflight: ensure required local files exist for act runs (.vars, .env, ~/.actrc).
 	@REQUIRE_ACT_VARS=1 ./scripts/check-required-files.sh >/dev/null
 
@@ -67,13 +73,13 @@ define act_run_workflow
 	  printf "%b\n" "$(GRAY)↳ trying event=$$ev$(RESET)"; \
 	  tmp="$$(mktemp)"; \
 	  set +e; \
-	  REQUIRE_ACT_VARS=1 ACT=true $(ACT) $$ev \
+	  DOCKER_HOST="unix://$(ACT_DOCKER_SOCK)" REQUIRE_ACT_VARS=1 ACT=true $(ACT) $$ev \
 	    --bind \
 	    $(ACT_REUSE_ARG) \
 	    -W $(WORKFLOW_FILE) \
 	    $(if $(JOB),-j $(JOB),) \
 	    -P ubuntu-latest=$(ACT_IMAGE) \
-	    --container-daemon-socket $(ACT_DOCKER_SOCK) \
+	    --container-daemon-socket "unix://$(ACT_CONTAINER_DAEMON_SOCKET)" \
 	    --container-architecture $(ACT_PLATFORM) \
 	    --container-options "--user $(ACT_CONTAINER_USER) $(ACT_CONTAINER_OPTS)" \
 	    2>&1 | tee "$$tmp"; \

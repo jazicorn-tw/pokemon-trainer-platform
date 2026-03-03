@@ -119,30 +119,10 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "::endgroup::"
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up Java 21 + Gradle
+        uses: ./.github/actions/setup-java-gradle
         with:
-          distribution: temurin
-          java-version: "21"
-
-      # Replaces:
-      # - uses: gradle/wrapper-validation-action@v2
-      # and also provides Gradle caching
-      - name: Disable job summary under act
-        if: ${{ github.actor == 'nektos/act' }}
-        run: |
-          # Prevent actions from writing HTML summaries to the console under act
-          echo "GITHUB_STEP_SUMMARY=/dev/null" >> "$GITHUB_ENV"
-
-      # ------------------------------------------------------------
-      # Gradle setup
-      # - CI: use official action (wrapper validation + caching + summary)
-      # - act: run Gradle directly (no HTML job summary spam)
-      # ------------------------------------------------------------
-
-      - name: Set up Gradle (CI only — wrapper validation + caching)
-        if: ${{ github.actor != 'nektos/act' }}
-        uses: gradle/actions/setup-gradle@v4
+          setup-gradle: 'true'
 
       - name: Gradle (act only — lightweight)
         if: ${{ github.actor == 'nektos/act' }}

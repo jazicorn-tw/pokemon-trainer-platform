@@ -17,11 +17,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 21 (Temurin)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
+      - name: Set up Java 21
+        uses: ./.github/actions/setup-java-gradle
 
       - name: Detect act (local runner)
         id: detect_act
