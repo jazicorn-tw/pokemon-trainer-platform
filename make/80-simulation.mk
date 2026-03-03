@@ -36,12 +36,23 @@
 # act defaults (safe for bind mounts)
 # -----------------------------------------------------------------------------
 
-# Run containers as the invoking user, not root.
-# This prevents root-owned files in bind-mounted caches (.gradle-act, etc.)
-ACT_CONTAINER_USER ?= $(shell id -u):$(shell id -g)
+# Run containers as 'runner' — the catthehacker image user (uid 1001) with a
+# home directory at /home/runner and docker group membership.
+# Do NOT use the macOS host uid: uid 501 is undefined in the container image,
+# so $HOME resolves to '/' which breaks setup-java (/.m2 permission denied),
+# Helm config writes, and Docker socket access (runner is in docker group).
+# NOTE: bind-mounted cache files (.gradle-act) will be owned by uid 1001 on
+# the macOS host; use 'make clean-act' or 'sudo rm -rf .gradle-act' to clean.
+ACT_CONTAINER_USER ?= runner
 
 # Optional reuse flag (set to --reuse if enabled elsewhere)
 ACT_REUSE_ARG ?=
+
+# Skip pulling images that are already present locally.
+# The catthehacker image is 67 GB — pulling triggers a credential-store lookup
+# (docker-credential-desktop) that is unavailable inside act's environment.
+# Override with ACT_PULL_ARG=--pull to force a fresh pull.
+ACT_PULL_ARG ?= --pull=false
 
 define act_run_workflow
 	$(call group_start,act)
@@ -57,6 +68,13 @@ define act_run_workflow
 	  printf "%b\n" "$(GRAY)Start it with: make env-up$(RESET)"; \
 	  exit 1; \
 	fi
+
+	@# Purge project-level Gradle configuration cache before each act run.
+	@# The container runs as runner (uid 1001) but cache files from a prior local run
+	@# are owned by the macOS user (uid 501).  On virtiofs, runner cannot chmod those
+	@# files, which causes Gradle to fail with "could not set file mode 600".
+	@# The cache is rebuilt quickly and lives only in .gradle/configuration-cache/.
+	@rm -rf "$(CURDIR)/.gradle/configuration-cache" 2>/dev/null || true
 
 	@# Preflight: ensure required local files exist for act runs (.vars, .env, ~/.actrc).
 	@REQUIRE_ACT_VARS=1 ./scripts/check-required-files.sh >/dev/null
@@ -75,6 +93,7 @@ define act_run_workflow
 	  set +e; \
 	  DOCKER_HOST="unix://$(ACT_DOCKER_SOCK)" REQUIRE_ACT_VARS=1 ACT=true $(ACT) $$ev \
 	    --bind \
+	    $(ACT_PULL_ARG) \
 	    $(ACT_REUSE_ARG) \
 	    -W $(WORKFLOW_FILE) \
 	    $(if $(JOB),-j $(JOB),) \

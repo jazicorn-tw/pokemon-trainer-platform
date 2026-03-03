@@ -46,6 +46,10 @@ _DOCKER_BIN := $(firstword $(wildcard \
   /usr/local/bin/docker \
   /usr/bin/docker))
 
+_COLIMA_BIN := $(firstword $(wildcard \
+  /opt/homebrew/bin/colima \
+  /usr/local/bin/colima))
+
 # Derive the Docker socket from the active context so Colima, Docker Desktop,
 # and plain Docker all work without manual override.
 # Override with ACT_DOCKER_SOCK=/path/to/docker.sock if needed.
@@ -68,6 +72,27 @@ ACT_DOCKER_SOCK ?= $(or \
 # Use "-" to disable the bind-mount entirely if workflows don't need DinD.
 ACT_CONTAINER_DAEMON_SOCKET ?= /var/run/docker.sock
 
+# GID of the Docker socket inside the Colima/Docker VM.
+# The runner user (uid 1001) is in the 'docker' group inside the container, but
+# the VM-side socket may have a different gid than the container's docker group.
+# Adding the VM socket's gid via --group-add ensures runner can access the socket
+# for DinD workflows (Testcontainers, docker build, etc.).
+#
+# Detection order:
+# 1. colima ssh — no image pull needed; reliable for Colima setups.
+#    Requires PATH to include /opt/homebrew/bin so 'lima' (colima's VM backend)
+#    is found. The full colima path is probed via _COLIMA_BIN above.
+# 2. docker run alpine --pull=never — works when alpine is already cached.
+# 3. Fall back to 999 (conventional docker gid) if detection fails.
+_DOCKER_SOCK_GID := $(or \
+  $(if $(_COLIMA_BIN),$(shell PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin \
+    $(_COLIMA_BIN) ssh -- stat -c '%g' /var/run/docker.sock 2>/dev/null),), \
+  $(if $(_DOCKER_BIN),$(shell DOCKER_HOST="unix://$(ACT_DOCKER_SOCK)" $(_DOCKER_BIN) run --rm --quiet \
+    --pull=never \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    alpine stat -c '%g' /var/run/docker.sock 2>/dev/null),), \
+  999)
+
 # -----------------------------------------------------------------------------
 # act runner tuning (Gradle cache + safer networking defaults)
 # -----------------------------------------------------------------------------
@@ -82,6 +107,7 @@ ACT_JAVA_TOOL_OPTIONS := \
 
 # Use docker-short flags and single-quotes for values containing spaces
 ACT_CONTAINER_OPTS ?= \
+  --group-add $(_DOCKER_SOCK_GID) \
   -e JAVA_TOOL_OPTIONS='$(ACT_JAVA_TOOL_OPTIONS)' \
   -e GRADLE_USER_HOME=/tmp/gradle \
   -v $(ACT_GRADLE_CACHE_DIR_EFFECTIVE):/tmp/gradle
