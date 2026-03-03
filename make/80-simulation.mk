@@ -69,11 +69,11 @@ define act_run_workflow
 	  exit 1; \
 	fi
 
-	@# Purge project-level Gradle configuration cache before each act run.
-	@# The container runs as runner (uid 1001) but cache files from a prior local run
-	@# are owned by the macOS user (uid 501).  On virtiofs, runner cannot chmod those
-	@# files, which causes Gradle to fail with "could not set file mode 600".
-	@# The cache is rebuilt quickly and lives only in .gradle/configuration-cache/.
+	@# Clear any stale configuration-cache entries left by local ./gradlew runs.
+	@# The configuration cache is disabled inside act containers via JAVA_TOOL_OPTIONS
+	@# (org.gradle.configuration-cache=false) because virtiofs does not support chmod,
+	@# causing Gradle to fail with "could not set file mode 600" for every new entry.
+	@# This cleanup prevents stale local entries from cluttering the project directory.
 	@rm -rf "$(CURDIR)/.gradle/configuration-cache" 2>/dev/null || true
 
 	@# Preflight: ensure required local files exist for act runs (.vars, .env, ~/.actrc).

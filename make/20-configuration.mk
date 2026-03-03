@@ -100,10 +100,17 @@ ACT_GRADLE_CACHE_DIR ?=
 ACT_GRADLE_CACHE_DIR_EFFECTIVE := $(or $(strip $(ACT_GRADLE_CACHE_DIR)),$(CURDIR)/.gradle-act)
 
 # Use JAVA_TOOL_OPTIONS to avoid quoting issues inside `--container-options`
+#
+# org.gradle.configuration-cache=false: virtiofs (the macOS bind-mount filesystem
+# used by Colima) does not support chmod from inside containers, causing Gradle to
+# fail with "could not set file mode 600" when it tries to secure the cache entry.
+# Disabling the configuration cache for act runs avoids all chmod activity in the
+# project's .gradle/ directory.  Local ./gradlew runs still use the cache normally.
 ACT_JAVA_TOOL_OPTIONS := \
   -Djava.net.preferIPv4Stack=true \
   -Dorg.gradle.internal.http.connectionTimeout=60000 \
-  -Dorg.gradle.internal.http.socketTimeout=60000
+  -Dorg.gradle.internal.http.socketTimeout=60000 \
+  -Dorg.gradle.configuration-cache=false
 
 # Use docker-short flags and single-quotes for values containing spaces
 ACT_CONTAINER_OPTS ?= \

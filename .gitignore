@@ -74,6 +74,10 @@ out/
 hs_err_pid*
 replay_pid*
 
+# Unix core dumps (e.g. from qemu emulation under act)
+core
+core.*
+
 ### Node / semantic-release ###
 node_modules/
 npm-debug.log*

@@ -26,7 +26,8 @@ jobs:
       SPRING_PROFILES_ACTIVE: test
 
       # Optional: speed up Gradle; safer on low-mem runners
-      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dorg.gradle.caching=true
+      # (org.gradle.caching is set in gradle.properties)
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false
 
       # Optional: some environments benefit from reuse, but it's not required
       TESTCONTAINERS_REUSE_ENABLE: false
