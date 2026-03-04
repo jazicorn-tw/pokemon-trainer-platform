@@ -25,8 +25,8 @@ This is the **operating system permission**.
 Example:
 
 ```bash
-chmod +x scripts/bootstrap-macos.sh
-./scripts/bootstrap-macos.sh
+chmod +x scripts/bootstrap/bootstrap-macos.sh
+./scripts/bootstrap/bootstrap-macos.sh
 ```
 
 If this bit is set:
@@ -55,7 +55,7 @@ Git file modes:
 You can inspect this with:
 
 ```bash
-git ls-files --stage scripts/bootstrap-macos.sh
+git ls-files --stage scripts/bootstrap/bootstrap-macos.sh
 ```
 
 If Git tracks a script as `100644`:
@@ -98,7 +98,7 @@ It must **not** rewrite repository history.
 
 ## Why the checker still warns
 
-`scripts/check-executable-bits.sh` checks **Git’s index**, not your filesystem.
+`scripts/check/check-executable-bits.sh` checks **Git’s index**, not your filesystem.
 
 It is asking:
 

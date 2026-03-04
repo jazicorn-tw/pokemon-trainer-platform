@@ -76,12 +76,12 @@ local-settings: ## 🧩 Print effective local settings
 	@test -f "$(LOCAL_SETTINGS)" && cat "$(LOCAL_SETTINGS)" || printf "%b\n" "$(GRAY)No local settings file found.$(RESET)"
 
 exec-bits: ## 🔧 Check & (optionally) auto-fix executable bits for tracked scripts
-	$(call require_exec,./scripts/check-executable-bits.sh)
-	@CHECK_EXECUTABLE_BITS_CONFIG="$(LOCAL_SETTINGS)" ./scripts/check-executable-bits.sh
+	$(call require_exec,./scripts/check/check-executable-bits.sh)
+	@CHECK_EXECUTABLE_BITS_CONFIG="$(LOCAL_SETTINGS)" ./scripts/check/check-executable-bits.sh
 
 hooks: ## 🪝 Configure repo-local git hooks
-	$(call require_exec,./scripts/install-hooks.sh)
-	@./scripts/install-hooks.sh
+	$(call require_exec,./scripts/bootstrap/install-hooks.sh)
+	@./scripts/bootstrap/install-hooks.sh
 
 doctor: check-env ## 🩺 Local environment sanity checks
 	$(call require_exec,./scripts/doctor.sh)

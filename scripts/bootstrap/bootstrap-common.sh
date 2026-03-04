@@ -17,7 +17,7 @@ fi
 cd "${REPO_ROOT}"
 
 # Fix executable bits (files only; best effort)
-find scripts .githooks -maxdepth 1 -type f -exec chmod +x {} + 2>/dev/null || true
+find scripts .githooks -type f -exec chmod +x {} + 2>/dev/null || true
 
 # Ensure Git uses repo-managed hooks
 log "🔧 Setting git hooks path to .githooks"

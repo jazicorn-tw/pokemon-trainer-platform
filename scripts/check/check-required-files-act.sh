@@ -35,7 +35,7 @@ JSON_MODE="${DOCTOR_JSON:-0}"
 STRICT_ACTRC_PERMS="${STRICT_ACTRC_PERMS:-0}"
 REQUIRE_ACT_VARS="${REQUIRE_ACT_VARS:-1}"
 
-_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
+_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib"
 # shellcheck source=scripts/lib/doctor-check-utils.sh
 source "${_LIB}/doctor-check-utils.sh"
 

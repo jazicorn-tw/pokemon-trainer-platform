@@ -55,7 +55,7 @@ Tracked scripts and git hooks **must be executable** to function correctly.
 This is enforced via:
 
 ```bash
-scripts/check-executable-bits.sh
+scripts/check/check-executable-bits.sh
 ```
 
 ### Why this exists
@@ -110,7 +110,7 @@ make local-settings
 or directly:
 
 ```bash
-./scripts/check-executable-bits.sh --print-config
+./scripts/check/check-executable-bits.sh --print-config
 ```
 
 ---
@@ -127,12 +127,12 @@ make hooks
 
 Under the hood, it runs an OS-specific bootstrap script:
 
-- macOS: `./scripts/bootstrap-macos.sh`
-- Linux: `./scripts/bootstrap-linux.sh`
+- macOS: `./scripts/bootstrap/bootstrap-macos.sh`
+- Linux: `./scripts/bootstrap/bootstrap-linux.sh`
 
 Both call a shared helper:
 
-- `./scripts/bootstrap-common.sh`
+- `./scripts/bootstrap/bootstrap-common.sh`
 
 What bootstrap does (best effort):
 

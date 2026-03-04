@@ -119,7 +119,7 @@ Gradle equivalents:
 
 ## Make targets
 
-- `make hooks` — installs Git hooks (runs `./scripts/install-hooks.sh`)
+- `make hooks` — installs Git hooks (runs `./scripts/bootstrap/install-hooks.sh`)
 - `make quality` — runs `spotlessApply` then `./gradlew clean check`
 - `make test` — runs unit tests
 - `make bootstrap` — runs `hooks` + `quality`

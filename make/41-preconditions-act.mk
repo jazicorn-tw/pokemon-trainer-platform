@@ -44,5 +44,5 @@ env-init-act-force: ## 🚨 Force overwrite act-only env files from examples (de
 
 check-env-act: ## 🧪 Verify act-only local env files (.vars + .secrets + ~/.actrc)
 	$(call section,🧪  Environment check (act))
-	$(call require_exec,./scripts/check-required-files-act.sh)
-	@./scripts/check-required-files-act.sh
+	$(call require_exec,./scripts/check/check-required-files-act.sh)
+	@./scripts/check/check-required-files-act.sh

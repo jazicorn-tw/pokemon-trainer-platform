@@ -36,5 +36,5 @@ env-init-force: ## 🚨 Force overwrite baseline env files from examples (destru
 
 check-env: ## 🌱 Verify required baseline local env file (.env)
 	$(call section,🌱  Environment check (baseline))
-	$(call require_exec,./scripts/check-required-files.sh)
-	@./scripts/check-required-files.sh
+	$(call require_exec,./scripts/check/check-required-files.sh)
+	@./scripts/check/check-required-files.sh

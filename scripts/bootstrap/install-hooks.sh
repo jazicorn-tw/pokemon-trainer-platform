@@ -25,10 +25,9 @@ fi
 find .githooks -maxdepth 1 -type f -print0 2>/dev/null | xargs -0 chmod +x 2>/dev/null || true
 
 # Ensure repo scripts are executable (prevents "Permission denied" in make targets).
-# Only chmod matching files if present.
-if compgen -G "scripts/*.sh" >/dev/null; then
-  chmod +x scripts/*.sh
-fi
+# Uses find to cover all subdirectories (scripts are organized into subfolders).
+find scripts -type f \( -name "*.sh" -o -name "*.bash" -o -name "*.mjs" \) -print0 \
+  | xargs -0 chmod +x 2>/dev/null || true
 
 echo "✅ Installed git hooks:"
 echo "  core.hooksPath = .githooks"

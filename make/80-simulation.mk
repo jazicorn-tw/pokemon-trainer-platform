@@ -77,7 +77,7 @@ define act_run_workflow
 	@rm -rf "$(CURDIR)/.gradle/configuration-cache" 2>/dev/null || true
 
 	@# Preflight: ensure required local files exist for act runs (.vars, .env, ~/.actrc).
-	@REQUIRE_ACT_VARS=1 ./scripts/check-required-files.sh >/dev/null
+	@REQUIRE_ACT_VARS=1 ./scripts/check/check-required-files.sh >/dev/null
 
 	@mkdir -p "$(ACT_GRADLE_CACHE_DIR_EFFECTIVE)"
 

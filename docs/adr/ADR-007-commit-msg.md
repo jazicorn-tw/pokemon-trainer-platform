@@ -97,10 +97,10 @@ This guard prevents accidental corruption of the hook via copy/paste of setup sn
 
 All setup logic lives in scripts under `scripts/`:
 
-- `scripts/install-hooks.sh`
+- `scripts/bootstrap/install-hooks.sh`
   - sets `core.hooksPath`
   - ensures hooks and scripts are executable
-- `scripts/bootstrap-macos.sh`
+- `scripts/bootstrap/bootstrap-macos.sh`
   - macOS-only
   - fixes executable bits on filesystems that strip `+x`
 
@@ -110,9 +110,9 @@ Installer logic is **explicitly forbidden** inside `.githooks/commit-msg`.
 
 To prevent silent hook failures:
 
-- `scripts/check-executable-bits.sh` verifies:
-  - `scripts/*.sh`
-  - `.githooks/*`
+- `scripts/check/check-executable-bits.sh` verifies:
+  - `scripts/` (all tracked scripts, recursively)
+  - `.githooks/`
 - Local behavior: WARN
 - CI behavior (`STRICT=1`): FAIL
 

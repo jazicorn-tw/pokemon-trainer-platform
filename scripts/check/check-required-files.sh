@@ -14,7 +14,7 @@ set -euo pipefail
 #
 # Notes:
 # - This script intentionally excludes act-only requirements (.vars, ~/.actrc, .secrets).
-#   Those are checked by: scripts/check-required-files-act.sh
+#   Those are checked by: scripts/check/check-required-files-act.sh
 # -----------------------------------------------------------------------------
 
 PROJECT_ENV=".env"
@@ -22,7 +22,7 @@ DOCS_ENV="docs/environment/ENV_SPEC.md"
 
 JSON_MODE="${DOCTOR_JSON:-0}"
 
-_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib"
+_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib"
 # shellcheck source=scripts/lib/doctor-check-utils.sh
 source "${_LIB}/doctor-check-utils.sh"
 

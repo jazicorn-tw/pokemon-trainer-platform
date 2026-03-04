@@ -141,7 +141,7 @@ If Docker still reports low resources after restart:
 ## Location
 
 ```text
-scripts/check-colima.sh
+scripts/check/check-colima.sh
 ```
 
 ---

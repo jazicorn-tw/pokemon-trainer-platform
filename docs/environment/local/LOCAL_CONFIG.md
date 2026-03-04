@@ -128,13 +128,13 @@ make doctor
 Or run the check directly:
 
 ```bash
-scripts/check-required-files.sh
+scripts/check/check-required-files.sh
 ```
 
 For machine-readable output:
 
 ```bash
-DOCTOR_JSON=1 scripts/check-required-files.sh
+DOCTOR_JSON=1 scripts/check/check-required-files.sh
 ```
 
 ---

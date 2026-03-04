@@ -47,7 +47,7 @@ CONFIG_FILE="${CHECK_EXECUTABLE_BITS_CONFIG:-.config/local-settings.json}"
 
 usage() {
   cat <<'EOF'
-Usage: scripts/check-executable-bits.sh [--print-config] [--strict N] [--auto-stage 0|1]
+Usage: scripts/check/check-executable-bits.sh [--print-config] [--strict N] [--auto-stage 0|1]
 
   --print-config     Print the effective config (after merge/precedence) and exit 0
   --strict N         Override strictness (0 warn, 1 fail, 2 auto-fix)
@@ -210,8 +210,8 @@ if [[ "${PRINT_CONFIG}" == "1" ]]; then
 fi
 
 PATTERNS=(
-  "scripts/*.sh"
-  ".githooks/*"
+  "scripts/"
+  ".githooks/"
 )
 
 missing=()

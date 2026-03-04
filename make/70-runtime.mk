@@ -35,7 +35,7 @@ db-shell: ## 🐘 Open a psql shell in the postgres container
 	$(call step,🐘 Opening psql shell)
 	@docker compose exec postgres psql -U $${POSTGRES_USER:-trainer} -d $${POSTGRES_DB:-trainer}
 
-# db-flyway-clean runs scripts/clean-db-flyway.sh, which calls `flyway clean` to drop ALL
+# db-flyway-clean runs scripts/db/clean-db-flyway.sh, which calls `flyway clean` to drop ALL
 # Flyway-managed objects (tables, sequences, flyway_schema_history) from the local database.
 # The next app start (make run) will re-apply every migration from scratch.
 #
@@ -54,13 +54,13 @@ db-flyway-clean: ## 🧼 Wipe DB schema via Flyway CLI (requires: flyway install
 	  printf "%b\n" "$(RED)❌ .env not found — copy .env.example and fill in values$(RESET)"; \
 	  exit 1; \
 	fi
-	@set -a; source .env; set +a; ./scripts/clean-db-flyway.sh
+	@set -a; source .env; set +a; ./scripts/db/clean-db-flyway.sh
 
-# seed-db runs scripts/seed-db.sh, which inserts 5 sample trainers (Ash, Misty, Brock,
+# seed-db runs scripts/db/seed-db.sh, which inserts 5 sample trainers (Ash, Misty, Brock,
 # Gary, Dawn) into the local database for development use.
 # Safe to re-run — ON CONFLICT DO NOTHING skips rows that already exist.
 # Requires the Docker Compose postgres container to be running (make docker-up).
 seed-db: ## 🌱 Seed local DB with 5 sample trainers (idempotent)
 	$(call step,🌱 Seeding database)
 	$(call info,Requires postgres container \(make docker-up\))
-	@./scripts/seed-db.sh
+	@./scripts/db/seed-db.sh

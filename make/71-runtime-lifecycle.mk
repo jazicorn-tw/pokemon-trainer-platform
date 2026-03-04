@@ -11,10 +11,10 @@
 .PHONY: env-up env-down env-status run
 
 env-up: ## 🚀 Start local dev environment (runtime prerequisites)
-	@./scripts/start-dev.sh
+	@./scripts/dev/start-dev.sh
 
 env-down: ## 🛑 Stop local dev environment
-	@./scripts/stop-dev.sh
+	@./scripts/dev/stop-dev.sh
 
 env-status: ## 🔎 Show local dev environment status
 	@echo "docker context: $$(docker context show 2>/dev/null || echo 'n/a')"

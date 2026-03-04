@@ -7,9 +7,9 @@ Bootstrap scripts exist to eliminate a class of frustrating, non-obvious **permi
 
 Scripts covered:
 
-- `scripts/bootstrap-common.sh` (shared logic)
-- `scripts/bootstrap-macos.sh` (macOS entry point)
-- `scripts/bootstrap-linux.sh` (Linux entry point)
+- `scripts/bootstrap/bootstrap-common.sh` (shared logic)
+- `scripts/bootstrap/bootstrap-macos.sh` (macOS entry point)
+- `scripts/bootstrap/bootstrap-linux.sh` (Linux entry point)
 
 ---
 
@@ -115,32 +115,32 @@ make bootstrap
 macOS:
 
 ```bash
-./scripts/bootstrap-macos.sh
+./scripts/bootstrap/bootstrap-macos.sh
 ```
 
 Linux:
 
 ```bash
-./scripts/bootstrap-linux.sh
+./scripts/bootstrap/bootstrap-linux.sh
 ```
 
 ---
 
 ## OS-specific behavior
 
-### macOS (`scripts/bootstrap-macos.sh`)
+### macOS (`scripts/bootstrap/bootstrap-macos.sh`)
 
 - Runs only when `uname -s` is `Darwin`
 - Prints a friendly message and exits on non-macOS systems
-- Delegates all shared work to `scripts/bootstrap-common.sh`
+- Delegates all shared work to `scripts/bootstrap/bootstrap-common.sh`
 
-### Linux (`scripts/bootstrap-linux.sh`)
+### Linux (`scripts/bootstrap/bootstrap-linux.sh`)
 
 - Runs only when `uname -s` is `Linux`
 - Prints a friendly message and exits on non-Linux systems
-- Delegates all shared work to `scripts/bootstrap-common.sh`
+- Delegates all shared work to `scripts/bootstrap/bootstrap-common.sh`
 
-### Shared helper (`scripts/bootstrap-common.sh`)
+### Shared helper (`scripts/bootstrap/bootstrap-common.sh`)
 
 The common bootstrap helper performs the actual work:
 
@@ -167,7 +167,7 @@ or notice unexpected local diffs related to permissions or line endings.
 
 Bootstrap works together with:
 
-- `scripts/check-executable-bits.sh` — verifies executable bits (auto-fix locally, enforce in CI)
+- `scripts/check/check-executable-bits.sh` — verifies executable bits (auto-fix locally, enforce in CI)
 - `make hooks` / `make bootstrap` — canonical entry points
 - `docs/LOCAL_ENVIRONMENT.md` — local-only behavior and settings
 - `ADR-000` — CI as source of truth
