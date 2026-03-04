@@ -1,9 +1,7 @@
-<!-- markdownlint-disable MD033 -->
-
 # ✅ TODO
 
 This file tracks **intentional, approved work**.
-If it’s here, it is meant to be built.
+If it's here, it is meant to be built.
 
 ---
 
@@ -19,59 +17,53 @@ If it’s here, it is meant to be built.
 
 ## 🧱 Milestones / Phases
 
-### Phase X — <Name>
+### Phase 2 — PokeAPI Species Validation (v0.2.0)
 
-_Target:_
+Target: validate Pokémon species against PokeAPI before adding to inventory
 
 ---
 
 ## 📝 Planned
 
-```md
-### ⏳ <Task title>
+### ⏳ PokeAPI WebClient integration
 
-- **Category:** 🏗️ Architecture | 🤖 AI | ⚙️ Tooling
-- **Why:** Problem this solves
-- **Scope:** In / Out
+- **Category:** 🏗️ Architecture
+- **Why:** Pokémon species names must be validated against PokeAPI before being added to a trainer's
+  inventory. Without this, invalid species like `"notapokemon"` are accepted silently.
+- **Scope:**
+  - In: WebClient-based PokeAPI client, species validation on `POST /trainers/{id}/pokemon`,
+    graceful handling of PokeAPI failures
+  - Out: caching PokeAPI responses, storing species metadata locally, reactive streams
 - **Acceptance Criteria:**
-  - [ ] Testable outcome
+  - [ ] `POST /trainers/{id}/pokemon` with an invalid species returns 422
+  - [ ] `POST /trainers/{id}/pokemon` with a valid species succeeds
+  - [ ] PokeAPI is fully mocked in all tests (no real HTTP calls)
+  - [ ] PokeAPI being down returns a graceful error (not 500)
+  - [ ] Tests pass with `./gradlew clean check`
   - [ ] Docs updated
-- **Related ADRs:** ADR-XXX
-- **Notes:**
-```
+- **Related ADRs:** ADR-011 (modular monolith)
+- **Notes:** Use WebClient in blocking mode (`.block()`). Full reactive architecture is intentionally
+  deferred. New dependency: `spring-boot-starter-webflux`.
 
 ---
 
 ## 🚧 In Progress
 
-```md
-### 🚧 <Task title>
-
-- **Owner:**
-- **Started:**
-- **Current Status:**
-- **Next Steps:**
-  - [ ] Action
-```
+Nothing in progress yet.
 
 ---
 
 ## 🧪 Experiments
 
-### 🧪 <Experiment name>
-
-- **Hypothesis:**
-- **Timebox:**
-- **Success Signal:**
-- **Outcome:**
+None active.
 
 ---
 
-## ✅ Completed (Optional)
+## ✅ Completed
 
-```md
-### ✅ <Task title>
+### ✅ Phase 1 — Trainers & Inventory (v0.1.0)
 
-- **Completed:** <date>
-- **Outcome:**
-```
+- **Completed:** 2026-03-04
+- **Outcome:** Full CRUD for Trainer and OwnedPokemon. Layered architecture
+  (Controller → Service → Domain → Repository), GlobalExceptionHandler with ProblemDetail,
+  comprehensive TDD coverage across unit, controller, and integration test layers.
