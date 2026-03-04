@@ -5,7 +5,8 @@
 
 This folder contains the **authoritative documentation** for the Pokémon Trainer Platform.
 
-The goal of this documentation set is to explain **how and why the system is built the way it is**, not just how to run it.
+The goal of this documentation set is to explain **how and why the system is built the way it is**,
+not just how to run it.
 
 If something is non-obvious, opinionated, or easy to misuse — it belongs here.
 

@@ -197,4 +197,5 @@ git commit -m "chore(dev): fix executable bits for scripts"
 
 ---
 
-> **Design note:** These failures are intentional guardrails. If day-one setup feels strict, it’s because production is stricter.
+> **Design note:** These failures are intentional guardrails. If day-one setup feels strict,
+> it’s because production is stricter.

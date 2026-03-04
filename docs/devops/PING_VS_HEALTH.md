@@ -1,7 +1,8 @@
 <!-- markdownlint-disable-file MD024 -->
 # `/ping` vs `/health` (Actuator) — What’s the Difference?
 
-This document explains **why `/ping` and `/health` both exist**, what problem each one solves, and how they should be wired in a **Spring Boot 4** application.
+This document explains **why `/ping` and `/health` both exist**, what problem each one solves,
+and how they should be wired in a **Spring Boot 4** application.
 
 ---
 

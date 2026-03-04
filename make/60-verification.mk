@@ -11,7 +11,7 @@
 # QUALITY / TESTS / BOOTSTRAP
 # -------------------------------------------------------------------
 
-.PHONY: pre-commit format lint test verify quality test-ci bootstrap bootstrap-act
+.PHONY: pre-commit format lint lint-docs test verify quality test-ci bootstrap bootstrap-act
 
 pre-commit: ## 🪝 Smart pre-commit gate (strict on main)
 	@if [ "$(GIT_BRANCH)" = "main" ]; then \
@@ -33,11 +33,17 @@ format: ## ✨ Auto-format sources
 	@$(GRADLE) --no-configuration-cache spotlessApply
 	$(call group_end)
 
-lint: ## 🔎 Static analysis only (fast-ish)
+lint: lint-docs ## 🔎 Static analysis + markdown lint (fast-ish)
 	$(call group_start,lint)
 	$(call step,🔎 Static analysis)
 	$(call info,Running Gradle…)
 	@$(GRADLE) --no-configuration-cache checkstyleMain checkstyleTest pmdMain pmdTest spotbugsMain spotbugsTest
+	$(call group_end)
+
+lint-docs: ## 📝 Lint all markdown files (markdownlint-cli2)
+	$(call group_start,lint-docs)
+	$(call step,📝 markdownlint)
+	@./node_modules/.bin/markdownlint-cli2 '**/*.md' '#node_modules'
 	$(call group_end)
 
 test: ## 🧪 Unit tests

@@ -1,7 +1,8 @@
 # Onboarding
 
 Welcome! 👋  
-This repository is designed to provide **fast feedback**, **strong quality gates**, and **clear expectations** from day one.
+This repository is designed to provide **fast feedback**, **strong quality gates**, and
+**clear expectations** from day one.
 
 This project assumes familiarity with Git, pull requests, and basic JVM tooling.  
 The guardrails exist to make those workflows **safer and more predictable**, not to teach them from scratch.

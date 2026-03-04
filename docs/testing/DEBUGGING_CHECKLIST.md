@@ -67,22 +67,22 @@ Common keywords to look for:
 
 Use the error message to classify the failure:
 
-**Spring context fails to start**
+### Spring context fails to start
 
 - `Failed to load ApplicationContext`
 - Usually caused by datasource, security, or auto-configuration issues
 
-**Testcontainers errors**
+### Testcontainers errors
 
 - `Mapped port can only be obtained after the container is started`
 - `Could not find a valid Docker environment`
 
-**Migration / schema issues**
+### Migration / schema issues
 
 - Flyway validation failures
 - Missing or out-of-order migrations
 
-**Security / endpoint failures**
+### Security / endpoint failures
 
 - `401`, `403`, or `404` instead of expected `200`
 

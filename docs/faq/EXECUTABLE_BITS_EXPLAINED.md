@@ -47,10 +47,10 @@ Git separately tracks whether a file *should be executable* when checked out.
 
 Git file modes:
 
-| Mode    | Meaning |
-|--------|--------|
+| Mode     | Meaning        |
+| -------- | -------------- |
 | `100644` | Not executable |
-| `100755` | Executable |
+| `100755` | Executable     |
 
 You can inspect this with:
 
@@ -79,6 +79,7 @@ chmod +x scripts/*.sh
 ```
 
 This:
+
 - fixes **your local machine**
 - does **not** update Git’s record
 - does **not** help the next clone
@@ -146,6 +147,7 @@ A commit is required to:
 This is a **one-time normalization step** for each script.
 
 After the commit:
+
 - Bootstrap won’t need to repair it again
 - The checker stays quiet
 - New contributors don’t hit permission issues
@@ -156,12 +158,12 @@ After the commit:
 
 Think of it like this:
 
-| Responsibility | Tool |
-|---------------|------|
-| Fix my machine right now | Bootstrap scripts |
-| Define repo guarantees | Git commit |
-| Enforce correctness | `check-executable-bits.sh` |
-| Decide what fails | CI |
+| Responsibility           | Tool                       |
+| ------------------------ | -------------------------- |
+| Fix my machine right now | Bootstrap scripts          |
+| Define repo guarantees   | Git commit                 |
+| Enforce correctness      | `check-executable-bits.sh` |
+| Decide what fails        | CI                         |
 
 Each layer does **one job**.
 

@@ -1,6 +1,7 @@
 # Day-1 Onboarding Checklist
 
-This project follows **strict but boring** conventions with explicit quality gates to ensure repeatable builds, reliable tests, and production parity.
+This project follows **strict but boring** conventions with explicit quality gates to ensure
+repeatable builds, reliable tests, and production parity.
 
 If you follow this checklist, you will not fight the tooling.
 

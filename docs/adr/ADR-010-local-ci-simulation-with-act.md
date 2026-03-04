@@ -154,4 +154,5 @@ Rejected due to:
 
 We standardize on **`act` + Makefile wrappers** for local CI simulation.
 
-This approach balances realism, developer experience, and maintainability while keeping GitHub Actions as the source of truth.
+This approach balances realism, developer experience, and maintainability while keeping GitHub
+Actions as the source of truth.

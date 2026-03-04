@@ -2,7 +2,8 @@
 
 # ⛵ Helm (Preparation Only)
 
-This repo currently deploys as a **single service** (modular monolith) while we prepare for a future split into multiple services.
+This repo currently deploys as a **single service** (modular monolith) while we prepare for a
+future split into multiple services.
 
 Helm is added now for **future Kubernetes readiness**, but Kubernetes is **not** required to develop or deploy today.
 

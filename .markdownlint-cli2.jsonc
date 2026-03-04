@@ -1,0 +1,4 @@
+{
+  // Files that should not be linted (auto-generated or third-party)
+  "ignores": ["node_modules/**", "CHANGELOG.md"]
+}

@@ -2,7 +2,8 @@
 
 This document describes the purpose and usage of the repo’s bootstrap scripts, and how they interact with **local settings**.
 
-Bootstrap scripts exist to eliminate a class of frustrating, non-obvious **permission**, **line ending**, and **git hook** issues on local machines **without affecting CI**.
+Bootstrap scripts exist to eliminate a class of frustrating, non-obvious **permission**,
+**line ending**, and **git hook** issues on local machines **without affecting CI**.
 
 Scripts covered:
 

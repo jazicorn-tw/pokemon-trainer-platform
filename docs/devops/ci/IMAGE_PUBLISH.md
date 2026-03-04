@@ -2,7 +2,8 @@
 
 # 🐳 Publish Docker Image (Release Tags Only)
 
-This repository publishes a Docker image to **GitHub Container Registry (GHCR)** **only** when a **semantic-release tag** is pushed (example: `v1.2.3`).
+This repository publishes a Docker image to **GitHub Container Registry (GHCR)** **only** when
+a **semantic-release tag** is pushed (example: `v1.2.3`).
 
 Workflow file: `.github/workflows/image-publish.yml`
 
@@ -206,4 +207,6 @@ Confirm:
 
 ## 🔒 Notes on safety
 
-Even though fork tag-push publishing is uncommon, the **canonical repo check** is deliberate hardening. It prevents accidental or malicious publishing from a copy of the repository where variables might differ.
+Even though fork tag-push publishing is uncommon, the **canonical repo check** is deliberate
+hardening. It prevents accidental or malicious publishing from a copy of the repository where
+variables might differ.

@@ -17,7 +17,8 @@ This project adopts **Conventional Commits** to enable:
 - CI-aligned release automation
 - consistent developer experience
 
-We already enforce quality via CI (ADR-000), but commit message correctness must be validated **before commits enter history** to avoid broken releases and noisy CI failures.
+We already enforce quality via CI (ADR-000), but commit message correctness must be validated
+**before commits enter history** to avoid broken releases and noisy CI failures.
 
 Git hooks are the correct enforcement point for commit messages, but several constraints shaped the final design:
 

@@ -9,7 +9,8 @@
 
 ## Context
 
-This project prioritizes **CI as the single source of truth**, strong quality gates, and minimal manual steps for release management.
+This project prioritizes **CI as the single source of truth**, strong quality gates, and minimal
+manual steps for release management.
 
 Historically, release processes that rely on:
 
@@ -170,7 +171,8 @@ Behavior:
 Rationale:
 
 - Release versions remain authoritative and automated (semantic-release creates `vX.Y.Z` tags).
-- Artifact publishing can be disabled instantly without code changes (e.g., registry incident, cost control, or rollout freeze).
+- Artifact publishing can be disabled instantly without code changes (e.g., registry incident,
+  cost control, or rollout freeze).
 - Separation of concerns:
   - semantic-release decides **when** a version exists
   - the repo variable decides **whether** images are published

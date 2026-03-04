@@ -49,7 +49,8 @@ We use Testcontainers + PostgreSQL to prevent â€œworks in tests, fails in prodâ€
 - Flyway migrations applied exactly as in production
 - Connection pooling, transaction behavior, and isolation levels closer to reality
 
-If you switch to an in-memory database for tests, you must accept that some production issues will only be caught after deployment.
+If you switch to an in-memory database for tests, you must accept that some production issues
+will only be caught after deployment.
 
 ---
 

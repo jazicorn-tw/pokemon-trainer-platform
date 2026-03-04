@@ -33,13 +33,13 @@ ACT_COLIMA_PROFILE=default
 
 ### Behavior
 
-| Setting | Effect |
-|-------|--------|
-| `ACT_GRADLE_CACHE_REMOVE=false` | Never remove cache (default, safest) |
-| `ACT_GRADLE_CACHE_REMOVE=true` | Always remove cache |
-| `ACT_GRADLE_CACHE_REMOVE=auto` | Remove only when Colima containerd is under pressure |
-| `ACT_GRADLE_CACHE_DRY_RUN=true` | Show what *would* be deleted |
-| `ACT_GRADLE_CACHE_WARN_GB` | Warn if cache exceeds this size |
+| Setting                          | Effect                                                 |
+| -------------------------------- | ------------------------------------------------------ |
+| `ACT_GRADLE_CACHE_REMOVE=false`  | Never remove cache (default, safest)                   |
+| `ACT_GRADLE_CACHE_REMOVE=true`   | Always remove cache                                    |
+| `ACT_GRADLE_CACHE_REMOVE=auto`   | Remove only when Colima containerd is under pressure   |
+| `ACT_GRADLE_CACHE_DRY_RUN=true`  | Show what *would* be deleted                           |
+| `ACT_GRADLE_CACHE_WARN_GB`       | Warn if cache exceeds this size                        |
 
 ### Common usage
 
@@ -82,13 +82,13 @@ CLEAN_DOCKER_COLIMA_PROFILE=default
 
 ### Behavior
 
-| Setting | Effect |
-|-------|--------|
-| `CLEAN_DOCKER_MODE=false` | Do nothing (default) |
-| `CLEAN_DOCKER_MODE=true` | Always prune docker cache |
-| `CLEAN_DOCKER_MODE=auto` | Prune only under containerd disk/inode pressure |
-| `CLEAN_DOCKER_VOLUMES=true` | **Delete named volumes (destructive)** |
-| `CLEAN_DOCKER_VERBOSE=true` | Print detailed prune actions |
+| Setting                     | Effect                                          |
+| --------------------------- | ----------------------------------------------- |
+| `CLEAN_DOCKER_MODE=false`   | Do nothing (default)                            |
+| `CLEAN_DOCKER_MODE=true`    | Always prune docker cache                       |
+| `CLEAN_DOCKER_MODE=auto`    | Prune only under containerd disk/inode pressure |
+| `CLEAN_DOCKER_VOLUMES=true` | **Delete named volumes (destructive)**          |
+| `CLEAN_DOCKER_VERBOSE=true` | Print detailed prune actions                    |
 
 🚫 `CLEAN_DOCKER_VOLUMES` does **not** support `auto`.  
 Volumes contain data and require explicit consent.
@@ -164,11 +164,11 @@ All `ACT_*` and `CLEAN_DOCKER_*` knobs apply.
 
 ## 🧠 Decision guide
 
-| Symptom | Start with |
-|------|-----------|
-| act fails with `no space left on device` | `make clean-local CLEAN_DOCKER_MODE=auto` |
-| Docker disk usage keeps growing | `make clean-docker CLEAN_DOCKER_MODE=true` |
-| Everything is broken / containerd corrupted | `make clean-colima CLEAN_COLIMA_RESET=true` |
+| Symptom                                              | Start with                                        |
+| ---------------------------------------------------- | ------------------------------------------------- |
+| act fails with `no space left on device`             | `make clean-local CLEAN_DOCKER_MODE=auto`         |
+| Docker disk usage keeps growing                      | `make clean-docker CLEAN_DOCKER_MODE=true`        |
+| Everything is broken / containerd corrupted          | `make clean-colima CLEAN_COLIMA_RESET=true`       |
 
 ---
 

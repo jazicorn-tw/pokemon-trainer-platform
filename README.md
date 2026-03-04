@@ -15,6 +15,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
   <img src="https://img.shields.io/badge/java-21-blue" alt="Java 21">
   <img src="https://img.shields.io/badge/database-postgresql-blue" alt="PostgreSQL">
+  <!-- markdownlint-disable-next-line MD013 -->
   <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml/badge.svg" alt="CI"></a>
 </p>
 
@@ -32,7 +33,8 @@
 The domain is playful.  
 The engineering is intentionally **serious**.
 
-> **Current state:** CI, infrastructure, and testing foundations are in place; domain features are delivered incrementally by phase.
+> **Current state:** CI, infrastructure, and testing foundations are in place; domain features
+> are delivered incrementally by phase.
 
 ---
 

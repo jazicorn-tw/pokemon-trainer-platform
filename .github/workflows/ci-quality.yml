@@ -60,3 +60,23 @@ jobs:
           echo "::group::🔍 Sonar analysis"
           ./gradlew test jacocoTestReport sonar --no-daemon --info
           echo "::endgroup::"
+
+  markdown-lint:
+    name: Markdown lint (markdownlint-cli2)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint markdown files
+        run: ./node_modules/.bin/markdownlint-cli2 '**/*.md' '#node_modules'

@@ -4,7 +4,8 @@
 
 This document defines the **decade-based structure** used by this repository’s Makefile system.
 
-The goal is **future-proof organization**: files are grouped by *conceptual responsibility*, not by the tools or technologies that happen to exist today.
+The goal is **future-proof organization**: files are grouped by *conceptual responsibility*, not
+by the tools or technologies that happen to exist today.
 
 If a target feels ambiguous, this document is the source of truth.
 

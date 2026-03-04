@@ -1,6 +1,7 @@
 # 🧑‍💻 Local Environment
 
-This project is designed to provide **fast, explicit feedback locally** while keeping **CI as the authoritative enforcer** of quality gates.
+This project is designed to provide **fast, explicit feedback locally** while keeping
+**CI as the authoritative enforcer** of quality gates.
 
 Local tooling focuses on:
 

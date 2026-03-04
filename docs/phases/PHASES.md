@@ -3,7 +3,8 @@
 
 ## 🎒 Pokémon Trainer Inventory Service
 
-_A Spring Boot 4 backend for managing trainers, Pokémon inventories, trades, and a marketplace — built with strict Test‑Driven Development (TDD)._
+_A Spring Boot 4 backend for managing trainers, Pokémon inventories, trades, and a marketplace —
+built with strict Test‑Driven Development (TDD)._
 
 This document is the **authoritative delivery contract** for the system.
 Each phase is completed **only** when its release criteria are met.
@@ -65,7 +66,8 @@ No feature is added without tests.
 
 ## 🔰 Phase 0 — Project Skeleton (v0.0.1)
 
-> ⚠️ **Environment requirement:** Phase 0 tests require **Docker** (or **Colima on macOS**) because the project uses **Testcontainers** for PostgreSQL-backed integration tests.  
+> ⚠️ **Environment requirement:** Phase 0 tests require **Docker** (or **Colima on macOS**)
+> because the project uses **Testcontainers** for PostgreSQL-backed integration tests.
 > If Docker is not running, Phase 0 **must fail** — this is intentional and documents production parity.
 
 * Full walkthrough: [`PHASE_0.md`](PHASE_0.md)
@@ -74,7 +76,8 @@ No feature is added without tests.
 
 ### 🎯 Purpose
 
-Establish a **runnable, testable Spring Boot 4 service** with production-aware scaffolding and strict infrastructure parity from day one.
+Establish a **runnable, testable Spring Boot 4 service** with production-aware scaffolding and
+strict infrastructure parity from day one.
 
 Phase 0 exists to:
 

@@ -6,7 +6,8 @@ This document describes the **recommended `.actrc` configuration** for this repo
 
 `.actrc` is a plain-text configuration file read automatically by `act`. It is **not** a shell script.
 
-Its purpose is to make local CI simulation behave as close to GitHub Actions as possible, with zero flags required on each run.
+Its purpose is to make local CI simulation behave as close to GitHub Actions as possible, with
+zero flags required on each run.
 
 ---
 

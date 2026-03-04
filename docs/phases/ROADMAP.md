@@ -4,7 +4,8 @@ This document describes the **planned, phased roadmap** for the Pokémon Trainer
 
 It reflects **intent and design direction**, not a record of released changes.
 
-> ✅ Actual released changes are tracked in `CHANGELOG.md`, which is generated automatically from Conventional Commits and Git tags.
+> ✅ Actual released changes are tracked in `CHANGELOG.md`, which is generated automatically
+> from Conventional Commits and Git tags.
 
 ---
 

@@ -3,7 +3,8 @@
 Thank you for your interest in contributing! 🤝
 We welcome thoughtful, well-tested changes that improve **correctness, clarity, and long-term maintainability**.
 
-This project is built around **Test-Driven Development (TDD)**, strict CI parity, and production-realistic constraints. Contributions that bypass these principles will not be merged.
+This project is built around **Test-Driven Development (TDD)**, strict CI parity, and
+production-realistic constraints. Contributions that bypass these principles will not be merged.
 
 ---
 
