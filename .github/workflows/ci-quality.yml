@@ -58,7 +58,7 @@ jobs:
             exit 0
           fi
           echo "::group::🔍 Sonar analysis"
-          ./gradlew test jacocoTestReport sonar --no-daemon --info
+          ./gradlew test jacocoTestReport sonar --no-daemon --no-configuration-cache --info
           echo "::endgroup::"
 
   markdown-lint:
