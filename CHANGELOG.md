@@ -1,5 +1,19 @@
 # 📦 Release History
 
+## 📦 Release 1.2.2
+
+### 🐛 Fixes
+
+- **docs:** resolve markdownlint violations in pull_request_template.md (d32fc7b)
+
+
+
+## 1.2.2
+
+### 🐛 Fixes
+
+- **docs:** resolve markdownlint violations in pull_request_template.md
+
 ## 📦 Release 1.2.1
 
 ### 🐛 Fixes
