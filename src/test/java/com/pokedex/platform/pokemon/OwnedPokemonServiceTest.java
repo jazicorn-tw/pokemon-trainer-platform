@@ -52,7 +52,9 @@ class OwnedPokemonServiceTest {
     when(trainerRepository.existsById(trainerId)).thenReturn(false);
 
     assertThatThrownBy(
-            () -> pokemonService.add(trainerId, new AddPokemonRequest("pikachu", null, null, null, null)))
+            () ->
+                pokemonService.add(
+                    trainerId, new AddPokemonRequest("pikachu", null, null, null, null)))
         .isInstanceOf(TrainerNotFoundException.class);
   }
 
@@ -141,7 +143,9 @@ class OwnedPokemonServiceTest {
     when(pokemonRepository.findById(pokemonId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(
-            () -> pokemonService.update(trainerId, pokemonId, new UpdateOwnedPokemonRequest(null, null)))
+            () ->
+                pokemonService.update(
+                    trainerId, pokemonId, new UpdateOwnedPokemonRequest(null, null)))
         .isInstanceOf(OwnedPokemonNotFoundException.class);
   }
 

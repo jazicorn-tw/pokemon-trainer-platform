@@ -33,7 +33,15 @@ class OwnedPokemonControllerTest {
 
   private static OwnedPokemonResponse sampleResponse(UUID trainerId, UUID id) {
     return new OwnedPokemonResponse(
-        id, trainerId, "pikachu", null, "Pika", 5, false, PokemonStatus.ACTIVE, LocalDateTime.now());
+        id,
+        trainerId,
+        "pikachu",
+        null,
+        "Pika",
+        5,
+        false,
+        PokemonStatus.ACTIVE,
+        LocalDateTime.now());
   }
 
   @Test
@@ -67,7 +75,8 @@ class OwnedPokemonControllerTest {
   @Test
   void addReturns404WhenTrainerNotFound() throws Exception {
     UUID trainerId = UUID.randomUUID();
-    when(pokemonService.add(eq(trainerId), any())).thenThrow(new TrainerNotFoundException(trainerId));
+    when(pokemonService.add(eq(trainerId), any()))
+        .thenThrow(new TrainerNotFoundException(trainerId));
 
     mockMvc
         .perform(
@@ -96,7 +105,8 @@ class OwnedPokemonControllerTest {
   void getByIdReturns200WhenFound() throws Exception {
     UUID trainerId = UUID.randomUUID();
     UUID pokemonId = UUID.randomUUID();
-    when(pokemonService.getById(trainerId, pokemonId)).thenReturn(sampleResponse(trainerId, pokemonId));
+    when(pokemonService.getById(trainerId, pokemonId))
+        .thenReturn(sampleResponse(trainerId, pokemonId));
 
     mockMvc
         .perform(get("/trainers/{trainerId}/pokemon/{id}", trainerId, pokemonId))

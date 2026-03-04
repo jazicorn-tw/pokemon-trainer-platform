@@ -1,4 +1,3 @@
-<!-- markdownlint-disable-file MD036 -->
 # Pull Request
 
 ## Summary

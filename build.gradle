@@ -88,10 +88,10 @@ flyway {
     url = System.getProperty('SPRING_DATASOURCE_URL')
     user = System.getProperty('SPRING_DATASOURCE_USERNAME')
     password = System.getProperty('SPRING_DATASOURCE_PASSWORD')
-    
-    cleanDisabled = false 
 
-    // IMPORTANT: This empty list prevents the plugin from looking for 
+    cleanDisabled = false
+
+    // IMPORTANT: This empty list prevents the plugin from looking for
     // JavaPluginConvention to find source sets.
     configurations = []
 }
@@ -156,7 +156,7 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
     html.required = true
   }
   effort.set(com.github.spotbugs.snom.Effort.MAX)
-  reportLevel.set(com.github.spotbugs.snom.Confidence.values()[0]) 
+  reportLevel.set(com.github.spotbugs.snom.Confidence.values()[0])
 }
 
 tasks.named("check") { dependsOn("spotlessCheck") }
