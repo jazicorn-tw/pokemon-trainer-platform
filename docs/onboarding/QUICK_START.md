@@ -2,6 +2,9 @@
 
 Get the API running and make your first requests in under 2 minutes.
 
+> **Prerequisites:** Complete [`DAY_1_ONBOARDING.md`](./DAY_1_ONBOARDING.md)
+> first. This guide assumes your environment is set up and Docker is running.
+
 ## Prerequisites
 
 - `.env` exists (run `make env-init` if not)

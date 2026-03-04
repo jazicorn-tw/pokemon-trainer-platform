@@ -21,6 +21,20 @@ The goal is fast unblocking — not blame.
 * Docker (or Colima) is not running
 * Testcontainers cannot start PostgreSQL
 
+**Diagnose first**
+
+```bash
+docker context list   # shows which context is active
+docker info           # confirms the daemon is reachable
+```
+
+If the wrong context is active, switch it:
+
+```bash
+docker context use colima     # macOS + Colima
+docker context use default    # Docker Desktop or Linux
+```
+
 **Fix**
 
 Run the repo’s environment sanity check first:
@@ -32,7 +46,7 @@ make doctor
 If you’re on macOS with Colima:
 
 ```bash
-colima start
+colima start --cpu 4 --memory 8   # ensure sufficient resources
 ```
 
 Quick verification:

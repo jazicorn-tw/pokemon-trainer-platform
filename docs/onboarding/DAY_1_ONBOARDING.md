@@ -5,6 +5,12 @@ repeatable builds, reliable tests, and production parity.
 
 If you follow this checklist, you will not fight the tooling.
 
+⏱️ **~30–45 minutes on first run** (longer if Docker or Colima needs installing).
+
+> 🆘 Stuck at any step? See
+> [`COMMON_FIRST_DAY_FAILURES.md`](./COMMON_FIRST_DAY_FAILURES.md) before
+> spending time debugging.
+
 > Local configuration behavior is defined in **ADR-000**.  
 > `.env` is supported for local development via Spring configuration import and **never** overrides
 > CI or production environment variables.
@@ -29,6 +35,22 @@ cd pokemon-trainer-platform
 ```
 
 ---
+
+## ⚡ Fast path (experienced contributors)
+
+If you have Java 21, Docker, and `make` ready, one command does steps 2–7:
+
+```bash
+make doctor     # verify machine prerequisites first
+make bootstrap  # env-init + hooks + exec-bits + quality gate
+```
+
+Then jump to [step 5](#5-start-local-database) to start the database and
+[step 9](#9-run-the-app-local-profile) to start the app.
+
+---
+
+## Manual steps (new to the stack or troubleshooting)
 
 ## 2. Environment setup (.env)
 
@@ -69,6 +91,16 @@ If this fails, fix the reported issue *before* continuing.
 
 📄 Details: `docs/tooling/DOCTOR.md`
 
+Then run the full suite of project-level checks:
+
+```bash
+make check-all
+```
+
+Discovers and runs every script in `scripts/check/` — validates required env
+files, executable bits, and Colima resource allocation. Exits 1 if any check
+fails.
+
 ---
 
 ## 4. Ensure Docker works (macOS + Colima)
@@ -85,6 +117,9 @@ docker context use colima
 colima start
 docker ps
 ```
+
+> ⚠️ **Colima memory:** Gradle + Testcontainers need at least 4 GB RAM.
+> Start Colima with enough resources: `colima start --cpu 4 --memory 8`
 
 ---
 
@@ -120,7 +155,7 @@ This installs:
 
 Hooks provide early feedback **before code leaves your machine**, but **do not replace CI**.
 
-See [MAKEFILE](./MAKEFILE.md) for details.
+See [`MAKEFILE.md`](../tooling/make/MAKEFILE.md) for details.
 
 ---
 
@@ -133,6 +168,10 @@ You may run **tests only**:
 ```bash
 ./gradlew test
 ```
+
+> 🐳 Tests use Testcontainers — **Docker must be running**. First run downloads a
+> PostgreSQL image and takes 1–3 minutes. A hanging test almost always means
+> Docker is not running or the wrong context is active.
 
 This validates behavior, but **does not** run formatting or static analysis.
 

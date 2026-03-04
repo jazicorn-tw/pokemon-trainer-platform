@@ -159,7 +159,7 @@ Requires:
 * `.vars` (project root — mirrors GitHub repo variables)
 * `.secrets` (project root — GitHub App auth)
 
-See `docs/environment/local/ACT.md` for full setup.
+See [`docs/tooling/ACTRC.md`](../tooling/ACTRC.md) for full setup.
 
 ### Colima (macOS Docker Runtime)
 

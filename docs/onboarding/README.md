@@ -1,8 +1,12 @@
 # Onboarding
 
-Welcome! 👋  
+Welcome! 👋
 This repository is designed to provide **fast feedback**, **strong quality gates**, and
 **clear expectations** from day one.
+
+> **Current status:** Phase 1 complete — Trainer and OwnedPokémon CRUD with full TDD
+> coverage. Phase 2 (PokeAPI species validation) is next.
+> See [`docs/phases/ROADMAP.md`](../phases/ROADMAP.md) for the full picture.
 
 This project assumes familiarity with Git, pull requests, and basic JVM tooling.  
 The guardrails exist to make those workflows **safer and more predictable**, not to teach them from scratch.
@@ -57,13 +61,14 @@ This is the **single supported entry point** for new contributors.
 
 ### What `make bootstrap` does
 
-1. Installs repo-local Git hooks (including commit message validation)
-2. Runs `make doctor` to verify your local environment
-3. Runs the local quality gate (formatting + static checks)
-4. Fixes common macOS permission issues
-5. Fails fast if your environment is misconfigured
+1. Creates `.env` from `.env.example` (non-destructive)
+2. Installs repo-local Git hooks (including commit message validation)
+3. Fixes executable bits on all scripts
+4. Runs the local quality gate (formatting + static checks)
 
-📄 Details: [`MAKEFILE.md`](../MAKEFILE.md)
+> Run `make doctor` first to verify your machine is ready before bootstrapping.
+
+📄 Details: [`MAKEFILE.md`](../tooling/make/MAKEFILE.md)
 
 ---
 
@@ -77,6 +82,7 @@ Onboarding docs are intentionally **progressive**. You don’t need to read ever
 | ---- | ---- |
 | Day 1 | [`DAY_1_ONBOARDING.md`](./DAY_1_ONBOARDING.md) — local setup, expectations |
 | Day 2 | [`DAY_2_FIRST_PR.md`](./DAY_2_FIRST_PR.md) — first PR, CI, review flow |
+| Day 3 | [`DAY_3_GOING_DEEPER.md`](./DAY_3_GOING_DEEPER.md) — local CI with act, releases, test patterns, Phase 2 |
 
 ---
 
@@ -179,8 +185,17 @@ If something passes locally but fails in CI, treat that as a **documentation gap
 
 📄 Docs:
 
-- [`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_CONFIG.md)
+- [`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_ENVIRONMENT.md)
 - [`.vscode/README.md`](../../.vscode/README.md)
+
+---
+
+## 🤝 Contributing guide
+
+📄 [`CONTRIBUTING.md`](../../CONTRIBUTING.md) — TDD workflow, code style rules,
+branching strategy, testing requirements, and PR checklist.
+
+Read it before opening your second PR.
 
 ---
 

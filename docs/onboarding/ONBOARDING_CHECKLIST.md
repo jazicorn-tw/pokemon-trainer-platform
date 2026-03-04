@@ -62,7 +62,7 @@
 ## 🧪 Local CI & Tooling
 
 - [ ] `act` installed (`act --version`)
-- [ ] `~/.actrc` exists
+- [ ] `~/.actrc` exists (📄 [`docs/tooling/ACTRC.md`](../../tooling/ACTRC.md))
 - [ ] `.actrc` permissions are safe (`600` recommended)
 
 ---
@@ -77,6 +77,11 @@
 
 - [ ] Doctor **passes** or only reports understood warnings
 - [ ] I fixed any failures before continuing
+- [ ] Project-level checks pass:
+
+  ```bash
+  make check-all
+  ```
 
 ---
 

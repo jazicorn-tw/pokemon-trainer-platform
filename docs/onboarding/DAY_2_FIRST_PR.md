@@ -21,10 +21,10 @@ in the best possible way.
 
 Skim these documents **once**:
 
-* `README.md` — project purpose & scope
-* `docs/ARCHITECTURE.md` — layers and boundaries
-* `PHASES.md` — current phase and constraints
-* `ADR/` — especially:
+* [`README.md`](../../README.md) — project purpose & scope
+* [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) — layers and boundaries
+* [`docs/phases/PHASES.md`](../phases/PHASES.md) — current phase and constraints
+* [`docs/adr/README.md`](../adr/README.md) — especially:
 
   * ADR-001 (PostgreSQL everywhere)
   * ADR-002 (Testcontainers)
@@ -121,7 +121,28 @@ Check:
 
 Make small, intentional commits.
 
-Preferred commit style:
+### Preferred tool: `cz commit`
+
+```bash
+cz commit
+```
+
+Runs an interactive prompt — just answer the questions:
+
+```text
+? Select the type of change:   feat
+? Scope (optional):            trainer
+? Short description:           add nickname validation
+? Longer description (opt.):   [enter to skip]
+? Breaking change?             N
+```
+
+The `commit-msg` hook validates the message automatically. If you use `git commit`
+directly, the hook still runs — an invalid format will be rejected with a clear error.
+
+📄 Full reference: [`docs/commit/COMMITIZEN.md`](../commit/COMMITIZEN.md)
+
+### Commit format reference
 
 ```text
 feat: add <short description>
