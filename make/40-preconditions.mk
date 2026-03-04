@@ -11,7 +11,7 @@
 # ENV (baseline) — local development (non-act)
 # -------------------------------------------------------------------
 
-.PHONY: env-help env-init env-init-force check-env
+.PHONY: env-help env-init env-init-force check-env check-all
 
 env-help: ## 📖 Environment setup docs
 	$(call section,📖  Environment setup)
@@ -38,3 +38,8 @@ check-env: ## 🌱 Verify required baseline local env file (.env)
 	$(call section,🌱  Environment check (baseline))
 	$(call require_exec,./scripts/check/check-required-files.sh)
 	@./scripts/check/check-required-files.sh
+
+check-all: ## 🔍 Run all scripts in scripts/check/
+	$(call section,🔍  Run all checks)
+	$(call require_exec,./scripts/check/check-all.sh)
+	@./scripts/check/check-all.sh

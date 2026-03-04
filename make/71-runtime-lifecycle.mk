@@ -8,13 +8,15 @@
 # - It only starts prerequisites (Colima + optional Compose), not Gradle/app.
 # -----------------------------------------------------------------------------
 
-.PHONY: env-up env-down env-status run
+.PHONY: env-up env-down env-status env-check run
 
 env-up: ## 🚀 Start local dev environment (runtime prerequisites)
 	@./scripts/dev/start-dev.sh
 
 env-down: ## 🛑 Stop local dev environment
 	@./scripts/dev/stop-dev.sh
+
+env-check: check-all ## 🔍 Run all environment checks
 
 env-status: ## 🔎 Show local dev environment status
 	@echo "docker context: $$(docker context show 2>/dev/null || echo 'n/a')"
