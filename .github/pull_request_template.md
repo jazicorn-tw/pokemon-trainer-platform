@@ -1,4 +1,3 @@
-<!-- markdownlint-disable-file MD036 -->
 # Pull Request
 
 ## Summary
@@ -30,11 +29,6 @@
 - [ ] Phase-gate ADRs reviewed and still valid
 - [ ] Phase-gate ADRs updated or added
 
-**ADRs referenced / modified**
-
-- ADR-___
-- ADR-___
-
 ---
 
 ## Quality Gates (ADR-000)
@@ -54,7 +48,7 @@
 - [ ] ADRs updated or added
 - [ ] Existing ADRs reviewed and still valid
 
-**ADRs referenced / modified**
+### ADRs referenced / modified
 
 - ADR-___
 - ADR-___
