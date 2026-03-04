@@ -17,6 +17,7 @@ services:
       retries: 10
 
   app:
+    profiles: ["full"]
     build:
       context: .
       dockerfile: Dockerfile

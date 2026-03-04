@@ -1,4 +1,4 @@
-# SQL
+# 🔰 Phase 1 — SQL (v1.0.0)
 
 > Table Architecture for Phase 1 of project
 

@@ -1,6 +1,5 @@
 import org.gradle.process.CommandLineArgumentProvider
 
-
 plugins {
   id 'java'
   id 'org.springframework.boot' version '4.0.0'
@@ -9,7 +8,7 @@ plugins {
   // ===============================
   // Formatting / Linting / Static Analysis
   // ===============================
-  id 'com.diffplug.spotless' version '6.25.0'   // Google Java Format (Prettier-equivalent)
+  id 'com.diffplug.spotless' version '6.25.0'
   id 'checkstyle'
   id 'pmd'
   id 'com.github.spotbugs' version '6.0.26'
@@ -19,13 +18,19 @@ plugins {
   // ===============================
   id 'org.sonarqube' version '5.1.0.4882'
   id 'jacoco'
+
+  // ===============================
+  // Flyway/ DB Migration
+  // ===============================
+  id 'org.flywaydb.flyway' version '11.2.0'
 }
 
+// Force Flyway version to bypass Spring Boot 4.0's internal dependency management
+ext['flyway.version'] = '11.2.0'
+
 group = 'com.pokedex'
-// Prefer an explicit release version when provided by CI (semantic-release).
-// Local/dev remains SNAPSHOT by default.
 version = (findProperty('releaseVersion') ?: '0.0.1-SNAPSHOT')
-description = 'A Spring Boot 4 API for trainers to manage their Pokémon, trade with others, and participate in a marketplace - powered by PokeAPI and built with TDD'
+description = 'A Spring Boot 4 API for trainers to manage their Pokémon - powered by PokeAPI and built with TDD'
 
 java {
   toolchain {
@@ -46,18 +51,15 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-validation'
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-  // WebClient (PokeAPI)
   implementation 'org.springframework:spring-webflux'
 
   // ===============================
   // Database & migration
   // ===============================
   implementation 'org.springframework.boot:spring-boot-starter-flyway'
-  implementation 'org.flywaydb:flyway-core:11.20.0'
-  runtimeOnly 'org.flywaydb:flyway-database-postgresql:11.20.0'
+  implementation 'org.flywaydb:flyway-core:11.2.0'
+  runtimeOnly 'org.flywaydb:flyway-database-postgresql:11.2.0'
 
-  // Databases
   runtimeOnly 'com.h2database:h2'
   runtimeOnly 'org.postgresql:postgresql'
 
@@ -73,23 +75,29 @@ dependencies {
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
   testImplementation 'org.springframework.security:spring-security-test'
-
-  // Mockito
   testImplementation 'org.mockito:mockito-core'
   testImplementation 'org.mockito:mockito-junit-jupiter'
-
-  // Testcontainers
   testImplementation 'org.springframework.boot:spring-boot-testcontainers'
   testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
   testImplementation 'org.testcontainers:junit-jupiter'
   testImplementation 'org.testcontainers:postgresql'
-
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+flyway {
+    url = System.getProperty('SPRING_DATASOURCE_URL')
+    user = System.getProperty('SPRING_DATASOURCE_USERNAME')
+    password = System.getProperty('SPRING_DATASOURCE_PASSWORD')
+    
+    cleanDisabled = false 
+
+    // IMPORTANT: This empty list prevents the plugin from looking for 
+    // JavaPluginConvention to find source sets.
+    configurations = []
 }
 
 /**
  * Adds Mockito as a proper -javaagent for Java 21+.
- * This is evaluated lazily at execution time, so it reliably reaches the forked test JVM.
  */
 class MockitoAgentArgumentProvider implements CommandLineArgumentProvider {
   private final FileCollection testRuntimeClasspath
@@ -102,99 +110,44 @@ class MockitoAgentArgumentProvider implements CommandLineArgumentProvider {
   Iterable<String> asArguments() {
     def mockitoCoreJar = testRuntimeClasspath.files.find { it.name ==~ /mockito-core-.*\.jar/ }
     if (mockitoCoreJar == null) {
-      throw new GradleException(
-      "Mockito agent jar not found. Expected mockito-core-*.jar on testRuntimeClasspath."
-      )
+      throw new GradleException("Mockito agent jar not found.")
     }
-    return [
-      "-javaagent:${mockitoCoreJar.absolutePath}".toString()
-    ]
+    return ["-javaagent:${mockitoCoreJar.absolutePath}".toString()]
   }
 }
 
 tasks.withType(Test).configureEach {
   useJUnitPlatform()
-
-  // Ensure Mockito -javaagent is always present for the forked JVM
-  jvmArgumentProviders.add(
-      new MockitoAgentArgumentProvider(configurations.testRuntimeClasspath)
-      )
-
-  // OPTIONAL (not required once fixed):
-  // jvmArgs "-XX:+EnableDynamicAgentLoading"
+  jvmArgumentProviders.add(new MockitoAgentArgumentProvider(configurations.testRuntimeClasspath))
 }
 
-// ===============================
-// Formatting (Google Java Format via Spotless)
-// ===============================
-// Usage:
-//   ./gradlew spotlessApply   # auto-format
-//   ./gradlew spotlessCheck   # verify formatting (CI-safe)
-//
-// Optional: integrate into ./gradlew check automatically via:
-//   tasks.named("check") { dependsOn("spotlessCheck") }
 spotless {
   java {
-    // Keep the version pinned for reproducibility.
     googleJavaFormat('1.19.2')
-    // Format all Java sources (main + test + any extra source sets under src/)
     target 'src/**/*.java'
   }
-
-  // Keep Gradle files tidy WITHOUT Groovy-Eclipse (avoids OSGi resolver warnings)
   groovyGradle {
     target '*.gradle', 'gradle/**/*.gradle'
-
     trimTrailingWhitespace()
     endWithNewline()
     indentWithSpaces(2)
   }
 }
 
-// ===============================
-// Linting / Static Analysis
-// ===============================
-
 checkstyle {
   toolVersion = '10.17.0'
   ignoreFailures = false
-
-  // Commit config to repo at .config/checkstyle/checkstyle.xml
   configFile = file("$rootDir/.config/checkstyle/checkstyle.xml")
-  configProperties = [
-    'configDir': file("$rootDir/.config/checkstyle")
-  ]
 }
 
 pmd {
   toolVersion = '7.5.0'
   consoleOutput = true
-  ignoreFailures = false
-
-  // High-signal rulesets (avoid noisy design rules early)
-  ruleSets = [
-    'category/java/bestpractices.xml',
-    'category/java/errorprone.xml'
-  ]
+  ruleSets = ['category/java/bestpractices.xml', 'category/java/errorprone.xml']
 }
 
 spotbugs {
   toolVersion = '4.8.6'
-  ignoreFailures = false
-}
-
-tasks.withType(Checkstyle).configureEach {
-  reports {
-    xml.required = true
-    html.required = true
-  }
-}
-
-tasks.withType(Pmd).configureEach {
-  reports {
-    xml.required = true
-    html.required = true
-  }
 }
 
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
@@ -202,36 +155,12 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
     xml.required = true
     html.required = true
   }
-
-  // Thorough scan, still practical
   effort.set(com.github.spotbugs.snom.Effort.MAX)
-
-  // WORKAROUND: avoids Groovy enum conversion bug
-  reportLevel.set(com.github.spotbugs.snom.Confidence.values()[0]) // LOW
-
-  // NOTE:
-  // Do NOT manually wire classes/sourceDirs/classpath in SpotBugs 6.x.
-  // The plugin configures spotbugsMain/spotbugsTest automatically, and
-  // these properties/types vary across versions (causes setFrom() errors).
-
-  // Optional: add once false positives appear
-  // excludeFilter.set(file("$rootDir/config/spotbugs/exclude.xml"))
+  reportLevel.set(com.github.spotbugs.snom.Confidence.values()[0]) 
 }
-
-// Optional knobs if tests get noisy early:
-// tasks.named("checkstyleTest") { enabled = false }
-// tasks.named("pmdTest") { enabled = false }
-// tasks.named("spotbugsTest") { enabled = false }
 
 tasks.named("check") { dependsOn("spotlessCheck") }
 
-// ===============================
-// SonarCloud
-// ===============================
-// Usage:
-//   ./gradlew sonar   (requires SONAR_TOKEN env var)
-//
-// sonar.projectKey and sonar.organization must match the SonarCloud project.
 sonar {
   properties {
     property 'sonar.projectKey', 'jazicorn-tw_pokemon-trainer-platform'
@@ -241,9 +170,6 @@ sonar {
   }
 }
 
-// ===============================
-// Jacoco (coverage for Sonar)
-// ===============================
 jacocoTestReport {
   dependsOn test
   reports {

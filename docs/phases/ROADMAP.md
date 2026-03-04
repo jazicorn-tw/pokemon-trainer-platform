@@ -24,6 +24,8 @@ It reflects **intent and design direction**, not a record of released changes.
 
 ## 🎒 Phase 1 — Trainers & Inventory (v0.1.0)
 
+**Status:** Completed
+
 - Trainer entity, service, repository, and controller
 - Owned Pokémon entity and inventory CRUD operations
 - Validation + global exception handling

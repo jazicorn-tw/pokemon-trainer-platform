@@ -109,6 +109,15 @@ If this command fails, the change is **incorrect**.
 
 ---
 
+## 🌐 Accessing the API
+
+Start the app with `make run` (starts Postgres + Spring Boot, sources `.env`).
+The API listens on **`http://localhost:8080`** — open `/actuator/health` in a browser to verify.
+
+Full curl examples: [`docs/onboarding/QUICK_START.md`](docs/onboarding/QUICK_START.md)
+
+---
+
 ## 🗺️ Roadmap (high level)
 
 | Phase | Focus                           |

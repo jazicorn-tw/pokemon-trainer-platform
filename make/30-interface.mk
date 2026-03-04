@@ -51,6 +51,9 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make docker-down" "→ stop local Docker Compose services"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make docker-reset" "→ stop + delete volumes + restart"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make db-shell" "→ psql shell into local postgres container"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make db-flyway-clean" "→ wipe DB schema via Flyway CLI (requires flyway installed)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make seed-db" "→ insert 5 sample trainers (idempotent)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make run" "→ start the API (docker-up + bootRun, loads .env)"
 	$(call println,)
 
 	$(call println,$(YELLOW)🧼 Local hygiene (disk pressure relief)$(RESET))

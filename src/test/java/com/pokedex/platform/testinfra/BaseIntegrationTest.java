@@ -7,8 +7,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Base infrastructure for PostgreSQL-backed integration tests.
@@ -28,7 +26,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * <p>To keep startup deterministic, we ensure the container is running inside the
  * {@code @DynamicPropertySource} method before registering supplier functions.
  */
-@Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SuppressWarnings({
   "resource",
@@ -49,7 +46,6 @@ public abstract class BaseIntegrationTest {
   private static final String POSTGRES_PASSWORD =
       System.getenv().getOrDefault("TEST_DATASOURCE_PASSWORD", "test");
 
-  @Container
   protected static final PostgreSQLContainer<?> POSTGRES =
       new PostgreSQLContainer<>(POSTGRES_IMAGE)
           .withDatabaseName(POSTGRES_DB)

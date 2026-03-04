@@ -28,6 +28,21 @@ cz commit
 
 This helps you pick the right type and keeps messages consistent.
 
+### Committing with a multi-line message in VSCode
+
+For longer commit messages with a body, open your editor instead of writing inline:
+
+```bash
+# One-time setup — set VSCode as your git editor
+git config --global core.editor "code --wait"
+
+# Then commit without -m to open the editor
+git commit
+```
+
+Git opens `.git/COMMIT_EDITMSG` in VSCode. Write your message, save, and close the tab.
+VSCode's Source Control panel (`⌃⇧G`) also lets you stage individual files or hunks before committing.
+
 ---
 
 ## ✅ Types (what to use)

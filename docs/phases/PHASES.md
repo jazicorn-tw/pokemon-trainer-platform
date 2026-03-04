@@ -395,9 +395,9 @@ Improve maintainability and developer experience.
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/yourname/pokemon-platform-system
-cd pokemon-platform-system
-./gradlew bootRun
+git clone https://github.com/jazicorn-tw/pokemon-trainer-platform
+cd pokemon-trainer-platform
+make run
 ```
 
 Swagger UI (from Phase 4+):

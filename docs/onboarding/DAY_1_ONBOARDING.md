@@ -25,7 +25,7 @@ If you follow this checklist, you will not fight the tooling.
 
 ```bash
 git clone <repo-url>
-cd pokemon-inventory-system
+cd pokemon-trainer-platform
 ```
 
 ---
@@ -98,7 +98,7 @@ Verify:
 
 ```bash
 docker compose ps
-docker logs -n 50 pokemon_inventory_postgres
+docker compose logs --tail=50 postgres
 ```
 
 Postgres healthcheck must be **healthy** before proceeding.
