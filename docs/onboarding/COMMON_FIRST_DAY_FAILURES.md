@@ -70,9 +70,13 @@ docker ps
 
 **Fix**
 
-* Read `docs/onboarding/PRECOMMIT.md`
-* Fix the first reported error (later errors are often cascading)
+* Fix the first reported error — later errors are often cascading
 * Re-run the commit
+
+📄 Per-tool error messages and exact fixes:
+[`QUALITY_GATE_EXPLAINED.md`](../faq/QUALITY_GATE_EXPLAINED.md)
+
+📄 Hook behaviour details: `docs/commit/PRECOMMIT.md`
 
 **One-time bypass (not recommended):**
 

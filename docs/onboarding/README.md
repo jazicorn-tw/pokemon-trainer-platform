@@ -202,9 +202,11 @@ Read it before opening your second PR.
 ## 🆘 If you’re stuck
 
 1. Re-run `make doctor`
-2. Check the relevant setup document
-3. Read the linked ADR
-4. If something is unclear, open a PR or issue — docs are part of the system
+2. Check [`COMMON_FIRST_DAY_FAILURES.md`](./COMMON_FIRST_DAY_FAILURES.md)
+3. For Spotless / Checkstyle / PMD / markdownlint errors, see
+   [`QUALITY_GATE_EXPLAINED.md`](../faq/QUALITY_GATE_EXPLAINED.md)
+4. Read the linked ADR
+5. If something is unclear, open a PR or issue — docs are part of the system
 
 ---
 
