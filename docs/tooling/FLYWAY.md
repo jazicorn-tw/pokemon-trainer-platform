@@ -41,6 +41,7 @@ make db-flyway-clean
 ```
 
 This requires:
+
 - Flyway CLI installed (`brew install flyway`)
 - `.env` present (copy `.env.example` if not)
 - Postgres container running (`make docker-up`)

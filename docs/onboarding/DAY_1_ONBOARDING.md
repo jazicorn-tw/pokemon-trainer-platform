@@ -10,7 +10,7 @@ If you follow this checklist, you will not fight the tooling.
 > 🆘 Stuck at any step? See
 > [`COMMON_FIRST_DAY_FAILURES.md`](./COMMON_FIRST_DAY_FAILURES.md) before
 > spending time debugging.
-
+>
 > Local configuration behavior is defined in **ADR-000**.  
 > `.env` is supported for local development via Spring configuration import and **never** overrides
 > CI or production environment variables.
