@@ -48,11 +48,15 @@
 ## 🏛 Phase-gate ADRs (must be accepted)
 
 - [ ] ADR-000 — Linting & static analysis as a foundational decision
-- [ ] ADR-001 — PostgreSQL baseline (no H2)
-- [ ] ADR-002 — Flyway for schema migrations
-- [ ] ADR-003 — Testcontainers for integration testing
-- [ ] ADR-004 — Actuator health endpoints + Docker healthchecks
-- [ ] ADR-005 — Phase security implementation (deps first, enforcement later)
+- [ ] ADR-001 — PostgreSQL everywhere (no H2)
+- [ ] ADR-002 — Testcontainers for integration testing
+- [ ] ADR-003 — Actuator health endpoints + Docker healthchecks
+- [ ] ADR-004 — `.env` & config precedence (local-only, never overrides CI)
+- [ ] ADR-005 — Phased security (dependencies now, enforcement in Phase 6)
+- [ ] ADR-006 — Local dev experience (Colima, doctor, bootstrap)
+- [ ] ADR-007 — Commit message enforcement (Conventional Commits + cz)
+- [ ] ADR-008 — Semantic release (automated versioning on merge to main)
+- [ ] ADR-010 — Local CI simulation with act
 
 ---
 
