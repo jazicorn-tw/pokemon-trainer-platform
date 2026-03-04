@@ -28,6 +28,13 @@ Each version introduces new functionality only after writing failing tests first
 
 ---
 
+> **Note on version labels:** Phase version numbers (v0.0.1, v0.1.0, etc.) are
+> **delivery milestone identifiers**, not git release tags. Git tags are managed
+> automatically by semantic-release from Conventional Commits and will not match
+> phase labels. See `CHANGELOG.md` for actual release history.
+
+---
+
 ## 🧩 Tech Stack
 
 | Area          | Technology                                                         |
@@ -64,7 +71,7 @@ No feature is added without tests.
 
 ---
 
-## 🔰 Phase 0 — Project Skeleton (v0.0.1)
+## 🔰 Phase 0 — Project Skeleton & DX Infrastructure (v0.0.1)
 
 > ⚠️ **Environment requirement:** Phase 0 tests require **Docker** (or **Colima on macOS**)
 > because the project uses **Testcontainers** for PostgreSQL-backed integration tests.
@@ -76,13 +83,14 @@ No feature is added without tests.
 
 ### 🎯 Purpose
 
-Establish a **runnable, testable Spring Boot 4 service** with production-aware scaffolding and
-strict infrastructure parity from day one.
+Establish a **runnable, testable Spring Boot 4 service** with a full production-grade DX stack —
+CI/CD, quality gates, release automation, and local tooling — before any domain logic.
 
 Phase 0 exists to:
 
 * Prove the application can boot end-to-end
 * Lock in database, migration, testing, and quality-gate strategy
+* Wire CI/CD pipelines, semantic-release, and Docker image publishing from day one
 * Prevent later architectural drift
 * Ensure CI and local environments behave identically
 
@@ -286,31 +294,25 @@ Allow trainers to buy and sell Pokémon.
 
 ---
 
-## 🧪 Phase 5 — Integration Testing & Testcontainers (v0.5.0)
+## 🧪 Phase 5 — Integration Testing & E2E (v0.5.0)
 
 ### Purpose
 
-Validate real‑world behavior using PostgreSQL.
+Validate real‑world end-to-end behavior using PostgreSQL and Testcontainers
+(already in use since Phase 0 — this phase adds full lifecycle coverage).
 
 ### TDD Steps
 
 * Add full‑flow integration tests:
-  * Trade lifecycle
-  * Marketplace purchase lifecycle
-* Replace H2 with PostgreSQL Testcontainers
-* Apply Flyway migrations in tests
-
-### New Dependencies
-
-* `org.testcontainers:junit-jupiter`
-* `org.testcontainers:postgresql`
-* `org.postgresql:postgresql`
+  * Trade lifecycle (propose → accept → ownership swap)
+  * Marketplace purchase lifecycle (list → buy → transfer)
+* Verify Flyway migrations apply cleanly in integration test context
 
 ### Release Criteria
 
-* No H2 usage in integration tests
-* Migrations apply cleanly
-* Full flows pass against real DB
+* Full trade and marketplace flows pass against real PostgreSQL (Testcontainers)
+* Migrations apply cleanly end-to-end
+* No mocked repositories in integration test layer
 
 ---
 
