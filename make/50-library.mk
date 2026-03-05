@@ -71,9 +71,8 @@ define require_exec
 endef
 
 local-settings: ## 🧩 Print effective local settings
-	$(call section,🧩  Local settings)
-	@echo "LOCAL_SETTINGS=$(LOCAL_SETTINGS)"
-	@test -f "$(LOCAL_SETTINGS)" && cat "$(LOCAL_SETTINGS)" || printf "%b\n" "$(GRAY)No local settings file found.$(RESET)"
+	$(call require_exec,./scripts/inspect/inspect-local-settings.sh)
+	@./scripts/inspect/inspect-local-settings.sh
 
 exec-bits: ## 🔧 Check & (optionally) auto-fix executable bits for tracked scripts
 	$(call require_exec,./scripts/check/check-executable-bits.sh)
