@@ -58,7 +58,7 @@ These settings:
 - Never affect CI behavior
 - Are intended for ergonomics and early feedback
 
-See `docs/LOCAL_ENVIRONMENT.md` for full details.
+See [`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_ENVIRONMENT.md) for full details.
 
 ---
 
@@ -169,7 +169,7 @@ Bootstrap works together with:
 
 - `scripts/check/check-executable-bits.sh` — verifies executable bits (auto-fix locally, enforce in CI)
 - `make hooks` / `make bootstrap` — canonical entry points
-- `docs/LOCAL_ENVIRONMENT.md` — local-only behavior and settings
+- [`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_ENVIRONMENT.md) — local-only behavior and settings
 - `ADR-000` — CI as source of truth
 - `ADR-007` — commit message enforcement strategy
 

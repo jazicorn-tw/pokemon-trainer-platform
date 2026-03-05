@@ -52,13 +52,19 @@ Then jump to [step 5](#5-start-local-database) to start the database and
 
 ## Manual steps (new to the stack or troubleshooting)
 
-## 2. Environment setup (.env)
+## 2. Environment setup
+
+Create the three local config files from their examples:
 
 ```bash
-cp .env.example .env
+cp .env.example .env           # app config (database, ports, profiles)
+cp .vars.example .vars         # non-secret CI variables (act / local CI parity)
+cp .secrets.example .secrets   # GitHub App credentials (optional for basic dev)
 ```
 
-### How `.env` works in this project
+None of these files are committed. All three are gitignored.
+
+### `.env` — app configuration
 
 * Spring Boot loads `.env` automatically for **local runs** via:
 
@@ -66,11 +72,25 @@ cp .env.example .env
   spring.config.import=optional:file:.env[.properties]
   ```
 
-* `.env` is **optional** and **local-only**
-* OS-level environment variables **always take precedence** (CI / prod)
+* **Optional** and **local-only** — OS-level environment variables always take precedence (CI / prod)
+* Must use simple `KEY=value` syntax (no `export`, no shell logic)
 
-⚠️ `.env` must use simple `KEY=value` syntax (no `export`, no shell logic).  
-Do **not** commit `.env`.
+### `.vars` — local CI variables
+
+* Mirrors GitHub Repository Variables (`Settings → Variables`) for `act` runs
+* Contains **non-secret** values only (booleans, toggles, repo name)
+* Needed when running `make run-ci` or local CI simulations with `act`
+
+📄 Details: [`docs/devops/ci/act/VARS.md`](../devops/ci/act/VARS.md)
+
+### `.secrets` — GitHub App credentials
+
+* Contains `GH_APP_ID` and `GH_APP_PRIVATE_KEY`
+* **Not required for basic local development** — only needed for workflows that
+  authenticate as the GitHub App (release CI, local `act` runs with real secrets)
+* Leave the values blank if you are not running those workflows
+
+📄 Details: [`docs/devops/ci/act/SECRETS.md`](../devops/ci/act/SECRETS.md)
 
 ---
 

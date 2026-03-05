@@ -39,6 +39,32 @@ make list-ci build-image     # list jobs in build-image workflow
 > ⚠️ Release and publish workflows are **not intended to run locally** — they
 > require GitHub App tokens. Run `make run-ci` for the CI-focused workflows only.
 
+### GitHub App secrets for `act` (advanced)
+
+If you need to run a workflow locally that authenticates as the GitHub App
+(e.g. release gating, token generation), `act` must receive the private key as
+a single-line value. The PEM file is multiline, so it must be base64-encoded first.
+
+**One-time setup:**
+
+```bash
+# Encode the private key from .secrets into a single-line b64 file
+# Replace the path with wherever you store your GitHub App PEM
+base64 github-app.pem | tr -d '\n' > .tmp_key.b64
+```
+
+Then set `GH_APP_PRIVATE_KEY` in `.secrets` to the contents of `.tmp_key.b64`:
+
+```bash
+# Read the encoded key into .secrets
+echo "GH_APP_PRIVATE_KEY=$(cat .tmp_key.b64)" >> .secrets
+```
+
+> ⚠️ `.tmp_key.b64` is a secret. Never commit it. Delete it after use.
+> Base64 is encoding, not encryption — the key is still sensitive.
+
+📄 Full reference: [`docs/devops/ci/act/SECRETS.md`](../devops/ci/act/SECRETS.md)
+
 ### How it differs from real CI
 
 `act` is close but not identical:
@@ -159,6 +185,7 @@ OwnedPokemonController
 | Flyway migrations | [`docs/faq/FLYWAY_MIGRATIONS_EXPLAINED.md`](../faq/FLYWAY_MIGRATIONS_EXPLAINED.md) |
 | CI troubleshooting | [`docs/testing/CI_TROUBLESHOOTING.md`](../testing/CI_TROUBLESHOOTING.md) |
 | act setup | [`docs/tooling/ACTRC.md`](../tooling/ACTRC.md) |
+| act secrets | [`docs/devops/ci/act/SECRETS.md`](../devops/ci/act/SECRETS.md) |
 | Contributing guide | [`CONTRIBUTING.md`](../../CONTRIBUTING.md) |
 | Phase roadmap | [`docs/phases/ROADMAP.md`](../phases/ROADMAP.md) |
 

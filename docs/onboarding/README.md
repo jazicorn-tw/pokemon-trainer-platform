@@ -80,6 +80,7 @@ Onboarding docs are intentionally **progressive**. You don’t need to read ever
 
 | When | What to read |
 | ---- | ---- |
+| Day 0 | [`DAY_0_MACHINE_SETUP.md`](./DAY_0_MACHINE_SETUP.md) — machine prerequisites, shell setup |
 | Day 1 | [`DAY_1_ONBOARDING.md`](./DAY_1_ONBOARDING.md) — local setup, expectations |
 | Day 2 | [`DAY_2_FIRST_PR.md`](./DAY_2_FIRST_PR.md) — first PR, CI, review flow |
 | Day 3 | [`DAY_3_GOING_DEEPER.md`](./DAY_3_GOING_DEEPER.md) — local CI with act, releases, test patterns, Phase 2 |
