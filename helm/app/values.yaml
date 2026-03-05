@@ -1,0 +1,121 @@
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/your-org/{{project-name}}
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# Ingress is disabled for now (ADR-009)
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: {{project-name}}.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# -----------------------------------------------------------------------------
+# Environment variables
+#
+# Mirrors `.env.example` (local dev) but is used for Kubernetes injection via Helm (ADR-009).
+#
+# Values differ per environment and MUST be supplied via:
+# - Helm values
+# - Kubernetes Secrets / ConfigMaps
+# -----------------------------------------------------------------------------
+env:
+  # ===============================
+  # Application
+  # ===============================
+  SPRING_PROFILES_ACTIVE: "prod"
+  # SERVER_PORT: "8080"
+
+  # ===============================
+  # Database (PostgreSQL)
+  # ===============================
+  # SPRING_DATASOURCE_URL: ""
+  # SPRING_DATASOURCE_USERNAME: ""
+  # SPRING_DATASOURCE_PASSWORD: ""
+
+  # ===============================
+  # JPA / Hibernate
+  # ===============================
+  # SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
+
+  # ===============================
+  # Flyway
+  # ===============================
+  # SPRING_FLYWAY_ENABLED: "true"
+  # SPRING_FLYWAY_LOCATIONS: "classpath:db/migration"
+
+  # ===============================
+  # External APIs
+  # ===============================
+  # {{EXTERNAL_API}}_BASE_URL: "https://{{external-api}}.co/api/v2"
+  # {{EXTERNAL_API}}_TIMEOUT_MS: "5000"
+
+  # ===============================
+  # Actuator / Observability
+  # ===============================
+  # MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info"
+
+  # ===============================
+  # Security
+  # ===============================
+  # JWT_SECRET: ""
+  # JWT_EXPIRATION_SECONDS: ""
+
+# -----------------------------------------------------------------------------
+# Health probes (Spring Boot Actuator)
+# -----------------------------------------------------------------------------
+probes:
+  enabled: true
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: http
+  initialDelaySeconds: 20
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: http
+  initialDelaySeconds: 20
+  periodSeconds: 10

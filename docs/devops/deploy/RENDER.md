@@ -56,4 +56,4 @@ If you use Spring Boot Actuator probes, use one of:
 ## Future enhancement (release-aligned deploy)
 
 Once you publish images to GHCR on semantic-release tags, you can configure Render to deploy from a specific image tag
-(e.g., `ghcr.io/jazicorn-tw/pokemon-trainer-platform:1.2.3`) rather than building from the repo.
+(e.g., `ghcr.io/your-org/{{project-name}}:1.2.3`) rather than building from the repo.

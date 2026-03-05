@@ -2,11 +2,13 @@
 
 # ✅ Local Environment Onboarding Checklist
 
-> **Purpose**: A fast, no-nonsense checklist to confirm your local environment is ready to run this project.
+> **Purpose**: A fast, no-nonsense checklist to confirm your local environment is ready to contribute.
 >
-> For background, explanations, and step-by-step guidance, see:
-> 
-> 👉 **`onboarding/README.md`** (this checklist lives alongside it)
+> **Setting up from the template for the first time?** Use [`PROJECT_SETUP.md`](./PROJECT_SETUP.md) instead —
+> it covers placeholder replacement, env files, bootstrap, and first run.
+>
+> This checklist is for verifying an already-configured environment (new team member, machine rebuild, etc.).
+> For background and explanations, see [`onboarding/README.md`](./README.md).
 
 ---
 

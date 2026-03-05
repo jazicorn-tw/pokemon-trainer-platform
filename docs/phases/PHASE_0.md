@@ -68,7 +68,7 @@ By the end of Phase 0 you will have:
 ## 🔜 Next — Phase 1 Preview
 
 With a verified skeleton and full DX stack in place, Phase 1 can focus purely
-on **domain logic** — Trainer CRUD and Pokémon inventory — without any
+on **domain logic** — Resource CRUD and {{resource}} inventory — without any
 infrastructure rewrites.
 
-See [`PHASE_1.md`](PHASE_1.md).
+See [`PHASES.md`](PHASES.md) for Phase 1 and beyond.

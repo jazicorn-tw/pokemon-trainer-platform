@@ -65,7 +65,7 @@ Local configuration is controlled via `.env`.
 Typical values:
 
 ```bash
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/pokemon_trainer_platform
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/{{app-name}}
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=postgres
 ```
@@ -96,13 +96,13 @@ docker logs -f postgres
 ### From your host machine
 
 ```bash
-psql "postgresql://postgres:postgres@localhost:5432/pokemon_trainer_platform"
+psql "postgresql://postgres:postgres@localhost:5432/{{app-name}}"
 ```
 
 ### From inside the container
 
 ```bash
-docker exec -it postgres psql -U postgres -d pokemon_trainer_platform
+docker exec -it postgres psql -U postgres -d {{app-name}}
 ```
 
 Helpful `psql` commands:

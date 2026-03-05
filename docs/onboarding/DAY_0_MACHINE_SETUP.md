@@ -46,7 +46,7 @@ requires a one-time shell function in your profile.
 Add the following to your `~/.zshrc` (or `~/.bashrc`):
 
 ```bash
-# pokemon-trainer-platform: pre-add lint wrapper
+# {{project-name}}: pre-add lint wrapper
 # Runs scripts/git/pre-add.sh before staging files in any repo that has it.
 git() {
   if [[ "$1" == "add" ]] && command git rev-parse --git-dir &>/dev/null; then
@@ -70,7 +70,7 @@ source ~/.zshrc
 > The wrapper is **project-aware** — it only activates in repos that have
 > `scripts/git/pre-add.sh`. Other repos are unaffected.
 >
-> Skip this step if you prefer to run `make lint-docs`, `make format`, and
+> Skip this step if you prefer to run `./gradlew checkstyleMain pmdMain spotbugsMain-docs`, `make format`, and
 > `make exec-bits` manually before staging.
 
 📄 Full details: [`docs/tooling/PRE_ADD_LINT.md`](../tooling/PRE_ADD_LINT.md)

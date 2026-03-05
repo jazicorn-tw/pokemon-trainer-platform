@@ -49,10 +49,10 @@ camelCase on all method names including tests.
 
 ```java
 // ❌
-void create_trainer_returns_201() {}
+void create_resource_returns_201() {}
 
 // ✅
-void createTrainerReturns201() {}
+void createResourceReturns201() {}
 ```
 
 ### `LineLength: Line is longer than 120 characters`
@@ -118,7 +118,7 @@ Commonly triggered on `@WebMvcTest` controller tests.
 
 ```java
 @SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert", "PMD.AvoidDuplicateLiterals"})
-class TrainerControllerTest {
+class ResourceControllerTest {
 ```
 
 ### `JUnitTestContainsTooManyAsserts: JUnit tests should not contain more than 1 assert(s)`
@@ -130,10 +130,10 @@ in service-layer tests that verify multiple fields at once.
 
 ```java
 @SuppressWarnings({"PMD.JUnitTestContainsTooManyAsserts", "PMD.AvoidDuplicateLiterals"})
-class TrainerServiceTest {
+class ResourceServiceTest {
 ```
 
-### `AvoidDuplicateLiterals: The String literal "trainer" appears N times`
+### `AvoidDuplicateLiterals: The String literal "resource" appears N times`
 
 **Cause:** The same string literal (e.g. a URL path or field name) appears
 more than once in the file. Commonly triggered in test classes.
@@ -141,7 +141,7 @@ more than once in the file. Commonly triggered in test classes.
 **Fix (preferred):** Extract to a constant:
 
 ```java
-private static final String TRAINER_PATH = "/api/trainers";
+private static final String RESOURCE_PATH = "/api/resources";
 ```
 
 **Fix (suppress):** If extraction would hurt readability (e.g. short

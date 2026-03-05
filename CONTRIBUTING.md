@@ -17,7 +17,7 @@ All development **must** follow the **red → green → refactor** loop.
 Choose the *lowest appropriate layer*:
 
 * **Service layer** → unit tests (Mockito)
-* **Controller layer** → `@WebMvcTest` + MockMvc
+* **Controller layer** → @WebMvcTest + MockMvc
 * **Integration layer** → Testcontainers (PostgreSQL)
 
 > If unsure, default to the lowest layer possible.
@@ -46,7 +46,7 @@ Choose the *lowest appropriate layer*:
 Use clear, scoped commit messages:
 
 * `feat(trade): add trade acceptance logic`
-* `fix(pokemon): handle PokeAPI validation errors`
+* `fix(resource): handle external API validation errors`
 * `test(market): add listing cancellation coverage`
 
 ---
@@ -69,7 +69,7 @@ This repository enforces **local quality gates** via a Git `pre-commit` hook.
 Before code leaves your machine, the hook may:
 
 * auto-format code (Spotless)
-* run static analysis
+* run static analysis (Checkstyle, PMD, SpotBugs)
 * optionally run unit tests
 
 Install hooks and run the full local gate:
@@ -88,8 +88,8 @@ The codebase follows a **layered architecture**:
 
 * `controller` → HTTP only
 * `service` → business logic
-* `repository` → persistence (JPA)
-* `client` → external integrations (PokeAPI)
+* `repository` → persistence
+* `client` → external integrations
 * `config` → cross-cutting concerns
 
 Breaking layer boundaries requires justification and, if significant, an ADR.
@@ -119,12 +119,12 @@ feature/* → dev → staging → main
 
 Every PR **must include appropriate tests**:
 
-| Layer       | Required Tests              |
-| ----------- | --------------------------- |
-| Services    | Unit (Mockito)              |
-| Controllers | `@WebMvcTest`               |
-| Integration | Testcontainers (PostgreSQL) |
-| Security    | `spring-security-test`      |
+| Layer       | Required Tests                       |
+| ----------- | ------------------------------------ |
+| Services    | Unit (Mockito)                       |
+| Controllers | `@WebMvcTest` + `@MockitoBean`       |
+| Integration | Testcontainers (PostgreSQL)          |
+| Security    | `spring-security-test`               |
 
 PRs without tests or with reduced coverage **will not be merged**.
 
@@ -137,7 +137,7 @@ Linting and CI enforcement are **architectural decisions**, not tooling preferen
 Before opening a PR:
 
 ```bash
-./gradlew clean check
+make quality
 ```
 
 Do **not** disable or bypass checks without an approved ADR.
@@ -156,7 +156,7 @@ See:
 * [ ] Code formatted
 * [ ] Feature documented if applicable
 * [ ] No dead or commented-out code
-* [ ] No new Testcontainers strategy
+* [ ] No new Testcontainers strategy (keep consistent)
 
 ---
 
@@ -165,14 +165,13 @@ See:
 **Prerequisites**:
 
 * Java 21
-* Docker
-* macOS: Colima
+* Docker (or Colima on macOS)
+* Gradle (via the included `gradlew` wrapper)
 
 Verify:
 
 ```bash
-java -version
-docker ps
+make doctor
 ```
 
 ---
@@ -180,9 +179,7 @@ docker ps
 ## ▶ Running Tests Locally
 
 ```bash
-colima start
-docker context use colima
-./gradlew test
+./gradlew test   # requires Docker / Colima
 ```
 
 If tests fail, consult `docs/testing/TESTING.md` first.
@@ -202,6 +199,7 @@ This project uses **classic Testcontainers only**.
 🚫 Not allowed:
 
 * `@ServiceConnection`
+* H2 or any in-memory database substitute
 * Mixing container strategies
 
 ---
@@ -211,7 +209,7 @@ This project uses **classic Testcontainers only**.
 All integration tests **must** extend:
 
 ```java
-class ExampleIT extends BaseIntegrationTest {}
+class ExampleIT extends AbstractIntegrationTest {}
 ```
 
 This guarantees consistent container lifecycle behavior.

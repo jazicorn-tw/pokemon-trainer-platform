@@ -193,4 +193,4 @@ make local-settings   # print all effective resolved values
 
 ← Back to [Phase 0.2 — CI/CD & Release](PHASE_0_2.md) |
 Back to [Phase 0 overview](PHASE_0.md) |
-Next: [Phase 1 — Trainers & Inventory](PHASE_1.md)
+Next: See [`PHASES.md`](PHASES.md) for Phase 1 and beyond

@@ -34,7 +34,7 @@ jobs:
 
       # Optional: override BaseIntegrationTest defaults (uncomment if needed)
       # TEST_DATASOURCE_IMAGE: postgres:16-alpine
-      # TEST_DATASOURCE_DB: pokedex_test
+      # TEST_DATASOURCE_DB: {{app-name}}_test
       # TEST_DATASOURCE_USER: test
       # TEST_DATASOURCE_PASSWORD: test
 

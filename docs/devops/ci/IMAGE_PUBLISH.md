@@ -100,7 +100,7 @@ images: ghcr.io/${{ github.repository }}
 
 Example:
 
-- `ghcr.io/jazicorn-tw/pokemon-inventory-system`
+- `ghcr.io/your-org/{{resource}}-inventory-system`
 
 ### Tags
 

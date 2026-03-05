@@ -31,7 +31,7 @@ If you follow this checklist, you will not fight the tooling.
 
 ```bash
 git clone <repo-url>
-cd pokemon-trainer-platform
+cd {{project-name}}
 ```
 
 ---

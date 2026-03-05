@@ -45,9 +45,9 @@ SPRING_PROFILES_ACTIVE=local
 SERVER_PORT=8080
 
 # Database (local / Docker / Testcontainers)
-POSTGRES_DB=pokemon
-POSTGRES_USER=pokemon
-POSTGRES_PASSWORD=pokemon
+POSTGRES_DB={{resource}}
+POSTGRES_USER={{resource}}
+POSTGRES_PASSWORD={{resource}}
 POSTGRES_PORT=5432
 
 # Optional tooling flags

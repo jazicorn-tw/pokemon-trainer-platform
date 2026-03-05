@@ -15,7 +15,7 @@ Add the following function to your `~/.zshrc` or `~/.bashrc`, then
 `source ~/.zshrc` (or restart your terminal):
 
 ```bash
-# pokemon-trainer-platform: pre-add lint wrapper
+# {{project-name}}: pre-add lint wrapper
 # Runs scripts/git/pre-add.sh before staging files in any repo that has it.
 git() {
   if [[ "$1" == "add" ]] && command git rev-parse --git-dir &>/dev/null; then
@@ -117,7 +117,7 @@ files in particular.
 ### `scripts/git/pre-add.sh: command not found`
 
 The shell function resolved the wrong repo root. Ensure you are inside the
-`pokemon-trainer-platform` directory when running `git add`.
+`{{project-name}}` directory when running `git add`.
 
 ### markdownlint-cli2 not found
 

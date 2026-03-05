@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADR)
 
-This folder contains **Architecture Decision Records** for the **Pokémon Trainer Platform**.
+This folder contains **Architecture Decision Records** for the **{{project-name}}**.
 
 ADRs capture *why* we made a decision, not just *what* we built.
 

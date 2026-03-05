@@ -1,9 +1,9 @@
 <!-- markdownlint-disable-file MD033 MD036 -->
 <!-- markdownlint-disable-file MD033 MD060 -->
 
-# 📚 Documentation Guide — Pokémon Trainer Platform
+# 📚 Documentation Guide — {{project-name}}
 
-This folder contains the **authoritative documentation** for the Pokémon Trainer Platform.
+This folder contains the **authoritative documentation** for the {{project-name}}.
 
 The goal of this documentation set is to explain **how and why the system is built the way it is**,
 not just how to run it.

@@ -131,7 +131,7 @@ Runs an interactive prompt — just answer the questions:
 
 ```text
 ? Select the type of change:   feat
-? Scope (optional):            trainer
+? Scope (optional):            resource
 ? Short description:           add nickname validation
 ? Longer description (opt.):   [enter to skip]
 ? Breaking change?             N

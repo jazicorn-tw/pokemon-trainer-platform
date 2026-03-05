@@ -36,7 +36,7 @@ Helm is a package manager for Kubernetes. A Helm "chart" is a versioned bundle o
 In this repo, the chart lives at:
 
 ```text
-helm/pokemon-trainer-platform
+helm/app
 ```
 
 ## What we do today
@@ -59,18 +59,18 @@ brew install helm
 Lint:
 
 ```bash
-helm lint helm/pokemon-trainer-platform
+helm lint helm/app
 ```
 
 Environment variables are documented in `.env.example` and mirrored in
-`helm/pokemon-trainer-platform/values.yaml`.
+`helm/app/values.yaml`.
 
 ## CI
 
 The `Build Image` workflow also runs:
 
 ```bash
-helm lint helm/pokemon-trainer-platform
+helm lint helm/app
 ```
 
 ## Future plan

@@ -103,7 +103,7 @@ whether the test runner started it earlier.
 setup. It lives at:
 
 ```text
-src/test/java/com/pokedex/platform/testinfra/BaseIntegrationTest.java
+src/test/java/com/{{app-name}}/platform/testinfra/BaseIntegrationTest.java
 ```
 
 Every integration test that touches the database **must** extend it:
@@ -112,7 +112,7 @@ Every integration test that touches the database **must** extend it:
 @SpringBootTest(classes = PlatformApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class TrainerIntegrationTest extends BaseIntegrationTest {
+class ResourceIntegrationTest extends BaseIntegrationTest {
     // container is already configured and started
 }
 ```
@@ -138,7 +138,7 @@ shared lifecycle guarantee.
 ## Running a single test class
 
 ```bash
-./gradlew test --tests "*.TrainerIntegrationTest"
+./gradlew test --tests "*.ResourceIntegrationTest"
 ```
 
 One container starts for that class. Docker is still required.
@@ -163,7 +163,7 @@ variables — useful in CI or when you need a specific Postgres version:
 | Variable | Default | Purpose |
 | -------- | ------- | ------- |
 | `TEST_DATASOURCE_IMAGE` | `postgres:16-alpine` | PostgreSQL image tag |
-| `TEST_DATASOURCE_DB` | `pokedex_test` | Database name |
+| `TEST_DATASOURCE_DB` | `{{app-name}}_test` | Database name |
 | `TEST_DATASOURCE_USER` | `test` | Database user |
 | `TEST_DATASOURCE_PASSWORD` | `test` | Database password |
 

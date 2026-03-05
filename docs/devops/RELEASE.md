@@ -19,7 +19,7 @@
 1. Merge into `main` with a **releasable commit type**
 
    ```text
-   feat: add trainer inventory endpoint
+   feat: add resource inventory endpoint
    ```
 
 2. Ensure one of the release gates is enabled:

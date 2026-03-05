@@ -15,12 +15,12 @@ fi
 
 _db_host="${_ls_db_host:-localhost}"
 _db_port="${_ls_db_port:-5432}"
-_db_name="${_ls_db_name:-pokedex}"
+_db_name="${_ls_db_name:-${APP_NAME:-app}}"
 
-# Precedence: env var > local-settings.json > hard default
+# Precedence: env var > local-settings.json > APP_NAME > hard default
 DB_URL="${SPRING_DATASOURCE_URL:-jdbc:postgresql://${_db_host}:${_db_port}/${_db_name}}"
-DB_USER="${SPRING_DATASOURCE_USERNAME:-trainer}"
-DB_PASS="${SPRING_DATASOURCE_PASSWORD:-trainer}"
+DB_USER="${SPRING_DATASOURCE_USERNAME:-${APP_NAME:-app}}"
+DB_PASS="${SPRING_DATASOURCE_PASSWORD:-changeme}"
 
 echo "🧼 Starting Flyway Clean..."
 

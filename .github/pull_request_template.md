@@ -87,7 +87,7 @@
 
 ## Phase & Gate
 
-**Current phase:** Phase 1 (Trainer + OwnedPokémon CRUD) — Phase 2 (PokeAPI) is next
+**Current phase:** Phase 1 (Resource + Owned{{resource}} CRUD) — Phase 2 ({{external-api}}) is next
 
 - [ ] Change is phase-appropriate — no Phase 2+ features introduced
 - [ ] No cross-layer refactors beyond what this change requires

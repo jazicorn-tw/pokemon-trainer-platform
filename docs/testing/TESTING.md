@@ -19,7 +19,7 @@ They must behave identically:
 - on a developer laptop (Docker Desktop or Colima)
 - in CI
 - without a manually installed PostgreSQL server
-- without developers maintaining a local `pokedex_test` database
+- without developers maintaining a local `{{app-name}}_test` database
 
 If tests ever require extra steps, the wiring has regressed.
 
@@ -130,7 +130,7 @@ These are Spring-native names so Spring Boot can bind them automatically.
 Used **only** by `BaseIntegrationTest` when constructing the container:
 
 - `TEST_DATASOURCE_IMAGE` (default: `postgres:16-alpine`)
-- `TEST_DATASOURCE_DB` (default: `pokedex_test`)
+- `TEST_DATASOURCE_DB` (default: `{{app-name}}_test`)
 - `TEST_DATASOURCE_USER` (default: `test`)
 - `TEST_DATASOURCE_PASSWORD` (default: `test`)
 
@@ -208,7 +208,7 @@ Use `@SpringBootTest` and extend `BaseIntegrationTest`:
 
 ```java
 @SpringBootTest
-class PokemonRepositoryIT extends BaseIntegrationTest {
+class {{Resource}}RepositoryIT extends BaseIntegrationTest {
   // integration tests
 }
 ```

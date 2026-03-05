@@ -73,7 +73,7 @@ build/reports/tests/test/classes/
 Example:
 
 ```bash
-build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTest.html
+build/reports/tests/test/classes/com.{{app-name}}.platform.PlatformApplicationTest.html
 ```
 
 ---
@@ -83,7 +83,7 @@ build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTest.ht
 Open the report directly in your default browser:
 
 ```bash
-open build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTest.html
+open build/reports/tests/test/classes/com.{{app-name}}.platform.PlatformApplicationTest.html
 ```
 
 ---
@@ -107,7 +107,7 @@ open build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTe
 2. Paste the path:
 
    ```bash
-   build/reports/tests/test/classes/com.pokedex.platform.PlatformApplicationTest.html
+   build/reports/tests/test/classes/com.{{app-name}}.platform.PlatformApplicationTest.html
    ```
 
 3. Press Enter  

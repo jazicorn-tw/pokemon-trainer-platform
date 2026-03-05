@@ -111,7 +111,7 @@ All keys, their defaults, and which scripts read them:
 | `local.app.port` | `8080` | _(reference value)_ |
 | `local.db.host` | `"localhost"` | `scripts/db/clean-db-flyway.sh` |
 | `local.db.port` | `5432` | `scripts/db/clean-db-flyway.sh` |
-| `local.db.name` | `"pokedex"` | `scripts/db/clean-db-flyway.sh` |
+| `local.db.name` | `"{{app-name}}"` | `scripts/db/clean-db-flyway.sh` |
 
 ### `colima.*` — Colima resource requirements
 

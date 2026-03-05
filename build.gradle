@@ -28,9 +28,9 @@ plugins {
 // Force Flyway version to bypass Spring Boot 4.0's internal dependency management
 ext['flyway.version'] = '11.2.0'
 
-group = 'com.pokedex'
+group = 'com.example'
 version = (findProperty('releaseVersion') ?: '0.0.1-SNAPSHOT')
-description = 'A Spring Boot 4 API for trainers to manage their Pokémon - powered by PokeAPI and built with TDD'
+description = '{{project-name}} — Spring Boot 4 backend API scaffold'
 
 java {
   toolchain {
@@ -163,8 +163,8 @@ tasks.named("check") { dependsOn("spotlessCheck") }
 
 sonar {
   properties {
-    property 'sonar.projectKey', 'jazicorn-tw_pokemon-trainer-platform'
-    property 'sonar.organization', 'jazicorn-tw'
+    property 'sonar.projectKey', 'your-org_{{project-name}}'
+    property 'sonar.organization', 'your-org'
     property 'sonar.host.url', 'https://sonarcloud.io'
     property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
   }

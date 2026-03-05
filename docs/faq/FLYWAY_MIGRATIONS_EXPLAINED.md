@@ -29,7 +29,7 @@ detects the checksum mismatch and refuses to start the application.
 ## Why all tables are in `V1__init.sql`
 
 Opening `V1__init.sql` you will see tables for Phase 1 through Phase 7:
-`trainer`, `owned_pokemon`, `trade`, `trade_pokemon`, `trade_offer`,
+`resource`, `{{resource}}`, `trade`, `trade_{{resource}}`, `trade_offer`,
 `sale_listing`, `user_account`.
 
 This is intentional — **not** a mistake or over-engineering.
@@ -75,7 +75,7 @@ work — Flyway sorts numerically.
 2. Write valid PostgreSQL:
 
    ```sql
-   CREATE INDEX idx_owned_pokemon_nickname ON owned_pokemon(nickname);
+   CREATE INDEX idx_{{resource}}_nickname ON {{resource}}(nickname);
    ```
 
 3. Start the application or run tests — Flyway applies it automatically.
@@ -142,7 +142,7 @@ allows `flywayMigrate` to reapply from V1.
 
 ```bash
 docker exec -it $(docker compose ps -q postgres) \
-  psql -U trainer -d trainer -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+  psql -U resource -d resource -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 ```
 
 Then restart the application to trigger Flyway.
@@ -164,7 +164,7 @@ This means:
 ```java
 @BeforeEach
 void cleanup() {
-    trainerRepository.deleteAll();   // wipe rows, not tables
+    resourceRepository.deleteAll();   // wipe rows, not tables
 }
 ```
 

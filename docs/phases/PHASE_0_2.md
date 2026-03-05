@@ -67,8 +67,8 @@ make release-dry-run
 The `image-build` workflow builds and pushes a Docker image to GHCR on every release tag:
 
 ```text
-ghcr.io/<owner>/pokemon-trainer-platform:<version>
-ghcr.io/<owner>/pokemon-trainer-platform:latest
+ghcr.io/<owner>/{{project-name}}:<version>
+ghcr.io/<owner>/{{project-name}}:latest
 ```
 
 The `Dockerfile` uses a multi-stage build:

@@ -1,10 +1,8 @@
-# 🐣 Phase 1 — Trainers & Inventory PR
+# 🐣 Phase 1 — Resources & Inventory PR
 
-> Phase 1 introduces the core domain: Trainer and OwnedPokemon CRUD,
+> Phase 1 introduces the core domain: Resource and {{Resource}} CRUD,
 > validation, and structured error responses using strict TDD on top of
 > the Phase 0 skeleton.
-> See [`docs/phases/PHASE_1.md`](../../docs/phases/PHASE_1.md) for the full
-> TDD walkthrough.
 
 ---
 
@@ -26,10 +24,10 @@
 ## Evidence (required)
 
 - [ ] `./gradlew test` passes (Docker / Colima running)
-- [ ] `curl -i -X POST .../trainers` with valid body returns **201**
-- [ ] `curl -i -X GET .../trainers/{id}` returns **200**
-- [ ] `curl -i -X POST .../trainers/{id}/pokemon` with valid body returns **201**
-- [ ] `curl -i -X GET .../trainers/{id}/pokemon` returns **200**
+- [ ] `curl -i -X POST .../resources` with valid body returns **201**
+- [ ] `curl -i -X GET .../resources/{id}` returns **200**
+- [ ] `curl -i -X POST .../resources/{id}/{{resource}}` with valid body returns **201**
+- [ ] `curl -i -X GET .../resources/{id}/{{resource}}` returns **200**
 - [ ] `curl -i http://localhost:8080/actuator/health` reports `UP`
 
 ---
@@ -38,14 +36,14 @@
 
 ### Domain
 
-- [ ] `Trainer` and `OwnedPokemon` are the only entities introduced
-- [ ] No PokeAPI calls — species validation is off-limits until Phase 2
+- [ ] `Resource` and `{{Resource}}` are the only entities introduced
+- [ ] No {{external-api}} calls — species validation is off-limits until Phase 2
 - [ ] No `spring-boot-starter-webflux` or WireMock added
 - [ ] `V1__init.sql` is **not modified** — schema was established in Phase 0
 
 ### Error handling
 
-- [ ] `TrainerNotFoundException` / `OwnedPokemonNotFoundException` → **404**
+- [ ] `ResourceNotFoundException` / `{{Resource}}NotFoundException` → **404**
 - [ ] `MethodArgumentNotValidException` → **400**
 - [ ] `DataIntegrityViolationException` (duplicate username) → **409**
 - [ ] All exceptions handled in `GlobalExceptionHandler` via `ProblemDetail` (RFC 7807)
@@ -63,21 +61,21 @@
 
 ## New classes introduced
 
-### Trainer domain
+### Resource domain
 
-- [ ] `Trainer` — `src/main/java/.../trainer/Trainer.java`
-- [ ] `TrainerRepository` — `src/main/java/.../trainer/TrainerRepository.java`
-- [ ] `TrainerService` — `src/main/java/.../trainer/TrainerService.java`
-- [ ] `TrainerController` — `src/main/java/.../trainer/TrainerController.java`
-- [ ] `TrainerNotFoundException`
+- [ ] `Resource` — `src/main/java/.../resource/Resource.java`
+- [ ] `ResourceRepository` — `src/main/java/.../resource/ResourceRepository.java`
+- [ ] `ResourceService` — `src/main/java/.../resource/ResourceService.java`
+- [ ] `ResourceController` — `src/main/java/.../resource/ResourceController.java`
+- [ ] `ResourceNotFoundException`
 
-### OwnedPokemon domain
+### {{Resource}} domain
 
-- [ ] `OwnedPokemon` — `src/main/java/.../pokemon/OwnedPokemon.java`
-- [ ] `OwnedPokemonRepository` — `src/main/java/.../pokemon/OwnedPokemonRepository.java`
-- [ ] `OwnedPokemonService` — `src/main/java/.../pokemon/OwnedPokemonService.java`
-- [ ] `OwnedPokemonController` — `src/main/java/.../pokemon/OwnedPokemonController.java`
-- [ ] `OwnedPokemonNotFoundException`
+- [ ] `{{Resource}}` — `src/main/java/.../{{resource}}/{{Resource}}.java`
+- [ ] `{{Resource}}Repository` — `src/main/java/.../{{resource}}/{{Resource}}Repository.java`
+- [ ] `{{Resource}}Service` — `src/main/java/.../{{resource}}/{{Resource}}Service.java`
+- [ ] `{{Resource}}Controller` — `src/main/java/.../{{resource}}/{{Resource}}Controller.java`
+- [ ] `{{Resource}}NotFoundException`
 
 ### Shared
 
@@ -107,9 +105,9 @@
 
 ## Notes for reviewers
 
-- Confirm **no PokeAPI calls** exist anywhere in the implementation
+- Confirm **no {{external-api}} calls** exist anywhere in the implementation
 - Confirm `GlobalExceptionHandler` returns `ProblemDetail` for 400, 404, and 409
-- Confirm `@MockitoBean` (not `@MockBean`) is used in all controller slice tests
+- Confirm `@MockitoBean` (not `@MockBean`) is used in all @WebMvcTest + MockMvc
 - Confirm integration tests extend `BaseIntegrationTest` — no standalone `@SpringBootTest`
 - Confirm `V1__init.sql` was not modified
 - Confirm quality gates are enforced and passing

@@ -41,7 +41,7 @@ GET /ping
 ```json
 {
   "status": "ok",
-  "service": "pokedex-api"
+  "service": "{{app-name}}-api"
 }
 ```
 
@@ -170,7 +170,7 @@ public class PingController {
   public Map<String, String> ping() {
     return Map.of(
         "status", "ok",
-        "service", System.getenv().getOrDefault("SERVICE_NAME", "pokedex-api")
+        "service", System.getenv().getOrDefault("SERVICE_NAME", "{{app-name}}-api")
     );
   }
 }

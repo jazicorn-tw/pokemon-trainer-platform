@@ -1,79 +1,72 @@
 <!-- markdownlint-disable MD033 -->
 
 <h1 align="center">
-  🎒 Pokémon Trainer Platform
+  {{project-name}}
 </h1>
 
 <p align="center">
   <em>
-    A production-grade Spring Boot 4 backend showcasing test-driven design,
-    CI-first quality gates, and disciplined developer experience.
+    A production-grade Spring Boot 4 + Gradle backend API template —
+    CI-first quality gates, TDD from day one, disciplined developer experience.
   </em>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
   <img src="https://img.shields.io/badge/java-21-blue" alt="Java 21">
+  <img src="https://img.shields.io/badge/spring--boot-4.x-brightgreen" alt="Spring Boot 4">
   <img src="https://img.shields.io/badge/database-postgresql-blue" alt="PostgreSQL">
   <!-- markdownlint-disable-next-line MD013 -->
-  <a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml"><img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/your-org/{{project-name}}/actions/workflows/ci-test.yml"><img src="https://github.com/your-org/{{project-name}}/actions/workflows/ci-test.yml/badge.svg" alt="CI"></a>
 </p>
+
+---
+
+> **Using this as a template?** See [`docs/onboarding/PROJECT_SETUP.md`](docs/onboarding/PROJECT_SETUP.md)
+> for the full setup checklist — placeholder replacement, env files, bootstrap, and first run.
 
 ---
 
 ## 🚀 At a glance
 
-**Pokémon Trainer Platform** is a backend API that enables trainers to:
+**{{project-name}}** is a Spring Boot 4 backend API scaffold that demonstrates:
 
-- Manage trainer profiles
-- Validate and manage Pokémon (**PokéAPI integration — phased**)
-- Trade Pokémon with other trainers
-- Buy and sell Pokémon in a marketplace
-
-The domain is playful.  
-The engineering is intentionally **serious**.
-
-> **Current state:** CI, infrastructure, and testing foundations are in place; domain features
-> are delivered incrementally by phase.
+- Doctor-first local setup validation
+- CI-aligned quality gates from day one
+- PostgreSQL with Flyway migrations (no in-memory shortcuts)
+- Testcontainers for integration testing
+- Incremental domain delivery via numbered phases
 
 ---
 
 ## 🧭 Developer Experience (Doctor-first)
 
-This project demonstrates a **doctor-first onboarding model**:
-
 ```bash
 make doctor
 ```
 
-- Validates Java 21, Docker, and local tooling
+- Validates Java 21, Docker, Gradle, and local tooling
 - Fails fast with explicit remediation steps
-- Doctor validates **environment readiness only** — it never replaces CI
+- Environment readiness only — never replaces CI
 
-A single CI-aligned quality gate enforces correctness:
+Full quality gate:
 
 ```bash
 ./gradlew clean check
 ```
 
-> **Fail fast locally.  
-> Enforce correctness in CI.  
-> Document every non-obvious rule with ADRs.**
+> **Fail fast locally. Enforce correctness in CI. Document every non-obvious rule with ADRs.**
 
 ---
 
-## 🧠 What this project demonstrates
+## 🧠 What this template demonstrates
 
 - **Test-Driven Development (TDD)** from day one
 - **CI parity** between local and remote environments
-- **Real infrastructure**
-  - PostgreSQL everywhere
-  - Testcontainers for integration tests
-- **Explicit architecture**
-  - Non-trivial decisions captured as ADRs
-- **No shortcuts**
-  - No in-memory databases
-  - No hidden magic scripts
+- **Real infrastructure** — PostgreSQL everywhere, Testcontainers for integration tests
+- **Explicit architecture** — non-trivial decisions captured as ADRs
+- **No shortcuts** — no H2, no in-memory databases, no hidden magic scripts
+- **Doctor-first DX** — one command validates the whole environment
 
 ---
 
@@ -83,10 +76,10 @@ A single CI-aligned quality gate enforces correctness:
 - **Spring Boot 4**
 - **PostgreSQL + Flyway**
 - **JPA / Hibernate**
-- **Spring Security + JWT** *(planned — phased rollout)*
 - **Testcontainers**
 - **Gradle**
-- **Docker**
+- **Docker / Colima**
+- **Spring Security + JWT** *(planned — phased rollout)*
 
 ---
 
@@ -95,49 +88,50 @@ A single CI-aligned quality gate enforces correctness:
 Authoritative quality gate:
 
 ```bash
-CI=true SPRING_PROFILES_ACTIVE=test ./gradlew clean check
+CI=true ./gradlew clean check
 ```
 
 Includes:
 
-- Unit tests
-- Integration tests (**PostgreSQL via Testcontainers**)
+- Unit tests (JUnit 5 + Mockito)
+- Integration tests (PostgreSQL via Testcontainers)
 - Formatting (Spotless)
 - Static analysis (Checkstyle, PMD, SpotBugs)
 
-If this command fails, the change is **incorrect**.
+> If this command fails, the change is **incorrect**.
 
 ---
 
 ## 🌐 Accessing the API
 
 Start the app with `make run` (starts Postgres + Spring Boot, sources `.env`).
-The API listens on **`http://localhost:8080`** — open `/actuator/health` in a browser to verify.
+The API listens on **`http://localhost:8080`** — open `/actuator/health` to verify.
 
-Full curl examples: [`docs/onboarding/QUICK_START.md`](docs/onboarding/QUICK_START.md)
+Quick-start examples: [`docs/onboarding/QUICK_START.md`](docs/onboarding/QUICK_START.md)
 
 ---
 
 ## 🗺️ Roadmap (high level)
 
-| Phase | Focus                           |
-|------:|---------------------------------|
-| 0     | Project skeleton & test harness |
-| 1     | Trainers & inventory            |
-| 2     | PokéAPI integration             |
-| 3     | Trades                          |
-| 4     | Marketplace                     |
-| 5     | Security & hardening            |
+| Phase | Focus                                |
+|------:|--------------------------------------|
+| 0     | Project skeleton & DX infrastructure |
+| 1     | Core CRUD domain                     |
+| 2     | External API integration             |
+| 3     | Domain feature 3 *(define yours)*    |
+| 4     | Domain feature 4 *(define yours)*    |
+| 5     | Security & hardening                 |
 
 ---
 
 ## 💡 Why this exists
 
-This project exists to demonstrate **how backend systems should be built**, not just that they can be built.
+This scaffold exists to demonstrate **how Java backend systems should be built**,
+not just that they can be built.
 
 It reflects:
 
-- Production mindset
+- Production mindset from day one
 - Strong engineering discipline
 - Clear documentation
 - Respect for future contributors and reviewers
@@ -146,8 +140,8 @@ It reflects:
 
 ### 🔗 More details
 
-- Architecture decisions: `docs/adr/`
-- Onboarding & DX: `docs/onboarding/`
+- Architecture decisions: [`docs/adr/`](docs/adr/)
+- Onboarding & DX: [`docs/onboarding/`](docs/onboarding/)
 - Local sanity checks: `make doctor`
 
 ---

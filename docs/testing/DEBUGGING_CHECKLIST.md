@@ -33,13 +33,13 @@ build/reports/tests/test/classes/
 Example:
 
 ```bash
-build/reports/tests/test/classes/com.pokedex.inventory.InventoryApplicationTest.html
+build/reports/tests/test/classes/com.{{app-name}}.inventory.InventoryApplicationTest.html
 ```
 
 **macOS:**
 
 ```bash
-open build/reports/tests/test/classes/com.pokedex.inventory.InventoryApplicationTest.html
+open build/reports/tests/test/classes/com.{{app-name}}.inventory.InventoryApplicationTest.html
 ```
 
 ---

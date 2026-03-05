@@ -4,9 +4,9 @@ Welcome! 👋
 This repository is designed to provide **fast feedback**, **strong quality gates**, and
 **clear expectations** from day one.
 
-> **Current status:** Phase 1 complete — Trainer and OwnedPokémon CRUD with full TDD
-> coverage. Phase 2 (PokeAPI species validation) is next.
-> See [`docs/phases/ROADMAP.md`](../phases/ROADMAP.md) for the full picture.
+> **New to this repo?** Start with [`PROJECT_SETUP.md`](./PROJECT_SETUP.md) — a single
+> checklist covering everything from prerequisites to first test run.
+> See [`docs/phases/ROADMAP.md`](../phases/ROADMAP.md) for the delivery roadmap.
 
 This project assumes familiarity with Git, pull requests, and basic JVM tooling.  
 The guardrails exist to make those workflows **safer and more predictable**, not to teach them from scratch.
@@ -80,10 +80,11 @@ Onboarding docs are intentionally **progressive**. You don’t need to read ever
 
 | When | What to read |
 | ---- | ---- |
+| First time | [`PROJECT_SETUP.md`](./PROJECT_SETUP.md) — **single setup checklist** (template → running app) |
 | Day 0 | [`DAY_0_MACHINE_SETUP.md`](./DAY_0_MACHINE_SETUP.md) — machine prerequisites, shell setup |
 | Day 1 | [`DAY_1_ONBOARDING.md`](./DAY_1_ONBOARDING.md) — local setup, expectations |
 | Day 2 | [`DAY_2_FIRST_PR.md`](./DAY_2_FIRST_PR.md) — first PR, CI, review flow |
-| Day 3 | [`DAY_3_GOING_DEEPER.md`](./DAY_3_GOING_DEEPER.md) — local CI with act, releases, test patterns, Phase 2 |
+| Day 3 | [`DAY_3_GOING_DEEPER.md`](./DAY_3_GOING_DEEPER.md) — local CI with act, releases, test patterns |
 
 ---
 

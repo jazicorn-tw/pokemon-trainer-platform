@@ -87,9 +87,9 @@ merge to `main`. You do not trigger releases manually.
 
 | Commit prefix | Example | Bump |
 | ------------- | ------- | ---- |
-| `fix:` | `fix(trainer): handle null username` | patch (0.0.x) |
-| `feat:` | `feat(pokemon): add nickname field` | minor (0.x.0) |
-| `feat!:` / `BREAKING CHANGE:` | `feat!: rename trainer endpoint` | major (x.0.0) |
+| `fix:` | `fix(resource): handle null username` | patch (0.0.x) |
+| `feat:` | `feat({{resource}}): add nickname field` | minor (0.x.0) |
+| `feat!:` / `BREAKING CHANGE:` | `feat!: rename resource endpoint` | major (x.0.0) |
 | `chore:`, `docs:`, `test:` | `docs(onboarding): fix broken link` | no release |
 
 ### What a release produces
@@ -118,13 +118,13 @@ Reach for the lowest layer that covers the behaviour you are testing.
 | -------------------- | ----- | ------- |
 | Business rules, no I/O | Service unit | JUnit 5 + Mockito |
 | HTTP request/response contract | Controller slice | `@WebMvcTest` + `@MockitoBean` |
-| Database persistence | Integration | `BaseIntegrationTest` (Testcontainers) |
+| Database persistence | Integration | `AbstractIntegrationTest` (Testcontainers) |
 | External HTTP client (Phase 2+) | Client unit | WireMock stubs |
 
 ### Rules
 
 * Controller tests use `@MockitoBean` on the service — no real database
-* Integration tests extend `BaseIntegrationTest` — required, not optional
+* Integration tests extend `AbstractIntegrationTest` — required, not optional
 * No test makes a real HTTP call to external services
 * Test methods use **camelCase only** — no underscores (Checkstyle `MethodName`)
 
@@ -132,43 +132,40 @@ Reach for the lowest layer that covers the behaviour you are testing.
 
 ```bash
 ./gradlew test                      # all tests (requires Docker)
-./gradlew test --tests "*.TrainerServiceTest"  # single class
+./gradlew test --tests "*.ResourceServiceTest"  # single class
 ```
 
 📄 Details: [`docs/testing/LOCAL_TESTING.md`](../testing/LOCAL_TESTING.md)
 
 ---
 
-## 4. Phase 2 preview — PokeAPI species validation
+## 4. Phase 2 preview — external API integration
 
 Phase 2 is the next active development target. Here is what lands and what it
 means for your PRs now.
 
 ### What Phase 2 adds
 
-* `PokeApiClient` — WebClient-based HTTP client for `pokeapi.co`
-* `PokeApiService` — validation facade called by `OwnedPokemonService`
-* Species validation on `POST /api/trainers/{id}/pokemon`
-* New responses: **422** (invalid species), **503** (PokeAPI down)
-* New dependency: `spring-boot-starter-webflux` (WebClient only, blocking)
-* New test tooling: WireMock for stubbing HTTP responses
+* `ExternalClient` — HTTP client for the external validation/enrichment API
+* `ExternalService` — validation facade called by the domain service
+* Validation wired into the relevant POST endpoints
+* New responses: **422** (invalid input), **503** (external API down)
+* New test tooling: HTTP stubs (e.g. WireMock) for stubbing external calls
 
 ### Architecture change
 
 ```text
-OwnedPokemonController
-  └─ OwnedPokemonService
-       └─ PokeApiService          ← Phase 2 addition
-            └─ PokeApiClient      ← Phase 2 addition (WebClient, blocking)
+ResourceController
+  └─ ResourceService
+       └─ ExternalService          ← Phase 2 addition
+            └─ ExternalClient      ← Phase 2 addition (HTTP client)
 ```
 
 ### What is off-limits in PRs right now
 
-* Do **not** implement `PokeApiClient` or `PokeApiService` ahead of Phase 2
-* Do **not** add `spring-boot-starter-webflux` to `build.gradle` yet
-* Do **not** add WireMock as a test dependency yet
-
-📄 Full TDD walkthrough: [`docs/phases/PHASE_2.md`](../phases/PHASE_2.md)
+* Do **not** implement `ExternalClient` or `ExternalService` ahead of Phase 2
+* Do **not** add Phase 2 dependencies to the build yet
+* Do **not** add HTTP stub dependencies yet
 
 ---
 

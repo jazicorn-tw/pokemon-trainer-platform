@@ -2,6 +2,8 @@
 
 Get the API running and make your first requests in under 2 minutes.
 
+> **Setting up for the first time?** See [`PROJECT_SETUP.md`](./PROJECT_SETUP.md) for the full
+> checklist — placeholder replacement, env files, bootstrap, and CI configuration.
 > **Prerequisites:** Complete [`DAY_1_ONBOARDING.md`](./DAY_1_ONBOARDING.md)
 > first. This guide assumes your environment is set up and Docker is running.
 
@@ -27,43 +29,43 @@ curl -s http://localhost:8080/actuator/health | jq .status
 # "UP"
 ```
 
-## Trainer endpoints
+## Resource endpoints
 
 ```bash
-# Create a trainer and capture the returned ID
-TRAINER_ID=$(curl -s -X POST http://localhost:8080/trainers \
+# Create a resource and capture the returned ID
+RESOURCE_ID=$(curl -s -X POST http://localhost:8080/resources \
   -H "Content-Type: application/json" \
-  -d '{"username":"ash"}' | jq -r .id)
+  -d '{"username":"alice"}' | jq -r .id)
 
-echo $TRAINER_ID   # xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+echo $RESOURCE_ID   # xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
-curl -s http://localhost:8080/trainers | jq .                          # list all
-curl -s http://localhost:8080/trainers/$TRAINER_ID | jq .              # get one
+curl -s http://localhost:8080/resources | jq .                          # list all
+curl -s http://localhost:8080/resources/$RESOURCE_ID | jq .              # get one
 
-curl -s -X PUT http://localhost:8080/trainers/$TRAINER_ID \
+curl -s -X PUT http://localhost:8080/resources/$RESOURCE_ID \
   -H "Content-Type: application/json" \
-  -d '{"username":"misty"}' | jq .                                     # update
+  -d '{"username":"bob"}' | jq .                                       # update
 
-curl -s -X DELETE http://localhost:8080/trainers/$TRAINER_ID \
+curl -s -X DELETE http://localhost:8080/resources/$RESOURCE_ID \
   -o /dev/null -w "%{http_code}"                                       # delete → 204
 ```
 
-## Pokémon endpoints
+## {{resource}} endpoints
 
 ```bash
-# (assumes $TRAINER_ID is set from above)
+# (assumes $RESOURCE_ID is set from above)
 
-POKEMON_ID=$(curl -s -X POST http://localhost:8080/trainers/$TRAINER_ID/pokemon \
+{{RESOURCE}}_ID=$(curl -s -X POST http://localhost:8080/resources/$RESOURCE_ID/{{resource}} \
   -H "Content-Type: application/json" \
-  -d '{"speciesName":"pikachu","nickname":"Pika","level":5}' | jq -r .id)
+  -d '{"itemName":"example-item","level":1}' | jq -r .id)
 
-curl -s http://localhost:8080/trainers/$TRAINER_ID/pokemon | jq .                        # list
-curl -s http://localhost:8080/trainers/$TRAINER_ID/pokemon/$POKEMON_ID | jq .            # get
+curl -s http://localhost:8080/resources/$RESOURCE_ID/{{resource}} | jq .                   # list
+curl -s http://localhost:8080/resources/$RESOURCE_ID/{{resource}}/${{RESOURCE}}_ID | jq .  # get
 
-curl -s -X PUT http://localhost:8080/trainers/$TRAINER_ID/pokemon/$POKEMON_ID \
+curl -s -X PUT http://localhost:8080/resources/$RESOURCE_ID/{{resource}}/${{RESOURCE}}_ID \
   -H "Content-Type: application/json" \
-  -d '{"nickname":"Sparky","level":10}' | jq .                                           # update
+  -d '{"label":"updated","level":2}' | jq .                                               # update
 
-curl -s -X DELETE http://localhost:8080/trainers/$TRAINER_ID/pokemon/$POKEMON_ID \
-  -o /dev/null -w "%{http_code}"                                                         # delete → 204
+curl -s -X DELETE http://localhost:8080/resources/$RESOURCE_ID/{{resource}}/${{RESOURCE}}_ID \
+  -o /dev/null -w "%{http_code}"                                                           # delete → 204
 ```

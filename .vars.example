@@ -15,4 +15,4 @@ ENABLE_SEMANTIC_RELEASE=true
 
 # Canonical repository allowed to publish artifacts
 # Format: <owner>/<repo>
-CANONICAL_REPOSITORY=jazicorn-tw/pokemon-trainer-platform
+CANONICAL_REPOSITORY=your-org/{{project-name}}

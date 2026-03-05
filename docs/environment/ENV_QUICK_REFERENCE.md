@@ -39,7 +39,7 @@ DEPLOY_ENABLED            # true|false — global deployment kill switch
 SPRING_PROFILES_ACTIVE   # dev|test|prod — active Spring profile (required)
 SERVER_PORT              # optional — override default server port
 
-SPRING_APPLICATION_NAME  # optional — app identity for logs/metrics
+APP_NAME  # optional — app identity for logs/metrics
 SPRING_MAIN_BANNER_MODE  # optional — off|console|log (often off in CI)
 ```
 

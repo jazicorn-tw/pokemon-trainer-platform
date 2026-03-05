@@ -1,27 +1,26 @@
 <!-- markdownlint-disable-file MD024 -->
 # 📦 Delivery Phases & Roadmap
 
-## 🎒 Pokémon Trainer Inventory Service
+## {{project-name}}
 
-_A Spring Boot 4 backend for managing trainers, Pokémon inventories, trades, and a marketplace —
-built with strict Test‑Driven Development (TDD)._
+_A production-grade Spring Boot 4 + Gradle backend API scaffold — built phase-by-phase
+with strict Test‑Driven Development (TDD) and CI-first quality gates._
 
 This document is the **authoritative delivery contract** for the system.
 Each phase is completed **only** when its release criteria are met.
 
-For design rationale and trade‑offs, see **../ARCHITECTURE.md**.
+For design rationale and trade‑offs, see **[../ARCHITECTURE.md](../ARCHITECTURE.md)**.
 
 ---
 
 ## 📘 Overview
 
-The **Pokémon Trainer Platform Service** is a Spring Boot 4 backend that lets trainers:
+The **{{project-name}}** scaffold lets you build a Spring Boot 4 backend API incrementally:
 
-* Register and manage trainer profiles
-* Add Pokémon to their inventory (validated via PokeAPI)
-* Trade Pokémon with other trainers
-* List Pokémon for sale and buy from other trainers
-* Authenticate with JWT
+* Phase 0 — runnable skeleton with full DX and CI infrastructure
+* Phase 1 — core domain entities and CRUD API
+* Phase 2 — external API integration (validation or enrichment)
+* Phase 3+ — trades, marketplace, auth, or your own domain features
 
 The project is built using **TDD (Test-Driven Development)** at all phases.
 Each version introduces new functionality only after writing failing tests first.
@@ -37,16 +36,16 @@ Each version introduces new functionality only after writing failing tests first
 
 ## 🧩 Tech Stack
 
-| Area          | Technology                                                         |
-| ------------- | ------------------------------------------------------------------ |
-| Language      | Java 21                                                            |
-| Framework     | Spring Boot 4.0.x                                                  |
-| Database      | PostgreSQL (local/dev/prod), Testcontainers (tests)                |
-| HTTP Client   | WebClient (Spring WebFlux)                                         |
-| Auth          | Spring Security + JWT (JJWT)                                       |
-| Testing       | JUnit 5, AssertJ, Mockito, Spring Test, Testcontainers             |
-| Documentation | SpringDoc OpenAPI (Swagger)                                        |
-| Mapping       | MapStruct                                                          |
+| Area        | Technology                                              |
+| ----------- | ------------------------------------------------------- |
+| Language    | Java 21                                                 |
+| Framework   | Spring Boot 4.0.x                                       |
+| Database    | PostgreSQL (local/dev/prod), Testcontainers (tests)     |
+| HTTP Client | WebClient (Spring WebFlux)                              |
+| Auth        | Spring Security + JWT _(planned — phased rollout)_      |
+| Testing     | JUnit 5, AssertJ, Mockito, Spring Test, Testcontainers  |
+| Migration   | Flyway                                                  |
+| Build       | Gradle 9                                                |
 
 ---
 
@@ -62,20 +61,12 @@ No feature is added without tests.
 
 ---
 
-## 🧪 Global TDD Rules
-
-* Every feature starts with failing tests
-* Minimal implementation to pass tests
-* Refactors only happen with green tests
-* No phase is complete without release criteria
-
----
-
 ## 🔰 Phase 0 — Project Skeleton & DX Infrastructure (v0.0.1)
 
 > ⚠️ **Environment requirement:** Phase 0 tests require **Docker** (or **Colima on macOS**)
 > because the project uses **Testcontainers** for PostgreSQL-backed integration tests.
-> If Docker is not running, Phase 0 **must fail** — this is intentional and documents production parity.
+> If Docker is not running, Phase 0 **must fail** — this is intentional and documents
+> production parity.
 
 * Full walkthrough: [`PHASE_0.md`](PHASE_0.md)
 
@@ -100,197 +91,124 @@ No business logic is introduced in this phase.
 
 ### 🧱 Phase-Gate ADRs
 
-The following Architectural Decision Records **must be accepted and committed**
-before Phase 0 is considered complete:
-
-* **ADR-000** — Quality gates & local/CI parity (pre-commit, CI authority)
+* **ADR-000** — Quality gates & local/CI parity
 * **ADR-001** — PostgreSQL as the only database (no H2, no in-memory fallbacks)
 * **ADR-002** — Flyway for schema migrations (explicit, versioned SQL)
 * **ADR-003** — Testcontainers for all integration tests
 * **ADR-004** — Actuator health endpoints + Docker health checks
 * **ADR-005** — Phased security approach (dependencies now, enforcement later)
 
-Failure to comply with any ADR invalidates Phase 0.
-
 ---
 
 ### 🧪 TDD Contract (Phase 0)
 
-Phase 0 is implemented **test-first**. The following tests define the phase boundary:
-
-1. **Context load test**
-   * Verifies Spring context boots
-   * Confirms PostgreSQL + Flyway wiring
-   * Fails fast if Testcontainers or Docker is misconfigured
-
-2. **Public liveness endpoint**
-   * `GET /ping` returns `"pong"`
-   * No authentication
-   * Used by humans, CI, and container health checks
-
-3. **Operational health**
-   * `GET /actuator/health` returns `UP`
-   * Database health included
-   * Mirrors production readiness checks
-
-4. **Container health**
-   * Dockerfile includes healthcheck
-   * Docker Compose respects health status
-   * CI depends on container health, not timing hacks
-
----
-
-## 📦 Dependencies (Phase 0 Only)
-
-Baseline dependencies introduced in this phase:
-
-* Spring Boot Web
-* Spring Boot Data JPA
-* Bean Validation
-* Spring Boot Actuator
-* PostgreSQL JDBC Driver
-* Flyway Core
-* Spring Boot Test
-* Testcontainers
-* PostgreSQL module
-* JUnit Jupiter integration
-
-No optional, convenience, or feature-level dependencies are permitted.
+1. **Context load test** — Spring context boots, PostgreSQL + Flyway wiring confirmed
+2. **Public liveness endpoint** — `GET /ping` returns `"pong"`
+3. **Operational health** — `GET /actuator/health` returns UP with DB status
+4. **Container health** — Dockerfile healthcheck wired to Compose
 
 ---
 
 ### ✅ Release Criteria (Phase 0 Complete)
-
-Phase 0 is complete **only when all criteria pass**:
 
 * Docker / Colima running locally
 * Application boots without manual setup
 * Local quality gates pass (ADR-000)
 * `./gradlew test` passes using Testcontainers PostgreSQL
 * `/ping` responds with `"pong"`
-* `/actuator/health` reports `UP`
-* CI pipeline passes with no environment-specific hacks
+* `/actuator/health` reports UP
+* CI pipeline passes
 * Docker healthcheck passes
 
 ---
 
-## 🐣 Phase 1 — Trainers & Pokémon Inventory (v0.1.0)
+## 🐣 Phase 1 — Core Domain & CRUD API (v0.1.0)
 
 ### Purpose
 
-Introduce the core domain: trainers and owned Pokémon.
+Introduce the primary domain entities and their full CRUD API, built test-first.
+
+### TODO: Define your domain
+
+Replace the placeholders below with your actual entities:
+
+* **Primary entity** — _e.g. User, Order, Product, Author_
+* **Secondary entity** — _e.g. Item, LineItem, Comment, Book_
 
 ### TDD Steps
 
-* Write service tests for `TrainerService`
-* Implement `Trainer` domain entity
-* Write controller tests for `POST /api/trainers`
-* Add `OwnedPokemon` entity tests
-* Validate trainer existence when adding Pokémon
-* Write controller tests for `/api/pokemon` endpoints
-
-### Resulting Features
-
-* Create trainer
-* Add, remove, list Pokémon
-* Validation & structured error responses
+* Write service unit tests for your primary entity
+* Implement entity, JPA repository, service, controller
+* Write `@WebMvcTest` @WebMvcTest + MockMvc with `@MockitoBean`
+* Write Testcontainers integration tests extending `AbstractIntegrationTest`
+* Add `GlobalExceptionHandler` returning `ProblemDetail` (RFC 7807) for 400, 404, 409
 
 ### Release Criteria
 
-* Trainers can be created and retrieved
-* Pokémon ownership enforced
-* Invalid trainer references rejected
+* Primary entity CRUD works end-to-end
+* Sub-entity ownership enforced (parent must exist)
+* Invalid references return structured 404/409 ProblemDetail errors
+* All unit, slice, and integration tests pass
+* CI pipeline green
 
 ---
 
-## 🧬 Phase 2 — PokeAPI Species Validation (v0.2.0)
+## 🧬 Phase 2 — External API Integration (v0.2.0)
 
 ### Purpose
 
-Ensure Pokémon species are valid before adding to inventory.
+Validate or enrich domain data against an external API before persisting.
+
+### TODO: Define your external API
+
+* **External API** — _e.g. Stripe, SendGrid, a public REST API_
+* **Validation rule** — _e.g. validate entity exists, enrich with metadata_
 
 ### TDD Steps
 
-* Mock `PokeApiClient` responses
-* Write failing tests for invalid species
-* Implement WebClient‑based PokeAPI client
-* Add DTO mapping tests
-
-> WebClient is used in a **blocking** manner (`.block()`).
-> Full reactive architecture is intentionally deferred.
-
-### New Dependency
-
-* `spring-boot-starter-webflux`
+* Mock the external API client in all tests (WireMock stubs)
+* Write failing tests for invalid/rejected cases
+* Implement WebClient-based HTTP client (blocking `.block()`)
+* Add graceful failure handling
 
 ### Release Criteria
 
-* Invalid species cannot be added
-* External API failures handled gracefully
-* PokeAPI fully mocked in tests
+* Invalid entries rejected with 422 Unprocessable Entity
+* External API failures handled gracefully (503, not 500)
+* External API fully mocked in CI — no real HTTP calls
+* All Phase 1 tests remain green
 
 ---
 
-## ⚔️ Phase 3 — Trading System (v0.3.0)
+## ⚔️ Phase 3 — Define your feature (v0.3.0)
+
+> TODO: Replace with your domain feature (e.g. Trading, Notifications, Subscriptions).
 
 ### Purpose
 
-Enable Pokémon trades between trainers.
+> Describe the feature and why it matters.
 
 ### TDD Steps
 
-* Write tests for trade creation
-  * Ownership validation
-  * Pokémon list validation
-* Write failing tests for accepting trades
-  * Atomic ownership swap
-* Write tests for rejecting and canceling trades
-* Add controller tests for `/api/trades`
-
-### Resulting Features
-
-* Trade proposals
-* Accept, reject, cancel trade
-* Ownership swaps
+> List the test-first steps for your feature.
 
 ### Release Criteria
 
-* Only owners can trade Pokémon
-* Accepting a trade swaps ownership atomically
-* Invalid trades rejected
+> List the acceptance criteria.
 
 ---
 
-## 💰 Phase 4 — Marketplace / Sale Listings (v0.4.0)
+## 💰 Phase 4 — Define your feature (v0.4.0)
+
+> TODO: Replace with your domain feature (e.g. Marketplace, Billing, Reporting).
 
 ### Purpose
 
-Allow trainers to buy and sell Pokémon.
-
-### TDD Steps
-
-* Write failing tests for creating listings
-* Write failing tests for buying Pokémon
-* Write failing tests for canceling listings
-* Implement marketplace service & controller
-
-### New Dependency
-
-* SpringDoc OpenAPI
-
-### Endpoints
-
-* `POST /api/listings`
-* `GET /api/listings`
-* `POST /api/listings/{id}/buy`
-* `POST /api/listings/{id}/cancel`
+> Describe the feature and why it matters.
 
 ### Release Criteria
 
-* Pokémon can be listed for sale
-* Listings cannot be double‑purchased
-* Ownership transferred correctly
-* Swagger UI available
+> List the acceptance criteria.
 
 ---
 
@@ -299,18 +217,12 @@ Allow trainers to buy and sell Pokémon.
 ### Purpose
 
 Validate real‑world end-to-end behavior using PostgreSQL and Testcontainers
-(already in use since Phase 0 — this phase adds full lifecycle coverage).
-
-### TDD Steps
-
-* Add full‑flow integration tests:
-  * Trade lifecycle (propose → accept → ownership swap)
-  * Marketplace purchase lifecycle (list → buy → transfer)
-* Verify Flyway migrations apply cleanly in integration test context
+(already in use since Phase 0 — this phase adds full lifecycle coverage across
+domain features).
 
 ### Release Criteria
 
-* Full trade and marketplace flows pass against real PostgreSQL (Testcontainers)
+* Full domain-flow integration tests pass against real PostgreSQL (Testcontainers)
 * Migrations apply cleanly end-to-end
 * No mocked repositories in integration test layer
 
@@ -320,13 +232,7 @@ Validate real‑world end-to-end behavior using PostgreSQL and Testcontainers
 
 ### Purpose
 
-Introduce security infrastructure without enforcement.
-
-### TDD Steps
-
-* Write tests confirming all routes are accessible
-* Add `SecurityConfig` permitting all requests
-* Add JWT dependencies
+Introduce Spring Security infrastructure without enforcement.
 
 ### New Dependencies
 
@@ -345,26 +251,13 @@ Introduce security infrastructure without enforcement.
 
 ### Purpose
 
-Enforce authentication and authorization.
-
-### TDD Steps
-
-* Write tests for:
-  * `/auth/register`
-  * `/auth/login`
-  * 401 on protected routes without token
-  * Valid JWT access
-* Implement:
-  * User account entity
-  * JWT service
-  * Security filter chain
-  * Password encoding
+Enforce authentication and authorization on protected routes.
 
 ### Release Criteria
 
 * Unauthorized requests return 401
 * Valid JWT grants access
-* Passwords stored securely
+* Passwords stored securely (BCrypt)
 
 ---
 
@@ -373,12 +266,6 @@ Enforce authentication and authorization.
 ### Purpose
 
 Improve maintainability and developer experience.
-
-### TDD Steps
-
-* Refactor mapping to MapStruct
-* Add Swagger UI
-* Optional Flyway hardening
 
 ### New Dependencies
 
@@ -394,18 +281,14 @@ Improve maintainability and developer experience.
 
 ---
 
-## 📦 Installation
+## 📦 Getting Started
 
 ```bash
-git clone https://github.com/jazicorn-tw/pokemon-trainer-platform
-cd pokemon-trainer-platform
+git clone https://github.com/your-org/{{project-name}}
+cd {{project-name}}
+make bootstrap
+make doctor
 make run
-```
-
-Swagger UI (from Phase 4+):
-
-```bash
-http://localhost:8080/swagger-ui.html
 ```
 
 ---
@@ -413,10 +296,8 @@ http://localhost:8080/swagger-ui.html
 ## 🧪 Running Tests
 
 ```bash
-./gradlew test
+./gradlew test   # requires Docker
 ```
-
-Integration tests (Phase 5+) require Docker.
 
 ---
 
@@ -432,6 +313,4 @@ Integration tests (Phase 5+) require Docker.
 
 * v0.9.0 — Audit & history
 * v1.0.0 — Stable public API
-* v1.1.0 — GraphQL
-* v1.2.0 — Docker + Kubernetes
-* v2.0.0 — Multi‑region marketplace
+* v2.0.0 — _define your next milestone_

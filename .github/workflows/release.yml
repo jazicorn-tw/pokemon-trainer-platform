@@ -362,8 +362,8 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/pokemon-trainer-platform:${{ needs.release.outputs.published_version }}
-            ghcr.io/${{ github.repository_owner }}/pokemon-trainer-platform:latest
+            ghcr.io/${{ github.repository_owner }}/{{project-name}}:${{ needs.release.outputs.published_version }}
+            ghcr.io/${{ github.repository_owner }}/{{project-name}}:latest
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -389,8 +389,8 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${{ needs.release.outputs.published_version }}"
-          helm package helm/pokemon-trainer-platform \
+          helm package helm/app \
             --version "$VERSION" \
             --app-version "$VERSION"
-          helm push "pokemon-trainer-platform-${VERSION}.tgz" \
+          helm push "{{project-name}}-${VERSION}.tgz" \
             oci://ghcr.io/${{ github.repository_owner }}/charts

@@ -75,7 +75,7 @@ src/
       db/migration/
         V1__init.sql
   test/
-    java/com/pokedex/inventory/
+    java/com/{{app-name}}/inventory/
       BaseIntegrationTest.java
       InventoryApplicationTests.java
     resources/
@@ -118,7 +118,7 @@ This project uses **classic Testcontainers only**:
 ## Base Integration Test
 
 ```java
-package com.pokedex.inventory;
+package com.{{app-name}}.inventory;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.test.context.ActiveProfiles;
@@ -161,7 +161,7 @@ public abstract class BaseIntegrationTest {
 ## Smoke Test
 
 ```java
-package com.pokedex.inventory;
+package com.{{app-name}}.inventory;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

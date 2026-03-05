@@ -1,0 +1,11 @@
+apiVersion: v2
+name: {{project-name}}
+description: Helm chart for the {{project-name}} API
+type: application
+icon: https://raw.githubusercontent.com/helm/helm/main/docs/logos/helm.svg
+
+# Chart version (independent from app version; can be aligned later)
+version: 0.1.0
+
+# App version (we’ll align to semantic-release tags when we publish charts)
+appVersion: "0.0.0"

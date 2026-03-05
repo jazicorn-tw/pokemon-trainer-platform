@@ -146,7 +146,7 @@ Docker Compose–managed services **must not use `container_name`**.
 Rationale:
 
 - `container_name` disables Docker Compose’s project scoping
-- Renaming repositories or services (e.g., inventory → trainer) can leave
+- Renaming repositories or services (e.g., inventory → resource) can leave
   orphaned containers that collide with new names
 - `docker compose down` cannot reliably clean up containers it does not own
 

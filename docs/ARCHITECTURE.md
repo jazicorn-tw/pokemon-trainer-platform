@@ -1,6 +1,6 @@
 # 🧠 Architecture Overview
 
-This document explains **how** the Pokémon Trainer Platform is structured and **why**
+This document explains **how** the {{project-name}} is structured and **why**
 specific design decisions were made.
 
 The focus is on **clarity, correctness, and evolvability** rather than premature scale.
@@ -41,11 +41,11 @@ Top-level packages represent **bounded contexts**.
 At this stage (Phase 0), these packages describe **intended boundaries** rather than
 fully implemented features.
 
-- `trainer` — trainer profiles and ownership *(planned)*
-- `pokemon` — owned Pokémon and species validation *(planned)*
-- `trade` — bilateral Pokémon exchanges *(planned)*
+- `resource` — resource profiles and ownership *(planned)*
+- `{{resource}}` — owned {{resource}} and species validation *(planned)*
+- `trade` — bilateral {{resource}} exchanges *(planned)*
 - `market` — listings and purchases *(planned)*
-- `pokeapi` — external API boundary *(planned)*
+- `{{external-api}}` — external API boundary *(planned)*
 - `security` — authentication and authorization *(planned)*
 
 Defining these boundaries early provides a stable mental model and avoids

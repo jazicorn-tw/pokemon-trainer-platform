@@ -7,7 +7,7 @@ Shared across **local**, **CI**, **Render**, and **Kubernetes**.
 ```text
 SPRING_PROFILES_ACTIVE  # dev|test|prod
 SERVER_PORT             # optional override
-SPRING_APPLICATION_NAME # app identity
+APP_NAME # app identity
 SPRING_MAIN_BANNER_MODE # off|console|log
 ```
 

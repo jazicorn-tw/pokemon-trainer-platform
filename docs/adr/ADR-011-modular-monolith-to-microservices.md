@@ -7,7 +7,7 @@
 
 ## Context
 
-The Pokémon Trainer Platform is currently implemented as a **modular monolith**
+The {{project-name}} is currently implemented as a **modular monolith**
 containing Inventory, Trading, and Marketplace bounded contexts.
 
 This structure prioritizes correctness, shared infrastructure, and developer experience.

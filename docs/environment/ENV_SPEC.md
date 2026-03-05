@@ -45,7 +45,7 @@ ENABLE_SEMANTIC_RELEASE  # optional — true|false — gate semantic-release exe
 SPRING_PROFILES_ACTIVE   # required — dev|test|prod — active Spring profile
 SERVER_PORT              # optional — override default server port
 
-SPRING_APPLICATION_NAME  # optional — app identity in logs/metrics
+APP_NAME  # optional — app identity in logs/metrics
 SPRING_MAIN_BANNER_MODE  # optional — off|console|log — reduce noise in CI
 ```
 
@@ -121,7 +121,7 @@ MANAGEMENT_HEALTH_DB_ENABLED                # optional — true|false — DB hea
 
 ```text
 LOGGING_LEVEL_ROOT          # optional — e.g. INFO|DEBUG|WARN
-LOGGING_LEVEL_COM_POKEDEX   # optional — package-level override (example)
+LOGGING_LEVEL_COM_EXAMPLE   # optional — package-level override (example)
 LOGGING_PATTERN_CONSOLE    # optional — customize console output
 ```
 
@@ -137,7 +137,7 @@ Legend: ✅ required, ⚪ optional, — not used / not applicable
 |---|---:|---:|---:|---:|---|
 | `SPRING_PROFILES_ACTIVE` | ✅ | ✅ | ✅ | ✅ | Usually `dev` / `test` / `prod` |
 | `SERVER_PORT` | ⚪ | — | ⚪ | ⚪ | Often provided by platform; override only if needed |
-| `SPRING_APPLICATION_NAME` | ⚪ | ⚪ | ⚪ | ⚪ | Useful for logs/metrics |
+| `APP_NAME` | ⚪ | ⚪ | ⚪ | ⚪ | Useful for logs/metrics |
 | `SPRING_MAIN_BANNER_MODE` | ⚪ | ✅ | ⚪ | ⚪ | Often `off` in CI |
 | `SPRING_DATASOURCE_URL` | ✅ | ✅ | ✅ | ✅ | JDBC URL (may include SSL params) |
 | `SPRING_DATASOURCE_USERNAME` | ✅ | ✅ | ✅ | ✅ | DB user |
@@ -159,7 +159,7 @@ Legend: ✅ required, ⚪ optional, — not used / not applicable
 | `MANAGEMENT_SERVER_PORT` | — | — | ⚪ | ⚪ | Separate actuator port if desired |
 | `MANAGEMENT_HEALTH_DB_ENABLED` | ⚪ | ⚪ | ⚪ | ⚪ | Toggle DB checks if too strict |
 | `LOGGING_LEVEL_ROOT` | ⚪ | ⚪ | ⚪ | ⚪ | Environment-specific verbosity |
-| `LOGGING_LEVEL_COM_POKEDEX` | ⚪ | ⚪ | ⚪ | ⚪ | Package override (example) |
+| `LOGGING_LEVEL_COM_EXAMPLE` | ⚪ | ⚪ | ⚪ | ⚪ | Package override (example) |
 | `LOGGING_PATTERN_CONSOLE` | ⚪ | ⚪ | ⚪ | ⚪ | Formatting override |
 
 ### CI feature flags (workflow-level)
@@ -328,7 +328,7 @@ They are stable across local dev, CI, Render, and Kubernetes.
 |--------|----------|-------------|
 | `SPRING_PROFILES_ACTIVE` | ✅ | Active Spring profile (`dev`, `test`, `prod`) |
 | `SERVER_PORT` | ❌ | Override default server port (often injected by platform) |
-| `SPRING_APPLICATION_NAME` | ❌ | App identity used in logs/metrics |
+| `APP_NAME` | ❌ | App identity used in logs/metrics |
 | `SPRING_MAIN_BANNER_MODE` | ❌ | Banner mode: `off`, `console`, `log` (often `off` in CI) |
 
 ---
@@ -433,7 +433,7 @@ Logging behavior tuning without rebuilds.
 | Variable | Required | Description |
 |--------|----------|-------------|
 | `LOGGING_LEVEL_ROOT` | ❌ | Root log level |
-| `LOGGING_LEVEL_COM_POKEDEX` | ❌ | Package-level override (example) |
+| `LOGGING_LEVEL_COM_EXAMPLE` | ❌ | Package-level override (example) |
 | `LOGGING_PATTERN_CONSOLE` | ❌ | Customize console output |
 
 Notes:
@@ -484,7 +484,7 @@ Helm charts support:
 See:
 
 - **ADR-009** — Deployment Strategy
-- `helm/pokemon-trainer-platform/values.yaml`
+- `helm/app/values.yaml`
 
 ---
 

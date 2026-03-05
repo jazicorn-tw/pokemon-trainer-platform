@@ -103,7 +103,7 @@ row("doctor.minDockerCpus",   get(merged, "doctor", "minDockerCpus"),           
 section("local.*")
 row("local.db.host",          get(merged, "local", "db", "host"),                 "localhost")
 row("local.db.port",          get(merged, "local", "db", "port"),                 "5432")
-row("local.db.name",          get(merged, "local", "db", "name"),                 "pokedex")
+row("local.db.name",          get(merged, "local", "db", "name"),                 "APP_NAME")
 
 section("docker.*")
 row("docker.postgres.image",  get(merged, "docker", "postgres", "image"),         "postgres:16-alpine")

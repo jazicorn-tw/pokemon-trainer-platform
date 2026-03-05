@@ -14,7 +14,7 @@
 .PHONY: help help-short help-auto help-ci explain debug
 
 help: ## 🧰 Show developer help (curated)
-	$(call section,🧰  Pokémon Trainer Platform — Make Targets)
+	$(call section,🧰  {{project-name}} — Make Targets)
 
 	$(call println,$(YELLOW)🚀 Recommended flow$(RESET))
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make help-categories" "→ discover help by category"
@@ -39,7 +39,7 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make env-init" "→ init baseline env from examples (safe)"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make env-init-force" "→ overwrite baseline env from examples ($(RED)⚠️ destructive$(RESET))"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make env-help" "→ docs: local environment setup"
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make lint" "→ static analysis only (fast-ish)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "./gradlew checkstyleMain pmdMain spotbugsMain" "→ static analysis only (fast-ish)"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make test" "→ unit tests"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make verify" "→ doctor + lint + test"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make quality" "→ doctor + spotlessCheck + clean check"
@@ -52,7 +52,7 @@ help: ## 🧰 Show developer help (curated)
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make docker-reset" "→ stop + delete volumes + restart"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make db-shell" "→ psql shell into local postgres container"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make db-flyway-clean" "→ wipe DB schema via Flyway CLI (requires flyway installed)"
-	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make seed-db" "→ insert 5 sample trainers (idempotent)"
+	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make seed-db" "→ insert 5 sample resources (idempotent)"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "make run" "→ start the API (docker-up + bootRun, loads .env)"
 	$(call println,)
 

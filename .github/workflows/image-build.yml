@@ -43,7 +43,7 @@ jobs:
           file: ./Dockerfile
           push: false
           platforms: linux/amd64
-          tags: pokemon-trainer-platform:ci
+          tags: {{project-name}}:ci
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -77,4 +77,4 @@ jobs:
           helm version
 
       - name: Helm lint
-        run: helm lint helm/pokemon-trainer-platform
+        run: helm lint helm/app

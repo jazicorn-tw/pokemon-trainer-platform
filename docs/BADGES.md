@@ -104,8 +104,8 @@ Badges are treated as **signals**, not decoration.
 ### Continuous Integration (CI)
 
 ```html
-<a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml">
-  <img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/ci-test.yml/badge.svg" alt="CI">
+<a href="https://github.com/your-org/{{project-name}}/actions/workflows/ci-test.yml">
+  <img src="https://github.com/your-org/{{project-name}}/actions/workflows/ci-test.yml/badge.svg" alt="CI">
 </a>
 ```
 
@@ -136,8 +136,8 @@ They may be added later once their signals are externally meaningful.
 ### Docker Image Build
 
 ```html
-<a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-build.yml">
-  <img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-build.yml/badge.svg" alt="Build Image">
+<a href="https://github.com/your-org/{{project-name}}/actions/workflows/image-build.yml">
+  <img src="https://github.com/your-org/{{project-name}}/actions/workflows/image-build.yml/badge.svg" alt="Build Image">
 </a>
 ```
 
@@ -164,8 +164,8 @@ They may be added later once their signals are externally meaningful.
 ### Docker Image Publish (Deferred)
 
 ```html
-<a href="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-publish.yml">
-  <img src="https://github.com/jazicorn-tw/pokemon-trainer-platform/actions/workflows/image-publish.yml/badge.svg" alt="Publish Image">
+<a href="https://github.com/your-org/{{project-name}}/actions/workflows/image-publish.yml">
+  <img src="https://github.com/your-org/{{project-name}}/actions/workflows/image-publish.yml/badge.svg" alt="Publish Image">
 </a>
 ```
 

@@ -42,7 +42,7 @@ docker-reset: ## 🧨 Reset local Docker environment (containers + volumes)
 
 db-shell: ## 🐘 Open a psql shell in the postgres container
 	$(call step,🐘 Opening psql shell)
-	@docker compose exec postgres psql -U $${POSTGRES_USER:-trainer} -d $${POSTGRES_DB:-trainer}
+	@docker compose exec postgres psql -U $${POSTGRES_USER:-$${APP_NAME:-app}} -d $${POSTGRES_DB:-$${APP_NAME:-app}}
 
 # db-flyway-clean runs scripts/db/clean-db-flyway.sh, which calls `flyway clean` to drop ALL
 # Flyway-managed objects (tables, sequences, flyway_schema_history) from the local database.
@@ -53,7 +53,7 @@ db-shell: ## 🐘 Open a psql shell in the postgres container
 #   - .env must exist (copy .env.example and fill in values)
 #   - Docker Compose postgres container must be running (make docker-up)
 #
-# Credentials are sourced from .env using SPRING_DATASOURCE_URL / USERNAME / PASSWORD —
+# Credentials are sourced from .env using SPRING_DATASOURCE_URL / SPRING_DATASOURCE_USERNAME / SPRING_DATASOURCE_PASSWORD —
 # the same values the Spring Boot app uses — so no manual credential editing is needed.
 db-flyway-clean: ## 🧼 Wipe DB schema via Flyway CLI (requires: flyway installed, .env present)
 	$(call step,🧼 Flyway clean — drop all schema objects)
@@ -65,11 +65,11 @@ db-flyway-clean: ## 🧼 Wipe DB schema via Flyway CLI (requires: flyway install
 	fi
 	@set -a; source .env; set +a; ./scripts/db/clean-db-flyway.sh
 
-# seed-db runs scripts/db/seed-db.sh, which inserts 5 sample trainers (Ash, Misty, Brock,
-# Gary, Dawn) into the local database for development use.
+# seed-db runs scripts/db/seed-db.sh, which inserts sample rows into the local database
+# for development use.
 # Safe to re-run — ON CONFLICT DO NOTHING skips rows that already exist.
 # Requires the Docker Compose postgres container to be running (make docker-up).
-seed-db: ## 🌱 Seed local DB with 5 sample trainers (idempotent)
+seed-db: ## 🌱 Seed local DB with sample data (idempotent)
 	$(call step,🌱 Seeding database)
 	$(call info,Requires postgres container \(make docker-up\))
 	@./scripts/db/seed-db.sh

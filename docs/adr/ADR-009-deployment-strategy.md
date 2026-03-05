@@ -9,7 +9,7 @@
 
 ## Context
 
-The Pokémon Trainer Platform is currently implemented as a **modular monolith**
+The {{project-name}} is currently implemented as a **modular monolith**
 (Inventory, Trading, Marketplace in a single Spring Boot application).
 
 The project prioritizes:

@@ -9,7 +9,7 @@ Use this project’s commit format:
 Examples:
 
 - `feat(trades): add accept trade endpoint`
-- `fix(db): handle null trainer id`
+- `fix(db): handle null resource id`
 - `docs(onboarding): clarify doctor vs verify`
 - `chore(ci): tighten release artifact guard`
 - `refactor(service): extract trade validation`

@@ -80,7 +80,7 @@ The Docker build step validates that:
     file: ./Dockerfile
     push: false
     platforms: linux/amd64
-    tags: pokemon-trainer-platform:ci
+    tags: {{project-name}}:ci
     labels: |
       org.opencontainers.image.source=${{ github.repository }}
       org.opencontainers.image.revision=${{ github.sha }}
@@ -91,7 +91,7 @@ The Docker build step validates that:
 Key points:
 
 - `push: false` guarantees **no registry interaction**
-- A local-only tag (`pokemon-trainer-platform:ci`) is used for validation
+- A local-only tag (`{{project-name}}:ci`) is used for validation
 - OCI labels link the image back to the repo and commit SHA
 - GitHub Actions cache (`type=gha`) speeds up repeated builds
 
@@ -113,7 +113,7 @@ It checks:
 
 ```yaml
 - name: Helm lint
-  run: helm lint helm/pokemon-trainer-platform
+  run: helm lint helm/app
 ```
 
 Helm version is pinned for reproducibility:

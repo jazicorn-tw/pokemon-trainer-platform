@@ -69,7 +69,7 @@ This test proves that:
 * the application can **actually start**
 
 Integration tests extend a shared Testcontainers base:
-`com.pokedex.platform.testinfra.BaseIntegrationTest`.
+`com.{{app-name}}.platform.testinfra.BaseIntegrationTest`.
 
 That base class:
 
@@ -78,12 +78,12 @@ That base class:
 * registers datasource properties via `@DynamicPropertySource`
 
 **File**
-`src/test/java/com/pokedex/platform/PlatformApplicationTest.java`
+`src/test/java/com/{{app-name}}/platform/PlatformApplicationTest.java`
 
 ```java
-package com.pokedex.platform;
+package com.{{app-name}}.platform;
 
-import com.pokedex.platform.testinfra.BaseIntegrationTest;
+import com.{{app-name}}.platform.testinfra.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -110,10 +110,10 @@ This test verifies the HTTP boundary **without** starting a full server
 and **without touching the database**.
 
 **File**
-`src/test/java/com/pokedex/platform/ping/PingControllerTest.java`
+`src/test/java/com/{{app-name}}/platform/ping/PingControllerTest.java`
 
 ```java
-package com.pokedex.platform.ping;
+package com.{{app-name}}.platform.ping;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,10 +149,10 @@ class PingControllerTest {
 ### 3️⃣ Minimal Controller (Green)
 
 **File**
-`src/main/java/com/pokedex/platform/ping/PingController.java`
+`src/main/java/com/{{app-name}}/platform/ping/PingController.java`
 
 ```java
-package com.pokedex.platform.ping;
+package com.{{app-name}}.platform.ping;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -225,7 +225,7 @@ docker ps
 
 # Run the app locally (docker-compose PostgreSQL)
 docker compose up -d postgres
-export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/pokedex"
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/{{app-name}}"
 export SPRING_DATASOURCE_USERNAME="postgres"
 export SPRING_DATASOURCE_PASSWORD="postgres"
 ./gradlew bootRun

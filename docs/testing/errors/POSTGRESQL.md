@@ -37,7 +37,7 @@ registry.add("spring.datasource.password", POSTGRES::getPassword);
 - Ensure the database name matches the container configuration:
 
 ```java
-.withDatabaseName("pokedex_test")
+.withDatabaseName("{{app-name}}_test")
 ```
 
 ## 3. Connection refused
