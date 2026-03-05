@@ -131,9 +131,29 @@ class OwnedPokemonServiceTest {
     when(pokemonRepository.save(pokemon)).thenReturn(pokemon);
 
     OwnedPokemonResponse response =
-        pokemonService.update(trainerId, pokemonId, new UpdateOwnedPokemonRequest("Sparky", 10));
+        pokemonService.update(
+            trainerId, pokemonId, new UpdateOwnedPokemonRequest("Sparky", 10, null, null, null));
 
     assertThat(response.level()).isEqualTo(10);
+  }
+
+  @Test
+  void updateUpdatesPokeapiIdShinyAndStatus() {
+    UUID trainerId = UUID.randomUUID();
+    UUID pokemonId = UUID.randomUUID();
+    var pokemon = new OwnedPokemon(pokemonId, trainerId, "pikachu", 5, PokemonStatus.ACTIVE);
+    when(pokemonRepository.findById(pokemonId)).thenReturn(Optional.of(pokemon));
+    when(pokemonRepository.save(pokemon)).thenReturn(pokemon);
+
+    OwnedPokemonResponse response =
+        pokemonService.update(
+            trainerId,
+            pokemonId,
+            new UpdateOwnedPokemonRequest(null, null, 25, true, PokemonStatus.TRADED));
+
+    assertThat(response.pokeapiId()).isEqualTo(25);
+    assertThat(response.shiny()).isTrue();
+    assertThat(response.status()).isEqualTo(PokemonStatus.TRADED);
   }
 
   @Test
@@ -145,7 +165,9 @@ class OwnedPokemonServiceTest {
     assertThatThrownBy(
             () ->
                 pokemonService.update(
-                    trainerId, pokemonId, new UpdateOwnedPokemonRequest(null, null)))
+                    trainerId,
+                    pokemonId,
+                    new UpdateOwnedPokemonRequest(null, null, null, null, null)))
         .isInstanceOf(OwnedPokemonNotFoundException.class);
   }
 

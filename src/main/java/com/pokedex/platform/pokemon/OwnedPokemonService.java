@@ -67,6 +67,15 @@ public class OwnedPokemonService {
     if (request.level() != null) {
       pokemon.setLevel(request.level());
     }
+    if (request.pokeapiId() != null) {
+      pokemon.setPokeapiId(request.pokeapiId());
+    }
+    if (request.shiny() != null) {
+      pokemon.setShiny(request.shiny());
+    }
+    if (request.status() != null) {
+      pokemon.setStatus(request.status());
+    }
     return OwnedPokemonResponse.from(pokemonRepository.save(pokemon));
   }
 

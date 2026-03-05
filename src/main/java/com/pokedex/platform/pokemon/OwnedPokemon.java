@@ -102,6 +102,10 @@ public class OwnedPokemon {
     return pokeapiId;
   }
 
+  public void setPokeapiId(Integer pokeapiId) {
+    this.pokeapiId = pokeapiId;
+  }
+
   public String getNickname() {
     return nickname;
   }
@@ -122,8 +126,16 @@ public class OwnedPokemon {
     return shiny;
   }
 
+  public void setShiny(boolean shiny) {
+    this.shiny = shiny;
+  }
+
   public PokemonStatus getStatus() {
     return status;
+  }
+
+  public void setStatus(PokemonStatus status) {
+    this.status = status;
   }
 
   public LocalDateTime getAcquiredAt() {

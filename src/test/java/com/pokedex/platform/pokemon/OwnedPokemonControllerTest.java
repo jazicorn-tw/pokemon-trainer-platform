@@ -143,6 +143,34 @@ class OwnedPokemonControllerTest {
   }
 
   @Test
+  void updateAcceptsPokeapiIdShinyAndStatus() throws Exception {
+    UUID trainerId = UUID.randomUUID();
+    UUID pokemonId = UUID.randomUUID();
+    var updated =
+        new OwnedPokemonResponse(
+            pokemonId,
+            trainerId,
+            "pikachu",
+            25,
+            "Sparky",
+            10,
+            true,
+            PokemonStatus.TRADED,
+            LocalDateTime.now());
+    when(pokemonService.update(eq(trainerId), eq(pokemonId), any())).thenReturn(updated);
+
+    mockMvc
+        .perform(
+            put("/trainers/{trainerId}/pokemon/{id}", trainerId, pokemonId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"pokeapiId\":25,\"shiny\":true,\"status\":\"TRADED\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pokeapiId").value(25))
+        .andExpect(jsonPath("$.shiny").value(true))
+        .andExpect(jsonPath("$.status").value("TRADED"));
+  }
+
+  @Test
   void updateReturns404WhenNotFound() throws Exception {
     UUID trainerId = UUID.randomUUID();
     UUID pokemonId = UUID.randomUUID();

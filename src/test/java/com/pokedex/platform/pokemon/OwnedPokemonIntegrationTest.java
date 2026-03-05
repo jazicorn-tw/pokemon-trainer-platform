@@ -132,6 +132,22 @@ class OwnedPokemonIntegrationTest extends BaseIntegrationTest {
   }
 
   @Test
+  void updateChangesStatusShinyAndPokeapiId() throws Exception {
+    String trainerId = createTrainer("ash");
+    String pokemonId = addPokemon(trainerId, "pikachu");
+
+    mockMvc
+        .perform(
+            put("/trainers/{trainerId}/pokemon/{id}", trainerId, pokemonId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"pokeapiId\":25,\"shiny\":true,\"status\":\"TRADED\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pokeapiId").value(25))
+        .andExpect(jsonPath("$.shiny").value(true))
+        .andExpect(jsonPath("$.status").value("TRADED"));
+  }
+
+  @Test
   void deleteRemovesPokemon() throws Exception {
     String trainerId = createTrainer("ash");
     String pokemonId = addPokemon(trainerId, "pikachu");
