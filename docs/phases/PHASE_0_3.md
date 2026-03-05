@@ -164,32 +164,28 @@ See [`docs/tooling/ACTRC.md`](../tooling/ACTRC.md) for full setup.
 ### Colima (macOS Docker Runtime)
 
 ```bash
-colima start --cpu 4 --memory 8
+colima start --cpu 6 --memory 8
 docker context use colima
 make doctor   # verify everything is green
 ```
 
-`scripts/check/check-colima.sh` validates Colima resource allocation
-(8 GiB RAM, 6 CPUs recommended) and can auto-restart Colima with the
-correct flags if resources are insufficient.
+`scripts/check/check-colima.sh` validates Colima resource allocation and can
+auto-restart Colima if resources are insufficient. Required minimums
+(**8 GiB RAM, 6 CPUs**) are configured in `.config/local-settings.json`
+under `colima.required` and apply automatically — no manual flag changes needed.
 
-### `local-settings.json` (git-ignored)
+### `.config/local-settings.json` (committed)
 
-Per-developer overrides for check script behaviour:
+Repo-committed defaults for local tooling behaviour, read by scripts via
+`jq` or Python before falling back to hard-coded values. Covers Colima
+resource requirements, doctor thresholds, local DB defaults, and the
+Postgres image tag.
 
-```json
-{
-  "exec_bits": { "strict": 0 }
-}
+```bash
+make local-settings   # print all effective resolved values
 ```
 
-Supported strictness levels for `check-executable-bits.sh`:
-
-| Level | Behaviour |
-| ----- | --------- |
-| `0` | Warn only (default) |
-| `1` | Fail the build |
-| `2` | Auto-fix (`chmod +x`) and optionally stage |
+📄 Full key reference: [`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_ENVIRONMENT.md)
 
 ---
 

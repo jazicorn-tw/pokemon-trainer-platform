@@ -13,10 +13,11 @@ development, CI simulation, and tooling such as `doctor`.
 
 ## ✅ Required files
 
-| File | Location | Purpose |
-|-----|---------|---------|
-| `.env` | Project root | Local runtime configuration |
-| `.actrc` | `$HOME/.actrc` | Configuration for `act` (local GitHub Actions runner) |
+| File | Location | Committed? | Purpose |
+|-----|---------|---------|---------|
+| `.env` | Project root | No | Local runtime configuration |
+| `.actrc` | `$HOME/.actrc` | No | Configuration for `act` (local GitHub Actions runner) |
+| `.config/local-settings.json` | Project root | Yes | Tooling defaults (Colima, doctor, DB, postgres image) |
 
 ---
 
@@ -114,6 +115,29 @@ chmod 600 ~/.actrc
 ```
 
 Your `doctor` checks will fail if permissions are more permissive.
+
+---
+
+## 🧩 `.config/local-settings.json` (committed)
+
+Unlike `.env` and `.actrc`, this file **is committed** to the repository.
+It provides team-wide defaults for local tooling — Colima resource
+requirements, doctor thresholds, local DB connection defaults, and the
+Postgres image tag used by Docker Compose.
+
+Scripts read it via `jq` or Python before falling back to hard-coded
+values, so overriding a default is as simple as editing the JSON.
+
+```bash
+make local-settings   # print all effective resolved values (after OS override merge)
+```
+
+To customise for your machine without touching the committed file, create
+an OS-specific override (e.g. `.config/local-settings.macos.json`) — it is
+deep-merged on top of the base at runtime.
+
+📄 Full key reference and override instructions:
+[`LOCAL_ENVIRONMENT.md`](./LOCAL_ENVIRONMENT.md)
 
 ---
 
