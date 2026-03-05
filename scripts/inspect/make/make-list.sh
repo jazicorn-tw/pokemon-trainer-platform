@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# scripts/inspect/inspect-list.sh
+# scripts/inspect/make/make-list.sh
 #
 # Lists make/ modules in sorted order, grouped by decade headers.
 # Output: headers + one-column entries: <emoji> <filename>

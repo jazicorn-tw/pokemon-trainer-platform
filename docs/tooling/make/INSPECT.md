@@ -1,6 +1,3 @@
-<!-- markdownlint-disable-file MD060 -->
-<!-- markdownlint-disable-file MD024 -->
-
 # 🔍 Makefile Inspection (`inspect-mk`)
 
 This document explains the **Makefile inspection tooling** provided by the
@@ -8,6 +5,8 @@ This document explains the **Makefile inspection tooling** provided by the
 
 The goal is **discoverability**, **navigation**, and **read-only introspection**
 of the decade-based Makefile architecture.
+
+Scripts live under `scripts/inspect/make/`.
 
 ---
 
@@ -30,7 +29,7 @@ As the Makefile system grows, it becomes harder to answer questions like:
 This repository uses a **numeric decade convention** for Make modules:
 
 | Decade | Purpose |
-|------|--------|
+| ------ | -------- |
 | 00s | Kernel / Make bootstrapping |
 | 10s | Presentation (UX, colors, formatting) |
 | 20s | Configuration & feature flags |
@@ -125,11 +124,11 @@ It is **safe to run at any time**.
 All logic lives in shell scripts; Make only orchestrates.
 
 ```text
-scripts/inspect/
-├── inspect-router.sh      # main entrypoint (argument routing)
-├── inspect-list.sh        # list modules (grouped by decade)
-├── inspect-all.sh         # inspect all modules
-├── inspect-decade-all.sh  # inspect all modules in one decade
+scripts/inspect/make/
+├── make-router.sh      # main entrypoint (argument routing)
+├── make-list.sh        # list modules (grouped by decade)
+├── make-all.sh         # inspect all modules
+├── make-decade-all.sh  # inspect all modules in one decade
 ```
 
 This keeps Makefiles:

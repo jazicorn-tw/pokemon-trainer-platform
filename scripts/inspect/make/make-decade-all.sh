@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Inspect every mk module in a decade with consolidated target summary first.
-# Usage: scripts/inspect/inspect-decade-all.sh 50
+# Usage: scripts/inspect/make/make-decade-all.sh 50
 
 DECADE="${1:-}"
 if [[ -z "${DECADE}" ]]; then
@@ -37,6 +37,6 @@ printf "\n%s━━━━━━━━━━━━━━━━━━━━━━�
 
 # Then inspect each file in order
 for f in "${FILES[@]}"; do
-  scripts/inspect/inspect-file.sh "${f}"
+  scripts/inspect/make/make-file.sh "${f}"
   echo
 done

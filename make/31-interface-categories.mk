@@ -127,7 +127,7 @@ help-inspect: ## 🧭 Inspection / Navigation
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "inspect-mk 50"           "→ inspect targets in a decade mk file"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "inspect-mk FLAG=a"       "→ inspect all make modules"
 	@printf "  $(BOLD)%-22s$(RESET) %s\n" "inspect-mk 50 FLAG=a"    "→ inspect all mk files in a decade"
-	@printf "  $(GRAY)%s$(RESET)\n" "Docs: docs/make/TREE.md, docs/make/INSPECT.md, scripts/inspect/"
+	@printf "  $(GRAY)%s$(RESET)\n" "Docs: docs/make/TREE.md, docs/make/INSPECT.md, scripts/inspect/make/"
 	$(call println,)
 
 

@@ -7,10 +7,10 @@
 # all heavy inspection logic to scripts under scripts/inspect/.
 #
 # Scripts:
-# - scripts/inspect/inspect-router.sh        (router + single-file inspector)
-# - scripts/inspect/inspect-list.sh          (no-arg: list make modules)
-# - scripts/inspect/inspect-all.sh           (inspect all modules)
-# - scripts/inspect/inspect-decade-all.sh    (inspect all modules in a decade)
+# - scripts/inspect/make/make-router.sh        (router + single-file inspector)
+# - scripts/inspect/make/make-list.sh          (no-arg: list make modules)
+# - scripts/inspect/make/make-all.sh           (inspect all modules)
+# - scripts/inspect/make/make-decade-all.sh    (inspect all modules in a decade)
 #
 # Design:
 # - Read-only / no side effects
@@ -36,10 +36,10 @@
 # -------------------------------------------------------------------
 # Script paths (overrideable)
 # -------------------------------------------------------------------
-PATH_INSPECT              ?= ./scripts/inspect/inspect-router.sh
-PATH_INSPECT_LIST_MODULES ?= ./scripts/inspect/inspect-list.sh
-PATH_INSPECT_ALL          ?= ./scripts/inspect/inspect-all.sh
-PATH_INSPECT_DECADE_ALL   ?= ./scripts/inspect/inspect-decade-all.sh
+PATH_INSPECT              ?= ./scripts/inspect/make/make-router.sh
+PATH_INSPECT_LIST_MODULES ?= ./scripts/inspect/make/make-list.sh
+PATH_INSPECT_ALL          ?= ./scripts/inspect/make/make-all.sh
+PATH_INSPECT_DECADE_ALL   ?= ./scripts/inspect/make/make-decade-all.sh
 
 .PHONY: inspect-mk
 

@@ -9,6 +9,6 @@ RESET="${RESET:-$'\033[0m'}"
 
 while IFS= read -r f; do
   echo "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-  scripts/inspect/inspect-file.sh "make/${f}"
+  scripts/inspect/make/make-file.sh "make/${f}"
   echo
 done < <(ls -1 make | sort)

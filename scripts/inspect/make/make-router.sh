@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# scripts/inspect/inspect-router.sh
+# scripts/inspect/make/make-router.sh
 #
 # One entrypoint for inspect tooling (Make delegates here).
 #
@@ -23,9 +23,9 @@ RESET="${RESET:-$'\033[0m'}"
 CYAN="${CYAN:-$'\033[36m'}"
 DIM="${DIM:-$'\033[2m'}"
 
-PATH_INSPECT_LIST_MODULES="${PATH_INSPECT_LIST_MODULES:-./scripts/inspect/inspect-list.sh}"
-PATH_INSPECT_ALL="${PATH_INSPECT_ALL:-./scripts/inspect/inspect-all.sh}"
-PATH_INSPECT_DECADE_ALL="${PATH_INSPECT_DECADE_ALL:-./scripts/inspect/inspect-decade-all.sh}"
+PATH_INSPECT_LIST_MODULES="${PATH_INSPECT_LIST_MODULES:-./scripts/inspect/make/make-list.sh}"
+PATH_INSPECT_ALL="${PATH_INSPECT_ALL:-./scripts/inspect/make/make-all.sh}"
+PATH_INSPECT_DECADE_ALL="${PATH_INSPECT_DECADE_ALL:-./scripts/inspect/make/make-decade-all.sh}"
 
 usage() {
   cat <<'EOF'
