@@ -226,11 +226,26 @@ die() {
 # ----------------------------
 # Strict mode / thresholds
 # ----------------------------
-MIN_MEM_GB="${DOCTOR_MIN_DOCKER_MEM_GB:-4}"
-MIN_CPUS="${DOCTOR_MIN_DOCKER_CPUS:-2}"
+# Read local-settings.json defaults (jq required; silently skipped if absent)
+_REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+_LS_FILE="${_REPO_ROOT}/.config/local-settings.json"
+_ls_min_mem=""
+_ls_min_cpus=""
+_ls_max_colima_mem=""
+_ls_max_colima_cpus=""
+if [[ -f "${_LS_FILE}" ]] && command -v jq >/dev/null 2>&1; then
+  _ls_min_mem="$(jq -r '.doctor.minDockerMemGb // empty' "${_LS_FILE}" 2>/dev/null || true)"
+  _ls_min_cpus="$(jq -r '.doctor.minDockerCpus // empty' "${_LS_FILE}" 2>/dev/null || true)"
+  _ls_max_colima_mem="$(jq -r '.colima.required.memGib // empty' "${_LS_FILE}" 2>/dev/null || true)"
+  _ls_max_colima_cpus="$(jq -r '.colima.required.cpu // empty' "${_LS_FILE}" 2>/dev/null || true)"
+fi
+
+# Precedence: env var > local-settings.json > hard default
+MIN_MEM_GB="${DOCTOR_MIN_DOCKER_MEM_GB:-${_ls_min_mem:-4}}"
+MIN_CPUS="${DOCTOR_MIN_DOCKER_CPUS:-${_ls_min_cpus:-2}}"
 REQUIRE_COLIMA="${DOCTOR_REQUIRE_COLIMA:-0}"
-MAX_COLIMA_MEM_GB="${DOCTOR_MAX_COLIMA_MEM_GB:-8}"
-MAX_COLIMA_CPUS="${DOCTOR_MAX_COLIMA_CPUS:-4}"
+MAX_COLIMA_MEM_GB="${DOCTOR_MAX_COLIMA_MEM_GB:-${_ls_max_colima_mem:-8}}"
+MAX_COLIMA_CPUS="${DOCTOR_MAX_COLIMA_CPUS:-${_ls_max_colima_cpus:-4}}"
 
 WARN_AS_FAIL=0
 if [[ "${STRICT}" == "1" ]]; then

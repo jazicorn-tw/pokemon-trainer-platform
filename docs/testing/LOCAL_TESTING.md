@@ -41,7 +41,7 @@ Verify Docker works:
 docker ps
 ```
 
-If `docker ps` fails → fix Docker/Colima first (see `DOCKER.md` / `COLIMA.md`).
+If `docker ps` fails → fix Docker/Colima first (see [`DOCKER`](errors/DOCKER.md) / [`COLIMA`](errors/COLIMA.md)).
 
 ## Required Dependencies (Gradle)
 

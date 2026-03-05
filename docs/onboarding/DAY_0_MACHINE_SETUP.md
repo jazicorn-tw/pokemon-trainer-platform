@@ -28,11 +28,12 @@ For Docker, use either **Docker Desktop** or **Colima** (recommended on Apple Si
 
 ```bash
 brew install colima docker
-colima start --cpu 4 --memory 8
+colima start --cpu 6 --memory 8
 ```
 
-> Gradle + Testcontainers need at least 4 GB RAM. Start Colima with `--memory 8`
-> to avoid flaky test failures.
+> Gradle + Testcontainers require at least **8 GiB RAM and 6 CPUs**. These are
+> the configured defaults in `.config/local-settings.json` (`colima.required`).
+> Starting with lower values will trigger an auto-restart by `make bootstrap`.
 
 ---
 

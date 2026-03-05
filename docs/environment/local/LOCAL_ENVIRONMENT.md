@@ -99,6 +99,52 @@ From `local-settings.json`:
 
 ---
 
+## 📋 Full local-settings.json reference
+
+All keys, their defaults, and which scripts read them:
+
+### `local.*` — host and port defaults
+
+| Key | Default | Read by |
+| --- | ------- | ------- |
+| `local.host` | `"localhost"` | _(reference value, available for future scripts)_ |
+| `local.app.port` | `8080` | _(reference value)_ |
+| `local.db.host` | `"localhost"` | `scripts/db/clean-db-flyway.sh` |
+| `local.db.port` | `5432` | `scripts/db/clean-db-flyway.sh` |
+| `local.db.name` | `"pokedex"` | `scripts/db/clean-db-flyway.sh` |
+
+### `colima.*` — Colima resource requirements
+
+| Key | Default | Read by |
+| --- | ------- | ------- |
+| `colima.profile` | `"default"` | `scripts/check/check-colima.sh` |
+| `colima.required.memGib` | `8` | `scripts/check/check-colima.sh`, `scripts/doctor.sh` |
+| `colima.required.cpu` | `6` | `scripts/check/check-colima.sh`, `scripts/doctor.sh` |
+| `colima.tolerance.gib` | `0.25` | `scripts/check/check-colima.sh` |
+
+### `doctor.*` — doctor.sh thresholds
+
+| Key | Default | Read by |
+| --- | ------- | ------- |
+| `doctor.minDockerMemGb` | `4` | `scripts/doctor.sh` |
+| `doctor.minDockerCpus` | `2` | `scripts/doctor.sh` |
+
+### `docker.*` — Docker image overrides
+
+| Key | Default | Read by |
+| --- | ------- | ------- |
+| `docker.postgres.image` | `"postgres:16-alpine"` | `make/70-runtime.mk` → `docker compose up` |
+
+> Changing `docker.postgres.image` takes effect on the next `make docker-up` or `make docker-reset`.
+> It exports `POSTGRES_IMAGE` into the environment so `docker-compose.yml` picks it up via
+> `${POSTGRES_IMAGE:-postgres:16-alpine}`.
+
+### `checks.*`, `git.*`, `make.*`, `planning.*`
+
+Existing keys — see the sections above for `checks.executableBits` details.
+
+---
+
 ## 🧪 Inspect active local settings
 
 To see the **effective configuration** after merging base + OS override:

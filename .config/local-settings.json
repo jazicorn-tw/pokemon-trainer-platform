@@ -29,5 +29,22 @@
     "ideas": "IDEAS.md",
     "todo": "TODO.md",
     "checklist": "PROMOTION_CHECKLIST.md"
+  },
+  "local": {
+    "host": "localhost",
+    "app": { "port": 8080 },
+    "db": {
+      "host": "localhost",
+      "port": 5432,
+      "name": "pokedex"
+    }
+  },
+  "colima": {
+    "profile": "default",
+    "required": { "memGib": 8, "cpu": 6 },
+    "tolerance": { "gib": 0.25 }
+  },
+  "docker": {
+    "postgres": { "image": "postgres:16-alpine" }
   }
 }

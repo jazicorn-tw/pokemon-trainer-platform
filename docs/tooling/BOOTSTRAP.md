@@ -34,20 +34,16 @@ They are **safe**, **idempotent**, and **explicitly invoked** (no hidden automat
 
 ## Relationship to local settings
 
-Bootstrap behavior is influenced by **repo-committed local settings**:
+Bootstrap behavior is influenced by **repo-committed local settings** in
+`.config/local-settings.json`. The keys relevant to bootstrap are:
 
 ```json
 {
   "checks": {
-    "executableBits": { "strict": 2 },
-    "lineEndings": { "enforce": true },
-    "filePermissions": { "warnOnGroupWrite": true }
+    "executableBits": { "strict": 2, "autoStage": true }
   },
   "git": {
     "autoInstallHooks": true
-  },
-  "make": {
-    "defaultTarget": "verify"
   }
 }
 ```
@@ -58,7 +54,8 @@ These settings:
 - Never affect CI behavior
 - Are intended for ergonomics and early feedback
 
-See [`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_ENVIRONMENT.md) for full details.
+📄 Full reference for all keys (`local.*`, `colima.*`, `doctor.*`, `docker.*`):
+[`LOCAL_ENVIRONMENT.md`](../environment/local/LOCAL_ENVIRONMENT.md)
 
 ---
 

@@ -56,11 +56,15 @@ colima version
 
 ## ▶️ Start Docker Engine (Colima)
 
-Start Colima with explicit DNS (recommended for reliability):
+Start Colima with sufficient resources and explicit DNS (recommended):
 
 ```bash
-colima start --dns 8.8.8.8 --dns 1.1.1.1
+colima start --cpu 6 --memory 8 --dns 8.8.8.8 --dns 1.1.1.1
 ```
+
+> The project requires at least **8 GiB RAM and 6 CPUs** (configured in
+> `.config/local-settings.json` under `colima.required`). Running with fewer
+> resources causes flaky Gradle builds and Testcontainers failures.
 
 Check status:
 

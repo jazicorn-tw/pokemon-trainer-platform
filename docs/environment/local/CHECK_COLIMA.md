@@ -16,12 +16,26 @@ It is designed to be **safe for local developer use** and **non-blocking** by de
 
 ## Requirements Enforced
 
-| Resource | Required | Notes |
-| -------- | ---------- | ------- |
-| Memory | 6 GiB | Docker may report slightly less due to VM overhead |
-| CPUs | 4 | Required for parallel Gradle + containers |
+| Resource | Default | Notes |
+| -------- | ------- | ----- |
+| Memory | 8 GiB | Docker may report slightly less due to VM overhead |
+| CPUs | 6 | Required for parallel Gradle + containers |
 
-A small tolerance is applied to memory checks to account for virtualization overhead.
+A small tolerance (0.25 GiB) is applied to memory checks to account for virtualization overhead.
+
+These values are read from `.config/local-settings.json` and can be adjusted per machine:
+
+```json
+{
+  "colima": {
+    "profile": "default",
+    "required": { "memGib": 8, "cpu": 6 },
+    "tolerance": { "gib": 0.25 }
+  }
+}
+```
+
+📄 Full reference: [`docs/environment/local/LOCAL_ENVIRONMENT.md`](./LOCAL_ENVIRONMENT.md)
 
 ---
 
@@ -74,8 +88,8 @@ Since Docker/Testcontainers rely on these values, they are the authoritative sou
 
 ```text
 ⚠️  Docker reports insufficient resources:
-   Memory: 1.9GiB (required: 6GiB)
-   CPUs:   2 (required: 4)
+   Memory: 1.9GiB (required: 8GiB)
+   CPUs:   2 (required: 6)
 
 🔄 Restarting Colima with correct settings...
 ✅ Restarted. Total Memory: 5.773GiB | CPUs: 4

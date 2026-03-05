@@ -92,7 +92,7 @@ When resources are low, Doctor prints **exact commands** to fix them:
 
 ```bash
 colima stop
-colima start --cpu 4 --memory 6
+colima start --cpu 6 --memory 8
 ```
 
 ---
@@ -136,6 +136,12 @@ DOCTOR_MIN_DOCKER_MEM_GB=6 make doctor
 Sets the *recommended* Docker memory threshold (GiB).
 Doctor will warn (or fail in strict mode) if below this value.
 
+Defaults (without env var) are read from `.config/local-settings.json`:
+
+```json
+{ "doctor": { "minDockerMemGb": 4, "minDockerCpus": 2 } }
+```
+
 ---
 
 ### `DOCTOR_MIN_DOCKER_CPUS`
@@ -145,6 +151,7 @@ DOCTOR_MIN_DOCKER_CPUS=4 make doctor
 ```
 
 Sets the *recommended* Docker CPU count.
+Also falls back to `doctor.minDockerCpus` in `.config/local-settings.json`.
 
 ---
 

@@ -46,7 +46,7 @@ make doctor
 If you’re on macOS with Colima:
 
 ```bash
-colima start --cpu 4 --memory 8   # ensure sufficient resources
+colima start --cpu 6 --memory 8   # ensure sufficient resources
 ```
 
 Quick verification:

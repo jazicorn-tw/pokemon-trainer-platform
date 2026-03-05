@@ -7,10 +7,58 @@ if [[ "${OS}" != "Darwin" ]]; then
   exit 0
 fi
 
-REQUIRED_MEM_GIB=8
-REQUIRED_CPU=6
-TOLERANCE_GIB=0.25
-PROFILE="${COLIMA_PROFILE:-default}"
+# ── Resolve config from local-settings.json (with OS override merge) ──────────
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+CONFIG_FILE="${REPO_ROOT}/.config/local-settings.json"
+
+_ls_mem_gib=""
+_ls_cpu=""
+_ls_tol=""
+_ls_profile=""
+
+if [[ -f "${CONFIG_FILE}" ]] && command -v python3 >/dev/null 2>&1; then
+  while IFS= read -r line; do
+    case "${line}" in
+      MEM_GIB=*)     _ls_mem_gib="${line#MEM_GIB=}" ;;
+      CPU=*)         _ls_cpu="${line#CPU=}" ;;
+      TOLERANCE=*)   _ls_tol="${line#TOLERANCE=}" ;;
+      PROFILE=*)     _ls_profile="${line#PROFILE=}" ;;
+    esac
+  done < <(python3 - "${CONFIG_FILE}" <<'PY'
+import json, platform, sys
+from pathlib import Path
+
+base_path = Path(sys.argv[1])
+system = platform.system().lower()
+suffix = {"darwin": "macos", "linux": "linux", "windows": "windows"}.get(system, system)
+override_path = base_path.parent / f"local-settings.{suffix}.json"
+
+def load_json(p):
+  return json.load(p.open()) if p.exists() else {}
+
+def deep_merge(a, b):
+  if not isinstance(a, dict) or not isinstance(b, dict):
+    return b
+  out = dict(a)
+  for k, v in b.items():
+    out[k] = deep_merge(out[k], v) if k in out and isinstance(out[k], dict) and isinstance(v, dict) else v
+  return out
+
+merged = deep_merge(load_json(base_path), load_json(override_path))
+c = merged.get("colima", {})
+print(f"MEM_GIB={c.get('required', {}).get('memGib', '')}")
+print(f"CPU={c.get('required', {}).get('cpu', '')}")
+print(f"TOLERANCE={c.get('tolerance', {}).get('gib', '')}")
+print(f"PROFILE={c.get('profile', '')}")
+PY
+)
+fi
+
+# Precedence: env var > local-settings.json > hard default
+REQUIRED_MEM_GIB="${_ls_mem_gib:-8}"
+REQUIRED_CPU="${_ls_cpu:-6}"
+TOLERANCE_GIB="${_ls_tol:-0.25}"
+PROFILE="${COLIMA_PROFILE:-${_ls_profile:-default}}"
 
 if ! command -v colima >/dev/null 2>&1; then
   echo "❌ Colima is not installed."

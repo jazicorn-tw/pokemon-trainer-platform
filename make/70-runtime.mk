@@ -13,6 +13,15 @@
 
 .PHONY: docker-volume docker-up docker-down docker-reset db-shell db-flyway-clean seed-db
 
+# Read POSTGRES_IMAGE from local-settings.json (docker.postgres.image) if jq is available.
+# Falls back to the default in docker-compose.yml (${POSTGRES_IMAGE:-postgres:16-alpine}).
+_POSTGRES_IMAGE := $(shell \
+  ls=$(LOCAL_SETTINGS); \
+  if [ -f "$$ls" ] && command -v jq >/dev/null 2>&1; then \
+    jq -r '.docker.postgres.image // empty' "$$ls" 2>/dev/null; \
+  fi)
+export POSTGRES_IMAGE ?= $(_POSTGRES_IMAGE)
+
 docker-volume: ## 🐳 List local Docker volumes (postgres-focused)
 	$(call step,🐳 Listing postgres volumes)
 	@docker volume ls | grep -i postgres || true
