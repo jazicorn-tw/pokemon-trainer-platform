@@ -14,7 +14,8 @@ set -euo pipefail
 #   3) OS override JSON (e.g. .config/local-settings.macos.json)
 #   4) Base JSON (e.g. .config/local-settings.json)
 #
-# This script only inspects *tracked files* to avoid noise from local-only scripts.
+# Inspects both tracked files (git index mode) and untracked files (filesystem bit)
+# so that newly added scripts are caught before they are committed.
 
 # -----------------------------------------------------------------------------
 # IMPORTANT:
@@ -219,6 +220,7 @@ missing=()
 collect_missing() {
   missing=()
   for pat in "${PATTERNS[@]}"; do
+    # Tracked files: check git index mode
     while IFS= read -r file; do
       [[ -z "${file}" ]] && continue
       [[ -f "${file}" ]] || continue
@@ -227,6 +229,15 @@ collect_missing() {
         missing+=("${file}")
       fi
     done < <(git ls-files -- "${pat}" || true)
+
+    # Untracked files: check filesystem bit (no git index entry yet)
+    while IFS= read -r file; do
+      [[ -z "${file}" ]] && continue
+      [[ -f "${file}" ]] || continue
+      if [[ ! -x "${file}" ]]; then
+        missing+=("${file}")
+      fi
+    done < <(git ls-files --others --exclude-standard -- "${pat}" || true)
   done
 }
 
@@ -250,7 +261,7 @@ auto_fix() {
 collect_missing
 
 if (( ${#missing[@]} == 0 )); then
-  echo "check-executable-bits: OK (all tracked scripts are executable)."
+  echo "check-executable-bits: OK (all scripts are executable — tracked + untracked)."
   exit 0
 fi
 

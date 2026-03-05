@@ -11,11 +11,15 @@
       "warnOnGroupWrite": true 
     }
   },
-  "git": { 
+  "git": {
     "autoInstallHooks": true,
     "releaseConfirm": {
       "strictDefault": false
-    } 
+    },
+    "preAddLint": {
+      "enabled": true,
+      "spotless": true
+    }
   }, 
   "make": { 
     "defaultTarget": "verify"
